@@ -90,6 +90,32 @@ npm start
 3. Share login credentials with team members
 4. Admin dashboard: `http://localhost:5000/admin/login.html`
 
+## Deploying to Vercel (Frontend) and a separate Node host (Backend)
+
+1. Deploy frontend to Vercel
+   - Import `Ghrandeur/FacultyPortalWebsite` into Vercel
+   - Root directory: `/`
+   - No build command needed for the static frontend
+   - Set output directory to `/` if required
+
+2. Host the backend separately
+   - Deploy `backend/server.js` to Render, Railway, or another Node host
+   - Set the backend URL to something like `https://api.example.com`
+   - Configure Firebase credentials with environment variables on the backend host
+
+3. Connect frontend to backend
+   - In Vercel, set a global runtime value before the app loads, for example:
+     ```html
+     <script>window.__BACKEND_URL__ = 'https://api.example.com';</script>
+     ```
+   - Or change the fallback in `assets/js/api-config.js` to your deployed backend URL:
+     ```js
+     window.API_URL = 'https://api.example.com/api';
+     ```
+   - Push the changes to GitHub and redeploy Vercel after updating the URL
+
+4. CORS is already enabled in `backend/server.js`, so Vercel should be able to call the backend once deployed.
+
 ## File Structure
 
 ```
