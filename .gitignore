@@ -7,6 +7,9 @@
 serviceAccountKey.json
 *-serviceAccountKey.json
 
+# Allow the backend service account key to be committed for deployment
+!backend/config/serviceAccountKey.json
+
 # Node modules
 node_modules/
 package-lock.json
