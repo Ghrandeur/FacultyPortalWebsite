@@ -29,6 +29,10 @@ build/
 # Uploads (optional - keep if versioning is needed)
 assets/uploads/*
 !assets/uploads/.gitkeep
+backend/uploads/
+
+# Local Firebase service account key
+backend/config/serviceAccountKey.json
 
 # Local storage
 localStorage.json
