@@ -45,8 +45,14 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-bottom: 32px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.topbar > .header-box {
+  min-width: 0;
 }
 
 .header-box {
@@ -86,10 +92,16 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--primary-blue);
+  background: var(--white);
+  color: var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: background 180ms ease, transform 180ms ease;
 }
 
 .page-back-button .back-icon {
-  color: var(--white);
+  color: inherit;
 }
 
 h1 {
@@ -100,31 +112,26 @@ h1 {
 }
 
 .theme-button {
-  background: linear-gradient(135deg, var(--primary-blue) 0%, #0284C7 100%);
+  background: var(--white);
   border: 2px solid var(--primary-blue);
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
-  font-size: 28px;
-  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
+  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  font-size: 24px;
+  color: var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .theme-button:hover {
-  transform: scale(1.1) rotate(15deg);
-  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
-  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
-}
-
-.page-back-button {
-  width: 56px;
-  height: 56px;
-  font-size: 24px;
+  background: #EFF6FF;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
 .theme-icon {
@@ -282,12 +289,26 @@ h1 {
 
   .theme-button,
   .page-back-button {
-    width: auto;
-    max-width: 60px;
+    width: 56px;
+    max-width: 56px;
+    flex-shrink: 0;
     align-self: center;
   }
 
   h1 {
     font-size: 2rem;
   }
+}
+
+.dark-mode .theme-button,
+.dark-mode .page-back-button {
+  background: #111827;
+  border-color: #60A5FA;
+  color: #BFDBFE;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.dark-mode .theme-button:hover,
+.dark-mode .page-back-button:hover {
+  background: rgba(59, 130, 246, 0.2);
 }
