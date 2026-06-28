@@ -36,7 +36,9 @@ router.post('/', upload.single('image'), (req, res) => {
   const folderRaw = (req.body && req.body.folder) ? String(req.body.folder) : '';
   const folder = folderRaw.replace(/[^a-zA-Z0-9-_]/g, '');
   const relativePath = folder ? `${folder}/${req.file.filename}` : req.file.filename;
-  const publicUrl = `http://localhost:5000/uploads/${relativePath}`;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  const protocol = req.protocol;
+  const publicUrl = `${protocol}://${host}/uploads/${relativePath}`;
 
   res.json({ url: publicUrl });
 });
