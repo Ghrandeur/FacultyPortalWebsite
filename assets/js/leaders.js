@@ -14,10 +14,11 @@ async function loadLeaders() {
     }
 
     leaders.forEach(leader => {
+      const photoUrl = window.normalizeMediaUrl(leader.photoUrl) || '/assets/images/placeholder.svg';
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `
-        <img src="${leader.photoUrl || '/assets/images/placeholder.svg'}" alt="${leader.name}" class="member-photo" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg'">
+        <img src="${photoUrl}" alt="${leader.name}" class="member-photo" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg'">
         <div class="member-info">
           <h3>${leader.name}</h3>
           <p>${leader.department}</p>
