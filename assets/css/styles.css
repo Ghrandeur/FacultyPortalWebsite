@@ -45,11 +45,13 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 32px;
 }
 
 .header-box {
   flex: 1;
+  min-width: 0;
   background: var(--white);
   padding: 24px;
   border-radius: 16px;
@@ -268,15 +270,18 @@ h1 {
 @media (max-width: 700px) {
   .topbar {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
   .header-box {
     padding: 20px;
   }
 
-  .theme-button {
-    width: 100%;
+  .theme-button,
+  .page-back-button {
+    width: auto;
+    max-width: 140px;
+    align-self: flex-end;
   }
 
   h1 {

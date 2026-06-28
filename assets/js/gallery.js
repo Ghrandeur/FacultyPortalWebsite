@@ -18,7 +18,7 @@ async function loadGalleryPhotos() {
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.innerHTML = `
-        <img src="${photoUrl}" alt="${photo.event}" onerror="this.src='/assets/images/placeholder.jpg'">
+        <img src="${photoUrl}" alt="${photo.event}" loading="lazy" onerror="this.src='/assets/images/placeholder.jpg'">
         <div class="gallery-caption">
           ${photo.event}
           <a class="details-btn" href="/pages/gallery-detail.html?id=${encodeURIComponent(photo.id)}">View Details</a>

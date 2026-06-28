@@ -19,7 +19,7 @@ async function loadArchiveEvents() {
       const card = document.createElement('div');
       card.className = 'event-card';
       card.innerHTML = `
-        <img src="${imageUrl}" alt="${event.title || 'Archive event'}" onerror="this.onerror=null;this.src='/assets/images/placeholder.jpg';">
+        <img src="${imageUrl}" alt="${event.title || 'Archive event'}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.jpg';">
         <div class="event-card-content">
           <h3>${event.title || 'Untitled event'}</h3>
           <p>${(event.description || '').replace(/\n/g, '<br>')}</p>
