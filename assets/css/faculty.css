@@ -1,0 +1,4 @@
+/* Faculty page specific styles */
+.faculty-content { max-width: 900px; margin: 0 auto; }
+.faculty-content h3 { font-size: 1.35rem; }
+.faculty-text p { text-align: justify; }

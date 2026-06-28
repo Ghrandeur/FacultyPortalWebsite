@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery Detail | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/pages.css" />
+    <style>
+      .detail-card {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 30px;
+      }
+      .detail-card img {
+        width: 100%;
+        border-radius: 18px;
+        margin-bottom: 24px;
+        object-fit: cover;
+        min-height: 380px;
+      }
+      .detail-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+      .detail-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(14, 165, 233, 0.12);
+        color: var(--primary-blue);
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-size: 0.95rem;
+      }
+      .detail-content {
+        line-height: 1.9;
+        color: var(--text-dark);
+        font-size: 1rem;
+      }
+      .detail-content h2 {
+        margin-top: 0;
+        color: var(--primary-blue);
+      }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="header-box">
+          <a href="/index.html" style="text-decoration: none;"><h1>FAHSSA</h1></a>
+        </div>
+        <button id="themeToggle" class="theme-button" type="button">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </header>
+
+      <main class="content-card detail-card">
+        <a href="/pages/gallery.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Gallery</a>
+        <div id="galleryDetailContent">
+          <p class="loading">Loading photo details...</p>
+        </div>
+      </main>
+    </div>
+
+    <script src="/assets/js/main.js"></script>
+    <script>
+      const API_URL = 'http://localhost:5000/api';
+
+      async function loadGalleryDetail() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const container = document.getElementById('galleryDetailContent');
+
+        if (!id) {
+          container.innerHTML = '<p style="color: red;">No photo specified.</p>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_URL}/gallery/${encodeURIComponent(id)}`);
+          if (!response.ok) {
+            throw new Error('Unable to load photo details');
+          }
+          const photo = await response.json();
+          container.innerHTML = `
+            <img src="${photo.photoUrl}" alt="${photo.event}" onerror="this.src='/assets/images/placeholder.jpg'">
+            <div class="detail-meta">
+              <span><i class="fa-solid fa-image"></i> ${photo.event}</span>
+              <span><i class="fa-solid fa-tags"></i> Photo</span>
+            </div>
+            <div class="detail-content">
+              <h2>${photo.event}</h2>
+              <p>${photo.description || 'No additional description is available.'}</p>
+            </div>
+          `;
+        } catch (error) {
+          console.error('Error loading gallery detail:', error);
+          container.innerHTML = '<p style="color: red;">Photo details could not be loaded. Please try again later.</p>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadGalleryDetail);
+    </script>
+  </body>
+</html>

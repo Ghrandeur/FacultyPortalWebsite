@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/admin.css" />
+  </head>
+  <body>
+    <div class="admin-container">
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="sidebar-header">
+          <h2>FAHSSA Admin</h2>
+          <button id="logoutBtn" class="logout-btn">
+            <i class="fa-solid fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-item active" data-section="dashboard">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </a>
+          <a href="#archive" class="nav-item" data-section="archive">
+            <i class="fa-solid fa-box-archive"></i> Archive
+          </a>
+          <a href="#faculty" class="nav-item" data-section="faculty">
+            <i class="fa-solid fa-building-columns"></i> Faculty Info
+          </a>
+          <a href="#gallery" class="nav-item" data-section="gallery">
+            <i class="fa-solid fa-images"></i> Gallery
+          </a>
+          <a href="#leaders" class="nav-item" data-section="leaders">
+            <i class="fa-solid fa-users-line"></i> Leaders
+          </a>
+          <a href="#documents" class="nav-item" data-section="documents">
+            <i class="fa-solid fa-file-lines"></i> Documents
+          </a>
+          <a href="#team" class="nav-item" data-section="team">
+            <i class="fa-solid fa-pen-nib"></i> Team
+          </a>
+          <a href="#past-questions" class="nav-item" data-section="past-questions">
+            <i class="fa-solid fa-file-pdf"></i> Past Questions
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="admin-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section active">
+          <h2>Dashboard</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Archive Events</h3>
+              <p id="archiveCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Gallery Photos</h3>
+              <p id="galleryCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Leaders</h3>
+              <p id="leadersCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Documents</h3>
+              <p id="docsCount">0</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Archive Section -->
+        <section id="archive" class="admin-section">
+          <h2>Manage Archive Events</h2>
+          <button class="add-btn" onclick="openArchiveForm()">
+            <i class="fa-solid fa-plus"></i> Add Event
+          </button>
+          <div id="archiveList" class="items-list"></div>
+        </section>
+
+        <!-- Faculty Section -->
+        <section id="faculty" class="admin-section">
+          <h2>Faculty Information</h2>
+          <form id="facultyForm" class="admin-form">
+            <div class="form-group">
+              <label for="facultyHistory">History</label>
+              <textarea id="facultyHistory" rows="5" placeholder="Faculty history..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="facultyMission">Mission</label>
+              <textarea id="facultyMission" rows="5" placeholder="Faculty mission..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="facultyVision">Vision</label>
+              <textarea id="facultyVision" rows="5" placeholder="Faculty vision..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="facultyContent">About Faculty</label>
+              <textarea id="facultyContent" rows="8" placeholder="Detailed information about the faculty..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Update Faculty Info</button>
+          </form>
+        </section>
+
+        <!-- Gallery Section -->
+        <section id="gallery" class="admin-section">
+          <h2>Manage Gallery</h2>
+          <button class="add-btn" onclick="openGalleryForm()">
+            <i class="fa-solid fa-plus"></i> Add Photo
+          </button>
+          <div id="galleryList" class="items-list"></div>
+        </section>
+
+        <!-- Leaders Section -->
+        <section id="leaders" class="admin-section">
+          <h2>Manage Leaders</h2>
+          <button class="add-btn" onclick="openLeaderForm()">
+            <i class="fa-solid fa-plus"></i> Add Leader
+          </button>
+          <div id="leadersList" class="items-list"></div>
+        </section>
+
+        <!-- Documents Section -->
+        <section id="documents" class="admin-section">
+          <h2>Manage Documents</h2>
+          <button class="add-btn" onclick="openDocumentForm()">
+            <i class="fa-solid fa-plus"></i> Upload Document
+          </button>
+          <div id="documentsList" class="items-list"></div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="team" class="admin-section">
+          <h2>Manage Team Members</h2>
+          <button class="add-btn" onclick="openTeamForm()">
+            <i class="fa-solid fa-plus"></i> Add Member
+          </button>
+          <div id="teamList" class="items-list"></div>
+        </section>
+
+        <!-- Past Questions Section -->
+        <section id="past-questions" class="admin-section">
+          <h2>Manage Past Questions & Resources</h2>
+          <button class="add-btn" onclick="openQuestionForm()">
+            <i class="fa-solid fa-plus"></i> Upload Resource
+          </button>
+          <div id="questionsList" class="items-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Modal Templates -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <form id="modalForm" class="admin-form">
+          <div id="modalBody"></div>
+          <button type="submit" class="submit-btn">Save</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-storage-compat.js"></script>
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/admin-dashboard.js"></script>
+  </body>
+</html>

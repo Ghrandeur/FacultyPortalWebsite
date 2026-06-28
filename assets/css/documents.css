@@ -1,0 +1,5 @@
+/* Documents page specific styles */
+.documents-list { gap: 12px; }
+.document-item { align-items: center; }
+.download-btn { white-space: nowrap; }
+.filter-section { margin-bottom: 20px; }

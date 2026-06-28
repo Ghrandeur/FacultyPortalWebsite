@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="University of Uyo Logo">
+  <circle cx="100" cy="100" r="92" fill="#031B4E" />
+  <circle cx="100" cy="100" r="58" fill="#E3342F" />
+  <path d="M72 110 L100 60 L128 110 Z" fill="#fff" />
+  <path d="M100 110 L100 150" stroke="#fff" stroke-width="10" />
+  <text x="100" y="180" font-family="Inter, Arial, sans-serif" font-size="18" fill="#fff" text-anchor="middle">UNIUYO</text>
+</svg>

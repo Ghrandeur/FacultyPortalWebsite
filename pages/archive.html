@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Archive | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/pages.css" />
+    <link rel="stylesheet" href="/assets/css/archive.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="header-box">
+          <a href="/index.html" style="text-decoration: none;">
+            <h1>FAHSSA</h1>
+          </a>
+        </div>
+        <button id="themeToggle" class="theme-button" type="button">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </header>
+
+      <main class="content-card">
+        <section class="page-header">
+          <h2><i class="fa-solid fa-box-archive"></i> Archive</h2>
+          <p>Past Events and Activities</p>
+        </section>
+
+        <div id="archiveContainer" class="archive-grid">
+          <div class="loading">Loading events...</div>
+        </div>
+      </main>
+    </div>
+
+    <div id="eventModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalTitle">Archive Event</h3>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/archive.js"></script>
+  </body>
+</html>

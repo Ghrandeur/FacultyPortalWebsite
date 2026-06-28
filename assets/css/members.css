@@ -1,0 +1,5 @@
+/* Leaders and Team shared styles */
+.members-grid { gap: 28px; }
+.member-photo { height: 260px; object-fit: cover; }
+.member-info { padding: 24px; }
+.member-position { color: var(--primary-blue); }

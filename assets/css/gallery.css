@@ -1,0 +1,5 @@
+/* Gallery page specific styles */
+.gallery-grid { grid-auto-rows: 1fr; }
+.gallery-item { aspect-ratio: 4/3; }
+.lightbox-image { max-width: 95%; max-height: 90vh; }
+.gallery-caption { font-weight: 600; }

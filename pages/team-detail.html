@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Detail | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/pages.css" />
+    <style>
+      .detail-card {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 30px;
+      }
+      .member-detail {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        align-items: start;
+      }
+      .member-photo {
+        width: 100%;
+        border-radius: 18px;
+        object-fit: cover;
+        min-height: 420px;
+      }
+      .member-info h2 {
+        color: var(--primary-blue);
+        margin-top: 0;
+      }
+      .member-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        color: var(--primary-blue);
+      }
+      .member-info p {
+        line-height: 1.8;
+        color: var(--text-dark);
+      }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      @media (max-width: 768px) {
+        .member-detail {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="header-box">
+          <a href="/index.html" style="text-decoration: none;"><h1>FAHSSA</h1></a>
+        </div>
+        <button id="themeToggle" class="theme-button" type="button">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </header>
+
+      <main class="content-card detail-card">
+        <a href="/pages/team.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Team</a>
+        <div id="teamDetailContent">
+          <p class="loading">Loading team member details...</p>
+        </div>
+      </main>
+    </div>
+
+    <script src="/assets/js/main.js"></script>
+    <script>
+      const API_URL = 'http://localhost:5000/api';
+
+      async function loadTeamDetail() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const container = document.getElementById('teamDetailContent');
+
+        if (!id) {
+          container.innerHTML = '<p style="color: red;">No team member specified.</p>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_URL}/team/${encodeURIComponent(id)}`);
+          if (!response.ok) {
+            throw new Error('Unable to load team member details');
+          }
+          const member = await response.json();
+          container.innerHTML = `
+            <div class="member-detail">
+              <img src="${member.photoUrl}" alt="${member.name}" class="member-photo" onerror="this.src='/assets/images/placeholder.jpg'">
+              <div class="member-info">
+                <h2>${member.name}</h2>
+                <p class="member-badge"><i class="fa-solid fa-pen-nib"></i> ${member.position}</p>
+                <p class="member-badge"><i class="fa-solid fa-building"></i> ${member.department}</p>
+                <p>${member.bio || 'No biography is available for this team member.'}</p>
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          console.error('Error loading team detail:', error);
+          container.innerHTML = '<p style="color: red;">Team member details could not be loaded. Please try again later.</p>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadTeamDetail);
+    </script>
+  </body>
+</html>

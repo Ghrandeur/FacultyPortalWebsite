@@ -1,0 +1,4 @@
+/* Past Questions page specific styles */
+.questions-list { gap: 14px; }
+.question-item { align-items: center; }
+@media (max-width:768px) { .question-item { flex-direction: column; } }
