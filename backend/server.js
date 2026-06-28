@@ -18,6 +18,32 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+function normalizeLocalUrls(value, protocol, host) {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeLocalUrls(item, protocol, host));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, normalizeLocalUrls(entry, protocol, host)])
+    );
+  }
+  if (typeof value === 'string') {
+    return value.replace(/^http:\/\/localhost:5000(\/.*)$/i, `${protocol}://${host}$1`);
+  }
+  return value;
+}
+
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function (body) {
+    const host = req.get('x-forwarded-host') || req.get('host') || 'facultyportalwebsite-3.onrender.com';
+    const protocol = req.protocol || 'https';
+    const normalizedBody = normalizeLocalUrls(body, protocol, host);
+    return originalJson.call(this, normalizedBody);
+  };
+  next();
+});
+
 // Serve static files
 app.use(express.static(path.join(__dirname, '../')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
