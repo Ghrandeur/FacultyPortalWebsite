@@ -269,19 +269,22 @@ h1 {
 
 @media (max-width: 700px) {
   .topbar {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .header-box {
     padding: 20px;
+    width: 100%;
   }
 
   .theme-button,
   .page-back-button {
     width: auto;
-    max-width: 140px;
-    align-self: flex-end;
+    max-width: 60px;
+    align-self: center;
   }
 
   h1 {
