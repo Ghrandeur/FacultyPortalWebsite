@@ -24,10 +24,14 @@ function loadServiceAccount() {
 }
 
 const serviceAccount = loadServiceAccount();
+const projectId = process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id;
+const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.appspot.com`;
+const databaseURL = process.env.FIREBASE_DATABASE_URL || `https://${projectId}.firebaseio.com`;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
+  databaseURL,
+  storageBucket
 });
 
 const db = admin.firestore();

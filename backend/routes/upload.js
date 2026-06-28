@@ -44,10 +44,10 @@ router.post('/', upload.single('image'), async (req, res) => {
     const remoteFile = bucket.file(fileName);
 
     await remoteFile.save(req.file.buffer || fs.readFileSync(req.file.path), {
-      metadata: { contentType: req.file.mimetype || 'application/octet-stream' },
-      public: true
+      metadata: { contentType: req.file.mimetype || 'application/octet-stream' }
     });
 
+    await remoteFile.makePublic();
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
     return res.json({ url: publicUrl });
   } catch (error) {

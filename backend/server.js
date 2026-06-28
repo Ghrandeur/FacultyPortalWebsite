@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
+const { storage } = require('./config/firebase');
 
 dotenv.config();
 
@@ -48,11 +49,11 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, '../')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
-// Upload fallback: if a leader URL points to /uploads/leaders/... but the file is stored in the root uploads directory,
-// serve the root file when the requested subfolder file does not exist.
-app.use('/uploads', (req, res, next) => {
-  const requestedFile = path.join(__dirname, 'uploads', req.path);
-  const fallbackFile = path.join(__dirname, 'uploads', path.basename(req.path));
+// Upload fallback: serve local files if available, then fall back to Firebase Storage if the local upload path is missing.
+app.use('/uploads', async (req, res, next) => {
+  const requestPath = (req.path || '').replace(/^[/\\]+/, '');
+  const requestedFile = path.join(__dirname, 'uploads', requestPath);
+  const fallbackFile = path.join(__dirname, 'uploads', path.basename(requestPath));
 
   if (fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
     return res.sendFile(requestedFile);
@@ -60,6 +61,22 @@ app.use('/uploads', (req, res, next) => {
 
   if (fs.existsSync(fallbackFile) && fs.statSync(fallbackFile).isFile()) {
     return res.sendFile(fallbackFile);
+  }
+
+  if (storage && storage.bucket) {
+    try {
+      const bucket = storage.bucket();
+      const fileName = `uploads/${requestPath}`;
+      const remoteFile = bucket.file(fileName);
+      const [exists] = await remoteFile.exists();
+
+      if (exists) {
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+        return res.redirect(publicUrl);
+      }
+    } catch (error) {
+      console.warn('Firebase storage fallback error:', error && error.message ? error.message : error);
+    }
   }
 
   next();
