@@ -1,6 +1,8 @@
 const API_URL = window.API_URL;
 let currentUser = null;
 let currentForm = null;
+let currentEditId = null;
+let currentEditData = null;
 
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -136,6 +138,8 @@ async function loadArchiveEvents() {
 }
 
 function openArchiveForm() {
+  currentEditId = null;
+  currentEditData = null;
   currentForm = 'archive';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
@@ -160,6 +164,41 @@ function openArchiveForm() {
   openModal();
 }
 
+async function editArchiveEvent(id) {
+  try {
+    const response = await fetch(`${API_URL}/archive/${id}`);
+    const event = await response.json();
+    currentEditId = id;
+    currentEditData = event;
+    currentForm = 'archive';
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Archive Event</h3>
+      <div class="form-group">
+        <label for="archiveTitle">Event Title</label>
+        <input type="text" id="archiveTitle" value="${event.title || ''}" placeholder="Event title" required>
+      </div>
+      <div class="form-group">
+        <label for="archiveDescription">Description</label>
+        <input type="text" id="archiveDescription" value="${event.description || ''}" placeholder="Short description" required>
+      </div>
+      <div class="form-group">
+        <label for="archiveImageFile">Upload New Image From Device (optional)</label>
+        <input type="file" id="archiveImageFile" accept="image/*">
+      </div>
+      <div class="form-group">
+        <label for="archiveContent">Full Content</label>
+        <textarea id="archiveContent" rows="6" placeholder="Event details...">${event.content || ''}</textarea>
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading event for edit:', error);
+    alert('Unable to load event for editing');
+  }
+}
+
 async function handleArchiveSubmit() {
   const title = document.getElementById('archiveTitle').value;
   const description = document.getElementById('archiveDescription').value;
@@ -167,13 +206,16 @@ async function handleArchiveSubmit() {
   const content = document.getElementById('archiveContent').value;
 
   try {
-    let imageUrl = '';
+    let imageUrl = currentEditData?.image || '';
     if (fileInput && fileInput.files && fileInput.files[0]) {
       imageUrl = await uploadImageToStorage(fileInput.files[0], 'archive');
     }
 
-    const response = await fetch(`${API_URL}/archive`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/archive/${currentEditId}` : `${API_URL}/archive`;
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -280,6 +322,7 @@ async function loadGalleryPhotos() {
           <p>${photo.description}</p>
         </div>
         <div class="item-actions">
+          <button class="edit-btn" onclick="editGalleryPhoto('${photo.id}')">Edit</button>
           <button class="delete-btn" onclick="deleteGalleryPhoto('${photo.id}')">Delete</button>
         </div>
       `;
@@ -317,6 +360,8 @@ async function uploadImageToStorage(file, folderName) {
 }
 
 function openGalleryForm() {
+  currentEditId = null;
+  currentEditData = null;
   currentForm = 'gallery';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
@@ -337,16 +382,53 @@ function openGalleryForm() {
   openModal();
 }
 
+async function editGalleryPhoto(id) {
+  try {
+    const response = await fetch(`${API_URL}/gallery/${id}`);
+    const photo = await response.json();
+    currentEditId = id;
+    currentEditData = photo;
+    currentForm = 'gallery';
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Gallery Photo</h3>
+      <div class="form-group">
+        <label for="galleryEvent">Event Name</label>
+        <input type="text" id="galleryEvent" value="${photo.event || ''}" placeholder="Event name" required>
+      </div>
+      <div class="form-group">
+        <label for="galleryPhotoFile">Upload New Image From Device (optional)</label>
+        <input type="file" id="galleryPhotoFile" accept="image/*">
+      </div>
+      <div class="form-group">
+        <label for="galleryDescription">Description</label>
+        <input type="text" id="galleryDescription" value="${photo.description || ''}" placeholder="Photo description">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading gallery photo for edit:', error);
+    alert('Unable to load photo for editing');
+  }
+}
+
 async function handleGallerySubmit() {
   const event = document.getElementById('galleryEvent').value;
   const fileInput = document.getElementById('galleryPhotoFile');
   const description = document.getElementById('galleryDescription').value;
 
   try {
-    const photoUrl = await uploadImageToStorage(fileInput.files[0], 'gallery');
+    let photoUrl = currentEditData?.photoUrl || '';
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      photoUrl = await uploadImageToStorage(fileInput.files[0], 'gallery');
+    }
 
-    const response = await fetch(`${API_URL}/gallery`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/gallery/${currentEditId}` : `${API_URL}/gallery`;
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -405,6 +487,7 @@ async function loadLeaders() {
           <p>${leader.department} - ${leader.position}</p>
         </div>
         <div class="item-actions">
+          <button class="edit-btn" onclick="editLeader('${leader.id}')">Edit</button>
           <button class="delete-btn" onclick="deleteLeader('${leader.id}')">Delete</button>
         </div>
       `;
@@ -416,6 +499,8 @@ async function loadLeaders() {
 }
 
 function openLeaderForm() {
+  currentEditId = null;
+  currentEditData = null;
   currentForm = 'leaders';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
@@ -440,6 +525,41 @@ function openLeaderForm() {
   openModal();
 }
 
+async function editLeader(id) {
+  try {
+    const response = await fetch(`${API_URL}/leaders/${id}`);
+    const leader = await response.json();
+    currentEditId = id;
+    currentEditData = leader;
+    currentForm = 'leaders';
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Leader</h3>
+      <div class="form-group">
+        <label for="leaderName">Name</label>
+        <input type="text" id="leaderName" value="${leader.name || ''}" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label for="leaderDepartment">Department</label>
+        <input type="text" id="leaderDepartment" value="${leader.department || ''}" placeholder="Department" required>
+      </div>
+      <div class="form-group">
+        <label for="leaderPosition">Position</label>
+        <input type="text" id="leaderPosition" value="${leader.position || ''}" placeholder="Position" required>
+      </div>
+      <div class="form-group">
+        <label for="leaderPhotoFile">Upload New Photo From Device (optional)</label>
+        <input type="file" id="leaderPhotoFile" accept="image/*">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading leader for edit:', error);
+    alert('Unable to load leader for editing');
+  }
+}
+
 async function handleLeaderSubmit() {
   const name = document.getElementById('leaderName').value;
   const department = document.getElementById('leaderDepartment').value;
@@ -447,10 +567,16 @@ async function handleLeaderSubmit() {
   const fileInput = document.getElementById('leaderPhotoFile');
 
   try {
-    const photoUrl = await uploadImageToStorage(fileInput.files[0], 'leaders');
+    let photoUrl = currentEditData?.photoUrl || '';
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      photoUrl = await uploadImageToStorage(fileInput.files[0], 'leaders');
+    }
 
-    const response = await fetch(`${API_URL}/leaders`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/leaders/${currentEditId}` : `${API_URL}/leaders`;
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -509,6 +635,7 @@ async function loadDocuments() {
           <p>${doc.category}</p>
         </div>
         <div class="item-actions">
+          <button class="edit-btn" onclick="editDocument('${doc.id}')">Edit</button>
           <button class="delete-btn" onclick="deleteDocument('${doc.id}')">Delete</button>
         </div>
       `;
@@ -520,6 +647,8 @@ async function loadDocuments() {
 }
 
 function openDocumentForm() {
+  currentEditId = null;
+  currentEditData = null;
   currentForm = 'documents';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
@@ -550,6 +679,47 @@ function openDocumentForm() {
   openModal();
 }
 
+async function editDocument(id) {
+  try {
+    const response = await fetch(`${API_URL}/documents/${id}`);
+    const doc = await response.json();
+    currentEditId = id;
+    currentEditData = doc;
+    currentForm = 'documents';
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Document</h3>
+      <div class="form-group">
+        <label for="documentName">File Name</label>
+        <input type="text" id="documentName" value="${doc.fileName || ''}" placeholder="Document name" required>
+      </div>
+      <div class="form-group">
+        <label for="documentCategory">Category</label>
+        <select id="documentCategory" required>
+          <option value="">Select category</option>
+          <option value="syllabus" ${doc.category === 'syllabus' ? 'selected' : ''}>Syllabus</option>
+          <option value="guidelines" ${doc.category === 'guidelines' ? 'selected' : ''}>Guidelines</option>
+          <option value="forms" ${doc.category === 'forms' ? 'selected' : ''}>Forms</option>
+          <option value="policies" ${doc.category === 'policies' ? 'selected' : ''}>Policies</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="documentUrl">File URL</label>
+        <input type="url" id="documentUrl" value="${doc.fileUrl || ''}" placeholder="https://example.com/document.pdf" required>
+      </div>
+      <div class="form-group">
+        <label for="documentDescription">Description</label>
+        <input type="text" id="documentDescription" value="${doc.description || ''}" placeholder="Document description">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading document for edit:', error);
+    alert('Unable to load document for editing');
+  }
+}
+
 async function handleDocumentSubmit() {
   const fileName = document.getElementById('documentName').value;
   const category = document.getElementById('documentCategory').value;
@@ -557,8 +727,11 @@ async function handleDocumentSubmit() {
   const description = document.getElementById('documentDescription').value;
 
   try {
-    const response = await fetch(`${API_URL}/documents`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/documents/${currentEditId}` : `${API_URL}/documents`;
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -617,6 +790,7 @@ async function loadTeamMembers() {
           <p>${member.department} - ${member.position}</p>
         </div>
         <div class="item-actions">
+          <button class="edit-btn" onclick="editTeamMember('${member.id}')">Edit</button>
           <button class="delete-btn" onclick="deleteTeamMember('${member.id}')">Delete</button>
         </div>
       `;
@@ -628,6 +802,8 @@ async function loadTeamMembers() {
 }
 
 function openTeamForm() {
+  currentEditId = null;
+  currentEditData = null;
   currentForm = 'team';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
@@ -652,6 +828,41 @@ function openTeamForm() {
   openModal();
 }
 
+async function editTeamMember(id) {
+  try {
+    const response = await fetch(`${API_URL}/team/${id}`);
+    const member = await response.json();
+    currentEditId = id;
+    currentEditData = member;
+    currentForm = 'team';
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Team Member</h3>
+      <div class="form-group">
+        <label for="teamName">Name</label>
+        <input type="text" id="teamName" value="${member.name || ''}" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label for="teamDepartment">Department</label>
+        <input type="text" id="teamDepartment" value="${member.department || ''}" placeholder="Department" required>
+      </div>
+      <div class="form-group">
+        <label for="teamPosition">Position</label>
+        <input type="text" id="teamPosition" value="${member.position || ''}" placeholder="Position" required>
+      </div>
+      <div class="form-group">
+        <label for="teamPhotoFile">Upload New Photo From Device (optional)</label>
+        <input type="file" id="teamPhotoFile" accept="image/*">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading team member for edit:', error);
+    alert('Unable to load team member for editing');
+  }
+}
+
 async function handleTeamSubmit() {
   const name = document.getElementById('teamName').value;
   const department = document.getElementById('teamDepartment').value;
@@ -659,10 +870,16 @@ async function handleTeamSubmit() {
   const fileInput = document.getElementById('teamPhotoFile');
 
   try {
-    const photoUrl = await uploadImageToStorage(fileInput.files[0], 'team');
+    let photoUrl = currentEditData?.photoUrl || '';
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      photoUrl = await uploadImageToStorage(fileInput.files[0], 'team');
+    }
 
-    const response = await fetch(`${API_URL}/team`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/team/${currentEditId}` : `${API_URL}/team`;
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -721,6 +938,7 @@ async function loadPastQuestions() {
           <p>${q.subject} - ${q.semester}</p>
         </div>
         <div class="item-actions">
+          <button class="edit-btn" onclick="editPastQuestion('${q.id}')">Edit</button>
           <button class="delete-btn" onclick="deletePastQuestion('${q.id}')">Delete</button>
         </div>
       `;
@@ -732,6 +950,8 @@ async function loadPastQuestions() {
 }
 
 function openQuestionForm() {
+  currentEditId = null;
+  currentEditData = null;
   currentForm = 'past-questions';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
@@ -766,6 +986,51 @@ function openQuestionForm() {
   openModal();
 }
 
+async function editPastQuestion(id) {
+  try {
+    const response = await fetch(`${API_URL}/past-questions/${id}`);
+    const q = await response.json();
+    currentEditId = id;
+    currentEditData = q;
+    currentForm = 'past-questions';
+
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Resource</h3>
+      <div class="form-group">
+        <label for="questionName">File Name</label>
+        <input type="text" id="questionName" value="${q.fileName || ''}" placeholder="File name" required>
+      </div>
+      <div class="form-group">
+        <label for="questionSubject">Subject</label>
+        <input type="text" id="questionSubject" value="${q.subject || ''}" placeholder="Subject name" required>
+      </div>
+      <div class="form-group">
+        <label for="questionSemester">Semester/Level</label>
+        <select id="questionSemester" required>
+          <option value="">Select level</option>
+          <option value="100" ${q.semester === '100' ? 'selected' : ''}>100 Level</option>
+          <option value="200" ${q.semester === '200' ? 'selected' : ''}>200 Level</option>
+          <option value="300" ${q.semester === '300' ? 'selected' : ''}>300 Level</option>
+          <option value="400" ${q.semester === '400' ? 'selected' : ''}>400 Level</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="questionUrl">File URL</label>
+        <input type="url" id="questionUrl" value="${q.fileUrl || ''}" placeholder="https://example.com/file.pdf" required>
+      </div>
+      <div class="form-group">
+        <label for="questionDescription">Description</label>
+        <input type="text" id="questionDescription" value="${q.description || ''}" placeholder="File description">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading resource for edit:', error);
+    alert('Unable to load resource for editing');
+  }
+}
+
 async function handleQuestionSubmit() {
   const fileName = document.getElementById('questionName').value;
   const subject = document.getElementById('questionSubject').value;
@@ -774,8 +1039,11 @@ async function handleQuestionSubmit() {
   const description = document.getElementById('questionDescription').value;
 
   try {
-    const response = await fetch(`${API_URL}/past-questions`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/past-questions/${currentEditId}` : `${API_URL}/past-questions`;
+
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -844,4 +1112,6 @@ function closeModal() {
   document.getElementById('modal').classList.remove('show');
   document.getElementById('modalForm').reset();
   document.getElementById('modalBody').innerHTML = '';
+  currentEditId = null;
+  currentEditData = null;
 }

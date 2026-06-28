@@ -63,6 +63,16 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Update document
+router.put('/:id', async (req, res) => {
+  try {
+    await db.collection('documents').doc(req.params.id).update(req.body);
+    res.json({ message: 'Document updated' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete document
 router.delete('/:id', async (req, res) => {
   try {

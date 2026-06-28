@@ -62,6 +62,16 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Update photo
+router.put('/:id', async (req, res) => {
+  try {
+    await db.collection('gallery').doc(req.params.id).update(req.body);
+    res.json({ message: 'Photo updated' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete photo
 router.delete('/:id', async (req, res) => {
   try {

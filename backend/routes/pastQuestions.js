@@ -64,6 +64,16 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Update resource
+router.put('/:id', async (req, res) => {
+  try {
+    await db.collection('pastQuestions').doc(req.params.id).update(req.body);
+    res.json({ message: 'Resource updated' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete resource
 router.delete('/:id', async (req, res) => {
   try {
