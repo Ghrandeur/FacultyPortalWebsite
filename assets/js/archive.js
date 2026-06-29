@@ -15,11 +15,11 @@ async function loadArchiveEvents() {
     }
 
     events.forEach((event) => {
-      const imageUrl = window.normalizeMediaUrl(event.image) || '/assets/images/placeholder.jpg';
+      const imageUrl = window.normalizeMediaUrl(event.image) || '/assets/images/placeholder.svg';
       const card = document.createElement('div');
       card.className = 'event-card';
       card.innerHTML = `
-        <img src="${imageUrl}" alt="${event.title || 'Archive event'}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.jpg';">
+        <img src="${imageUrl}" alt="${event.title || 'Archive event'}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">
         <div class="event-card-content">
           <h3>${event.title || 'Untitled event'}</h3>
           <p>${(event.description || '').replace(/\n/g, '<br>')}</p>

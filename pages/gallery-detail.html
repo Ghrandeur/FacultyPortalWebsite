@@ -99,9 +99,9 @@
             throw new Error('Unable to load photo details');
           }
           const photo = await response.json();
-          const photoUrl = window.normalizeMediaUrl(photo.photoUrl) || '/assets/images/placeholder.jpg';
+          const photoUrl = window.normalizeMediaUrl(photo.photoUrl) || '/assets/images/placeholder.svg';
           container.innerHTML = `
-            <img src="${photoUrl}" alt="${photo.event}" onerror="this.src='/assets/images/placeholder.jpg'">
+            <img src="${photoUrl}" alt="${photo.event}" onerror="this.src='/assets/images/placeholder.svg'">
             <div class="detail-meta">
               <span><i class="fa-solid fa-image"></i> ${photo.event}</span>
               <span><i class="fa-solid fa-tags"></i> Photo</span>

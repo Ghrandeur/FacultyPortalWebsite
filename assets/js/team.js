@@ -14,11 +14,11 @@ async function loadTeamMembers() {
     }
 
     members.forEach(member => {
-      const photoUrl = window.normalizeMediaUrl(member.photoUrl) || '/assets/images/placeholder.jpg';
+      const photoUrl = window.normalizeMediaUrl(member.photoUrl) || '/assets/images/placeholder.svg';
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `
-        <img src="${photoUrl}" alt="${member.name}" class="member-photo" loading="lazy" onerror="this.src='/assets/images/placeholder.jpg'">
+        <img src="${photoUrl}" alt="${member.name}" class="member-photo" loading="lazy" onerror="this.src='/assets/images/placeholder.svg'">
         <div class="member-info">
           <h3>${member.name}</h3>
           <p>${member.department}</p>

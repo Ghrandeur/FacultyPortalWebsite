@@ -14,17 +14,17 @@ async function loadGalleryPhotos() {
     }
 
     photos.forEach(photo => {
-      const photoUrl = window.normalizeMediaUrl(photo.photoUrl) || '/assets/images/placeholder.jpg';
+      const photoUrl = window.normalizeMediaUrl(photo.photoUrl) || '/assets/images/placeholder.svg';
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.innerHTML = `
-        <img src="${photoUrl}" alt="${photo.event}" loading="lazy" onerror="this.src='/assets/images/placeholder.jpg'">
+        <img src="${photoUrl}" alt="${photo.event}" loading="lazy" onerror="this.src='/assets/images/placeholder.svg'">
         <div class="gallery-caption">
           ${photo.event}
           <a class="details-btn" href="/pages/gallery-detail.html?id=${encodeURIComponent(photo.id)}">View Details</a>
         </div>
       `;
-      item.onclick = () => openLightbox(photo.photoUrl, photo.event);
+      item.onclick = () => openLightbox(photoUrl, photo.event);
       item.tabIndex = 0;
       item.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -49,7 +49,7 @@ function openLightbox(imageUrl, caption) {
   const img = lightbox.querySelector('.lightbox-image');
   const cap = lightbox.querySelector('.lightbox-caption');
   
-  img.src = imageUrl;
+  img.src = window.normalizeMediaUrl(imageUrl) || '/assets/images/placeholder.svg';
   cap.textContent = caption;
   lightbox.style.display = 'block';
 }

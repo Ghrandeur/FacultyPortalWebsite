@@ -99,9 +99,9 @@
             throw new Error('Unable to load event details');
           }
           const event = await response.json();
-          const imageUrl = window.normalizeMediaUrl(event.image) || '/assets/images/placeholder.jpg';
+          const imageUrl = window.normalizeMediaUrl(event.image) || '/assets/images/placeholder.svg';
           container.innerHTML = `
-            <img src="${imageUrl}" alt="${event.title}" onerror="this.src='/assets/images/placeholder.jpg'">
+            <img src="${imageUrl}" alt="${event.title}" onerror="this.src='/assets/images/placeholder.svg'">
             <div class="detail-meta">
               <span><i class="fa-solid fa-calendar-days"></i> ${new Date(event.date).toLocaleDateString()}</span>
               <span><i class="fa-solid fa-tag"></i> Event</span>
