@@ -20,22 +20,45 @@ function loadServiceAccount() {
     return require(resolvedServiceAccountPath);
   }
 
-  throw new Error(`Firebase service account file not found at ${resolvedServiceAccountPath}`);
+  return null;
 }
 
 const serviceAccount = loadServiceAccount();
-const projectId = process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id;
-const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_BUCKET || `${projectId}.firebasestorage.app`;
-const databaseURL = process.env.FIREBASE_DATABASE_URL || `https://${projectId}.firebaseio.com`;
+const projectId = process.env.FIREBASE_PROJECT_ID || (serviceAccount && serviceAccount.project_id);
+const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_BUCKET || (projectId ? `${projectId}.firebasestorage.app` : null);
+const databaseURL = process.env.FIREBASE_DATABASE_URL || (projectId ? `https://${projectId}.firebaseio.com` : null);
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL,
-  storageBucket
-});
+if (!serviceAccount) {
+  console.log('Firebase service account not configured; Firebase features will be disabled.');
+}
 
-const db = admin.firestore();
-const auth = admin.auth();
-const storage = admin.storage();
+let db = null;
+let auth = null;
+let storage = null;
+
+if (serviceAccount && projectId && storageBucket && databaseURL) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL,
+    storageBucket
+  });
+
+  // Debug info to help diagnose env misconfiguration in deploys
+  try {
+    console.log('FIREBASE INIT:', {
+      FIREBASE_PROJECT_ID: projectId,
+      FIREBASE_STORAGE_BUCKET: storageBucket,
+      SERVICE_ACCOUNT_EMAIL: serviceAccount.client_email || '<missing>'
+    });
+  } catch (err) {
+    console.warn('Failed to log firebase init details', err && err.message);
+  }
+
+  db = admin.firestore();
+  auth = admin.auth();
+  storage = admin.storage();
+} else {
+  console.log('Firebase not initialized because service account or project config is missing.');
+}
 
 module.exports = { db, auth, admin, storage };
