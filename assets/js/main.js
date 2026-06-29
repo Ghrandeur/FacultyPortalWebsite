@@ -23,7 +23,8 @@ if (themeToggle) {
 }
 
 const topbar = document.querySelector('.topbar');
-if (topbar && !document.getElementById('pageBackButton')) {
+const isHomePage = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html');
+if (topbar && !document.getElementById('pageBackButton') && !isHomePage) {
   const backButton = document.createElement('button');
   backButton.id = 'pageBackButton';
   backButton.type = 'button';

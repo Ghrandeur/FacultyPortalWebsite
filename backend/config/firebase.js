@@ -25,7 +25,7 @@ function loadServiceAccount() {
 
 const serviceAccount = loadServiceAccount();
 const projectId = process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id;
-const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.appspot.com`;
+const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_BUCKET || `${projectId}.firebasestorage.app`;
 const databaseURL = process.env.FIREBASE_DATABASE_URL || `https://${projectId}.firebaseio.com`;
 
 admin.initializeApp({
