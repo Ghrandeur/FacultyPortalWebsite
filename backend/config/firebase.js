@@ -3,7 +3,7 @@ const path = require('path');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 function loadServiceAccount() {
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
@@ -11,7 +11,7 @@ function loadServiceAccount() {
     return JSON.parse(serviceAccountJson);
   }
 
-  const serviceAccountPath = process.env.FIREBASE_ADMIN_SDK_PATH || '../serviceAccountKey.json';
+  const serviceAccountPath = process.env.FIREBASE_ADMIN_SDK_PATH || './serviceAccountKey.json';
   const resolvedServiceAccountPath = path.isAbsolute(serviceAccountPath)
     ? serviceAccountPath
     : path.resolve(__dirname, serviceAccountPath);
@@ -25,11 +25,13 @@ function loadServiceAccount() {
 
 const serviceAccount = loadServiceAccount();
 const projectId = process.env.FIREBASE_PROJECT_ID || (serviceAccount && serviceAccount.project_id);
-const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_BUCKET || (projectId ? `${projectId}.firebasestorage.app` : null);
+const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_BUCKET || (projectId ? `${projectId}.appspot.com` : null);
 const databaseURL = process.env.FIREBASE_DATABASE_URL || (projectId ? `https://${projectId}.firebaseio.com` : null);
 
 if (!serviceAccount) {
   console.log('Firebase service account not configured; Firebase features will be disabled.');
+} else {
+  console.log('Firebase service account loaded from:', path.resolve(__dirname, process.env.FIREBASE_ADMIN_SDK_PATH || './serviceAccountKey.json'));
 }
 
 let db = null;

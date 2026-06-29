@@ -342,17 +342,22 @@ async function uploadImageToStorage(file, folderName) {
   formData.append('folder', folderName);
   formData.append('image', file);
 
+  if (!currentUser) {
+    throw new Error('User not authenticated');
+  }
+
   const response = await fetch(`${API_URL}/upload`, {
     method: 'POST',
     headers: {
-      'Authorization': currentUser && typeof currentUser.getIdToken === 'function' ? await currentUser.getIdToken() : ''
+      'Authorization': await currentUser.getIdToken()
     },
     body: formData
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || 'Image upload failed');
+    console.error('Upload error response:', response.status, errorText);
+    throw new Error(errorText || `Image upload failed (${response.status})`);
   }
 
   const data = await response.json();
@@ -575,6 +580,10 @@ async function handleLeaderSubmit() {
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/leaders/${currentEditId}` : `${API_URL}/leaders`;
 
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+
     const response = await fetch(url, {
       method,
       headers: {
@@ -584,15 +593,19 @@ async function handleLeaderSubmit() {
       body: JSON.stringify({ name, department, position, photoUrl })
     });
 
-    if (response.ok) {
-      closeModal();
-      loadLeaders();
-      loadDashboardStats();
-      alert('Leader added successfully!');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Leader creation failed:', response.status, errorText);
+      throw new Error(errorText || `Leader add failed (${response.status})`);
     }
+
+    closeModal();
+    loadLeaders();
+    loadDashboardStats();
+    alert('Leader added successfully!');
   } catch (error) {
-    console.error('Error:', error);
-    alert('Error adding leader');
+    console.error('Error adding leader:', error);
+    alert(`Error adding leader: ${error.message || 'Unknown error'}`);
   }
 }
 

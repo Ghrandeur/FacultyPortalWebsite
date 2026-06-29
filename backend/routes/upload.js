@@ -51,8 +51,11 @@ router.post('/', upload.single('image'), async (req, res) => {
     const awsRegion = process.env.AWS_REGION || process.env.S3_REGION || process.env.AWS_DEFAULT_REGION;
     const s3Endpoint = process.env.S3_ENDPOINT || process.env.AWS_S3_ENDPOINT; // optional for Spaces or custom endpoints
 
+    const firebaseStorageEnabled = !!(storage && storage.bucket);
+    const s3Enabled = Boolean(s3Bucket && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY);
     console.log('UPLOAD REQUEST CONFIG:', {
-      hasFirebaseStorage: !!(storage && storage.bucket),
+      firebaseStorageEnabled,
+      s3Enabled,
       s3Bucket,
       hasAwsAccessKey: Boolean(process.env.AWS_ACCESS_KEY_ID),
       hasAwsSecret: Boolean(process.env.AWS_SECRET_ACCESS_KEY),

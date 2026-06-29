@@ -4,9 +4,9 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
-const { storage } = require('./config/firebase');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
+const { storage } = require('./config/firebase');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,14 +14,18 @@ const PORT = process.env.PORT || 5000;
 // Trusted proxy for correct protocol/host behind Render or other proxies
 app.set('trust proxy', true);
 
+const firebaseServiceAccountConfigured = Boolean(
+  process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_ADMIN_SDK_PATH
+);
 console.log('UPLOAD CONFIG:', {
   s3Bucket: process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || process.env.AWS_BUCKET,
   hasAwsAccessKey: Boolean(process.env.AWS_ACCESS_KEY_ID),
   hasAwsSecret: Boolean(process.env.AWS_SECRET_ACCESS_KEY),
   hasS3Endpoint: Boolean(process.env.S3_ENDPOINT || process.env.AWS_S3_ENDPOINT),
   awsRegion: process.env.AWS_REGION || process.env.S3_REGION || process.env.AWS_DEFAULT_REGION,
-  firebaseServiceAccount: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_JSON),
-  firebaseProjectId: Boolean(process.env.FIREBASE_PROJECT_ID)
+  firebaseServiceAccount: firebaseServiceAccountConfigured,
+  firebaseProjectId: Boolean(process.env.FIREBASE_PROJECT_ID),
+  firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_BUCKET
 });
 
 // Middleware

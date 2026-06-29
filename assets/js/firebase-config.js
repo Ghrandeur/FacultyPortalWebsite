@@ -3,7 +3,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCcXEf9zoNaWdJ7A3D1qknYTnZsCN3wsqc",
   authDomain: "fahssa-editorial.firebaseapp.com",
   projectId: "fahssa-editorial",
-  storageBucket: "fahssa-editorial.firebasestorage.app",
+  storageBucket: "fahssa-editorial.appspot.com",
   messagingSenderId: "70368869895",
   appId: "1:70368869895:web:06f11851f774badf86f4a2"
 };
