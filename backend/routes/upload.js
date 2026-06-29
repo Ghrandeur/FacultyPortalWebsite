@@ -27,37 +27,55 @@ const diskStorage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: diskStorage });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 router.post('/', upload.single('image'), async (req, res) => {
-  if (!req.file) {
+  if (!req.file || !req.file.buffer) {
     return res.status(400).json({ error: 'No image uploaded' });
   }
 
   try {
     const folderRaw = (req.body && req.body.folder) ? String(req.body.folder) : '';
     const folder = folderRaw.replace(/[^a-zA-Z0-9-_]/g, '');
-    const relativePath = folder ? `${folder}/${req.file.filename}` : req.file.filename;
+    const originalName = req.file.originalname || 'upload';
+    const ext = path.extname(originalName) || '.bin';
+    const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9.-]/g, '_');
+    const safeName = `${Date.now()}-${baseName}${ext}`;
+    const relativePath = folder ? `${folder}/${safeName}` : safeName;
 
     const bucket = storage.bucket();
     const fileName = `uploads/${relativePath}`;
     const remoteFile = bucket.file(fileName);
 
-    await remoteFile.save(req.file.buffer || fs.readFileSync(req.file.path), {
-      metadata: { contentType: req.file.mimetype || 'application/octet-stream' }
+    await remoteFile.save(req.file.buffer, {
+      metadata: {
+        contentType: req.file.mimetype || 'application/octet-stream',
+        cacheControl: 'public, max-age=31536000'
+      }
     });
 
     await remoteFile.makePublic();
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-    return res.json({ url: publicUrl });
+
+    const localUploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(localUploadDir)) {
+      fs.mkdirSync(localUploadDir, { recursive: true });
+    }
+
+    const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
+    if (!fs.existsSync(localFolder)) {
+      fs.mkdirSync(localFolder, { recursive: true });
+    }
+
+    fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
+
+    return res.json({ url: publicUrl, storage: 'firebase' });
   } catch (error) {
-    const folderRaw = (req.body && req.body.folder) ? String(req.body.folder) : '';
-    const folder = folderRaw.replace(/[^a-zA-Z0-9-_]/g, '');
-    const relativePath = folder ? `${folder}/${req.file.filename}` : req.file.filename;
-    const host = req.get('x-forwarded-host') || req.get('host');
-    const protocol = req.protocol;
-    const fallbackUrl = `${protocol}://${host}/uploads/${relativePath}`;
-    return res.json({ url: fallbackUrl, warning: error.message });
+    console.error('Image upload failed:', error);
+    return res.status(500).json({ error: 'Image upload failed', details: error.message });
   }
 });
 
