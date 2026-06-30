@@ -80,36 +80,23 @@ router.post('/', upload.single('image'), async (req, res) => {
         try { await remoteFile.makePublic(); } catch (e) { console.warn('remoteFile.makePublic() failed:', e && e.message); }
 
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-
-        // save local copy as fallback
-        const localUploadDir = path.join(__dirname, '../uploads');
-        if (!fs.existsSync(localUploadDir)) {
-          fs.mkdirSync(localUploadDir, { recursive: true });
-        }
-
-        const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
-        if (!fs.existsSync(localFolder)) {
-          fs.mkdirSync(localFolder, { recursive: true });
-        }
-
-        fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
-
         return res.json({ url: publicUrl, storage: 'firebase' });
       } catch (firebaseErr) {
         console.warn('Firebase upload failed, will attempt S3 fallback if configured:', firebaseErr && firebaseErr.message);
-        // Save a local copy so the app can continue to use the uploaded file even when cloud storage is unavailable
-        try {
-          const localUploadDir = path.join(__dirname, '../uploads');
-          if (!fs.existsSync(localUploadDir)) fs.mkdirSync(localUploadDir, { recursive: true });
-          const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
-          if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
-          fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
-          const localUrl = `/uploads/${relativePath}`;
-          if (!s3Enabled) {
+        if (!s3Enabled) {
+          // Save a local copy as a secondary fallback only when cloud storage is unavailable
+          try {
+            const localUploadDir = path.join(__dirname, '../uploads');
+            if (!fs.existsSync(localUploadDir)) fs.mkdirSync(localUploadDir, { recursive: true });
+            const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
+            if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
+            fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
+            const localUrl = `/uploads/${relativePath}`;
             return res.json({ url: localUrl, storage: 'local-fallback', warning: 'firebase_failed' });
+          } catch (localErr) {
+            console.error('Failed to save local fallback copy:', localErr && localErr.message);
+            return res.status(500).json({ error: 'Upload failed', details: localErr && localErr.message });
           }
-        } catch (localErr) {
-          console.error('Failed to save local fallback copy:', localErr && localErr.message);
         }
       }
     }

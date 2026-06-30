@@ -5,7 +5,9 @@ const defaultBackendUrl = (window.location.hostname === 'localhost' || window.lo
   ? 'http://localhost:5000'
   : deployedBackendUrl;
 const runtimeBackendUrl = window.__BACKEND_URL__ || window.API_URL || defaultBackendUrl;
+const backendBaseUrl = runtimeBackendUrl.replace(/\/api$/, '');
 window.API_URL = runtimeBackendUrl.endsWith('/api') ? runtimeBackendUrl : `${runtimeBackendUrl.replace(/\/$/, '')}/api`;
+window.BACKEND_BASE_URL = backendBaseUrl;
 
 window.normalizeMediaUrl = function (url) {
   if (!url || typeof url !== 'string') return '';
@@ -13,12 +15,16 @@ window.normalizeMediaUrl = function (url) {
   const trimmedUrl = url.trim();
   if (!trimmedUrl) return '';
 
-  const normalized = trimmedUrl
-    .replace(/^http:\/\/localhost(?::\d+)?(\/.*)$/i, 'https://facultyportalwebsite-3.onrender.com$1')
-    .replace(/^http:\/\/127\.0\.0\.1(?::\d+)?(\/.*)$/i, 'https://facultyportalwebsite-3.onrender.com$1');
+  let normalized = trimmedUrl
+    .replace(/^http:\/\/localhost(?::\d+)?(\/.*)$/i, `${backendBaseUrl}$1`)
+    .replace(/^http:\/\/127\.0\.0\.1(?::\d+)?(\/.*)$/i, `${backendBaseUrl}$1`);
 
   if (/^(https?:)?\/\//i.test(normalized)) {
     return normalized;
+  }
+
+  if (normalized.startsWith('/uploads')) {
+    return `${backendBaseUrl}${normalized}`;
   }
 
   if (normalized.startsWith('/')) {
