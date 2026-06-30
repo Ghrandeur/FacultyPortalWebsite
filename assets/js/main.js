@@ -22,8 +22,74 @@ if (themeToggle) {
   });
 }
 
+const siteNavigationLinks = [
+  { href: '/pages/archive.html', label: 'Archive' },
+  { href: '/pages/faculty.html', label: 'Faculty' },
+  { href: '/pages/gallery.html', label: 'Gallery' },
+  { href: '/pages/leaders.html', label: 'Leaders' },
+  { href: '/pages/documents.html', label: 'Documents' },
+  { href: '/pages/team.html', label: 'Team' },
+  { href: '/pages/past-questions.html', label: 'Past Questions' },
+  { href: '/admin/login.html', label: 'Admin' },
+];
+
 const topbar = document.querySelector('.topbar');
 const isHomePage = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html');
+if (topbar && !isHomePage && !document.getElementById('pageNavButton')) {
+  const navButton = document.createElement('button');
+  navButton.id = 'pageNavButton';
+  navButton.type = 'button';
+  navButton.className = 'theme-button page-nav-button';
+  navButton.setAttribute('aria-expanded', 'false');
+  navButton.setAttribute('aria-controls', 'pageNavDropdown');
+  navButton.title = 'Open navigation menu';
+  navButton.innerHTML = '<span class="nav-icon" aria-hidden="true"><span></span><span></span><span></span></span>';
+
+  const dropdown = document.createElement('div');
+  dropdown.id = 'pageNavDropdown';
+  dropdown.className = 'page-nav-dropdown';
+  dropdown.setAttribute('role', 'menu');
+
+  siteNavigationLinks.forEach(({ href, label }) => {
+    const link = document.createElement('a');
+    link.href = href;
+    link.className = 'page-nav-item';
+    link.textContent = label;
+    link.setAttribute('role', 'menuitem');
+    dropdown.appendChild(link);
+  });
+
+  if (themeToggle) {
+    topbar.insertBefore(navButton, themeToggle);
+    topbar.insertBefore(dropdown, themeToggle);
+  } else {
+    topbar.appendChild(navButton);
+    topbar.appendChild(dropdown);
+  }
+
+  const closeDropdown = () => {
+    navButton.setAttribute('aria-expanded', 'false');
+    dropdown.classList.remove('open');
+  };
+
+  navButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const isOpen = navButton.getAttribute('aria-expanded') === 'true';
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      navButton.setAttribute('aria-expanded', 'true');
+      dropdown.classList.add('open');
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!topbar.contains(event.target)) {
+      closeDropdown();
+    }
+  });
+}
+
 if (topbar && !document.getElementById('pageBackButton') && !isHomePage) {
   const backButton = document.createElement('button');
   backButton.id = 'pageBackButton';
