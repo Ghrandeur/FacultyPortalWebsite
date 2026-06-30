@@ -97,6 +97,20 @@ router.post('/', upload.single('image'), async (req, res) => {
         return res.json({ url: publicUrl, storage: 'firebase' });
       } catch (firebaseErr) {
         console.warn('Firebase upload failed, will attempt S3 fallback if configured:', firebaseErr && firebaseErr.message);
+        // Save a local copy so the app can continue to use the uploaded file even when cloud storage is unavailable
+        try {
+          const localUploadDir = path.join(__dirname, '../uploads');
+          if (!fs.existsSync(localUploadDir)) fs.mkdirSync(localUploadDir, { recursive: true });
+          const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
+          if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
+          fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
+          const localUrl = `/uploads/${relativePath}`;
+          if (!s3Enabled) {
+            return res.json({ url: localUrl, storage: 'local-fallback', warning: 'firebase_failed' });
+          }
+        } catch (localErr) {
+          console.error('Failed to save local fallback copy:', localErr && localErr.message);
+        }
       }
     }
 

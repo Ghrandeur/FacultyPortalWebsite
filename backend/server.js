@@ -6,7 +6,8 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
-const { storage } = require('./config/firebase');
+const cfg = require('./config/firebase');
+const { storage, db, auth } = cfg;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -112,6 +113,21 @@ app.use('/api/auth', require('./routes/auth'));
 // Serve main index page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../index.html'));
+});
+
+// Health endpoint for deployment checks
+app.get('/health', (req, res) => {
+  try {
+    return res.json({
+      server: true,
+      storage: !!storage,
+      db: !!db,
+      auth: !!auth,
+      timestamp: new Date().toISOString()
+    });
+  } catch (e) {
+    return res.status(500).json({ server: false, error: e && e.message });
+  }
 });
 
 // 404 handler

@@ -337,31 +337,49 @@ async function uploadImageToStorage(file, folderName) {
   if (!file) {
     return '';
   }
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = `${API_URL}/upload`;
+    const formData = new FormData();
+    formData.append('folder', folderName);
+    formData.append('image', file);
 
-  const formData = new FormData();
-  formData.append('folder', folderName);
-  formData.append('image', file);
+    xhr.open('POST', url);
+    xhr.timeout = 30000; // 30s
 
-  if (!currentUser) {
-    throw new Error('User not authenticated');
-  }
+    xhr.onload = function () {
+      try {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const data = JSON.parse(xhr.responseText);
+          resolve(data.url || '');
+        } else {
+          reject(new Error(xhr.responseText || `Upload failed (${xhr.status})`));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    };
 
-  const response = await fetch(`${API_URL}/upload`, {
-    method: 'POST',
-    headers: {
-      'Authorization': await currentUser.getIdToken()
-    },
-    body: formData
+    xhr.onerror = function () { reject(new Error('Network error during upload')); };
+    xhr.ontimeout = function () { reject(new Error('Upload timed out')); };
+
+    // Set Authorization header if available
+    (async () => {
+      try {
+        if (window.currentUser || currentUser) {
+          const user = currentUser || window.currentUser;
+          if (user && typeof user.getIdToken === 'function') {
+            const token = await user.getIdToken();
+            xhr.setRequestHeader('Authorization', token);
+          }
+        }
+      } catch (e) {
+        // ignore token errors, proceed without header
+      } finally {
+        xhr.send(formData);
+      }
+    })();
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Upload error response:', response.status, errorText);
-    throw new Error(errorText || `Image upload failed (${response.status})`);
-  }
-
-  const data = await response.json();
-  return data.url || '';
 }
 
 function openGalleryForm() {
