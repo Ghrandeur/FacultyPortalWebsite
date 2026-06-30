@@ -1,3 +1,6 @@
+import { auth } from './firebase-config.js';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+
 // Admin Login JavaScript
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -6,14 +9,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
   const errorMsg = document.getElementById('errorMessage');
   
-  if (!window.firebaseAuth || typeof window.firebaseAuth.signInWithEmailAndPassword !== 'function') {
-    errorMsg.style.display = 'block';
-    errorMsg.textContent = 'Login failed: Firebase authentication is not ready yet. Please refresh the page and try again.';
-    return;
-  }
-
   try {
-    const result = await window.firebaseAuth.signInWithEmailAndPassword(email, password);
+    const result = await signInWithEmailAndPassword(auth, email, password);
     
     // Save auth token to localStorage
     const token = await result.user.getIdToken();
@@ -30,11 +27,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 });
 
 // Check if user is already logged in
-if (window.firebaseAuth && typeof window.firebaseAuth.onAuthStateChanged === 'function') {
-  window.firebaseAuth.onAuthStateChanged((user) => {
-    if (user) {
-      // User is logged in, redirect to dashboard
-      window.location.href = 'dashboard.html';
-    }
-  });
-}
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.href = 'dashboard.html';
+  }
+});

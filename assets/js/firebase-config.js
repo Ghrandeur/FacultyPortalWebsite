@@ -1,27 +1,24 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
+
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCcXEf9zoNaWdJ7A3D1qknYTnZsCN3wsqc",
-  authDomain: "fahssa-editorial.firebaseapp.com",
-  projectId: "fahssa-editorial",
-  storageBucket: "fahssa-editorial.appspot.com",
-  messagingSenderId: "70368869895",
-  appId: "1:70368869895:web:06f11851f774badf86f4a2"
+  apiKey: 'AIzaSyCDXYoAP2q1OqT3G_j2l7yNSLSPReMFidk',
+  authDomain: 'fahssaeditorial.firebaseapp.com',
+  databaseURL: 'https://fahssaeditorial-default-rtdb.firebaseio.com',
+  projectId: 'fahssaeditorial',
+  storageBucket: 'fahssaeditorial.firebasestorage.app',
+  messagingSenderId: '321709441811',
+  appId: '1:321709441811:web:b807d636c2a623712690e6'
 };
 
-// Initialize Firebase (if not already initialized)
-if (firebase && firebase.apps && !firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-const auth = firebase && firebase.auth ? firebase.auth() : null;
-let storage = null;
-if (firebase && typeof firebase.storage === 'function') {
-  storage = firebase.storage();
-} else if (firebase && firebase.storage) {
-  storage = firebase.storage;
-}
-
-// Export for use in admin pages
+window.firebaseApp = app;
 window.firebaseAuth = auth;
 window.firebaseStorage = storage;
-window.firebaseApp = firebase;
+
+export { app, auth, storage };

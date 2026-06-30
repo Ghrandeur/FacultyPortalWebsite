@@ -1,3 +1,6 @@
+import { auth } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+
 const API_URL = window.API_URL;
 let currentUser = null;
 let currentForm = null;
@@ -12,12 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkAuth() {
-  if (!window.firebaseAuth || typeof window.firebaseAuth.onAuthStateChanged !== 'function') {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  window.firebaseAuth.onAuthStateChanged((user) => {
+  onAuthStateChanged(auth, (user) => {
     if (!user) {
       window.location.href = 'login.html';
       return;
@@ -44,7 +42,7 @@ function setupEventListeners() {
 
   // Logout button
   document.getElementById('logoutBtn').addEventListener('click', () => {
-    window.firebaseAuth.signOut().then(() => {
+    signOut(auth).then(() => {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminEmail');
       window.location.href = 'login.html';
