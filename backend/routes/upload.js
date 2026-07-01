@@ -119,8 +119,11 @@ router.post('/', upload.single('image'), async (req, res) => {
       CacheControl: 'public, max-age=31536000'
     };
 
-    // Try to set public read ACL when possible
-    if (!s3Endpoint) putParams.ACL = 'public-read';
+    // Only send ACL when explicitly configured. Many AWS buckets now disallow ACLs.
+    const s3ACL = process.env.S3_ACL || process.env.AWS_S3_ACL || process.env.AWS_ACL;
+    if (s3ACL) {
+      putParams.ACL = s3ACL;
+    }
 
     await s3.send(new PutObjectCommand(putParams));
 
