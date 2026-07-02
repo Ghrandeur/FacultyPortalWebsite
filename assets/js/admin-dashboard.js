@@ -1144,3 +1144,23 @@ function closeModal() {
   currentEditId = null;
   currentEditData = null;
 }
+
+// Expose functions used by inline onclick handlers in module-loaded admin dashboard
+window.openArchiveForm = openArchiveForm;
+window.openGalleryForm = openGalleryForm;
+window.openLeaderForm = openLeaderForm;
+window.openDocumentForm = openDocumentForm;
+window.openTeamForm = openTeamForm;
+window.openQuestionForm = openQuestionForm;
+window.editArchiveEvent = editArchiveEvent;
+window.deleteArchiveEvent = deleteArchiveEvent;
+window.editGalleryPhoto = editGalleryPhoto;
+window.deleteGalleryPhoto = deleteGalleryPhoto;
+window.editLeader = editLeader;
+window.deleteLeader = deleteLeader;
+window.editDocument = editDocument;
+window.deleteDocument = deleteDocument;
+window.editTeamMember = editTeamMember;
+window.deleteTeamMember = deleteTeamMember;
+window.editPastQuestion = editPastQuestion;
+window.deletePastQuestion = deletePastQuestion;
