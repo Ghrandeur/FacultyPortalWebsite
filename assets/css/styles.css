@@ -87,15 +87,22 @@ select {
   position: fixed;
   inset: 0;
   z-index: 998;
-  display: flex;
+  display: none;
   align-items: flex-start;
   justify-content: flex-end;
   padding: 24px;
   background: rgba(15, 23, 42, 0.96);
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.98);
+  transform: translateX(16px);
   transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+}
+
+.page-nav-dropdown.open {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
 }
 
 .page-nav-dropdown.open {

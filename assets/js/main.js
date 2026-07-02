@@ -74,17 +74,11 @@ if (topbar && !isHomePage && !document.getElementById('pageNavButton')) {
 
   if (themeToggle) {
     topbar.insertBefore(navButton, themeToggle);
-    topbar.insertBefore(dropdown, themeToggle);
+    document.body.appendChild(dropdown);
   } else {
     topbar.appendChild(navButton);
-    topbar.appendChild(dropdown);
+    document.body.appendChild(dropdown);
   }
-
-  const closeDropdown = () => {
-    navButton.setAttribute('aria-expanded', 'false');
-    dropdown.setAttribute('aria-hidden', 'true');
-    dropdown.classList.remove('open');
-  };
 
   navButton.addEventListener('click', (event) => {
     event.stopPropagation();
