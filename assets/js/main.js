@@ -43,7 +43,7 @@ if (topbar && !isHomePage && !document.getElementById('pageNavButton')) {
   navButton.setAttribute('aria-expanded', 'false');
   navButton.setAttribute('aria-controls', 'pageNavDropdown');
   navButton.title = 'Open navigation menu';
-  navButton.innerHTML = '<span class="nav-icon" aria-hidden="true"><span></span><span></span><span></span></span>';
+  navButton.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
 
   const dropdown = document.createElement('div');
   dropdown.id = 'pageNavDropdown';
@@ -53,6 +53,12 @@ if (topbar && !isHomePage && !document.getElementById('pageNavButton')) {
 
   const dropdownInner = document.createElement('div');
   dropdownInner.className = 'page-nav-dropdown-inner';
+
+  function closeDropdown() {
+    navButton.setAttribute('aria-expanded', 'false');
+    dropdown.setAttribute('aria-hidden', 'true');
+    dropdown.classList.remove('open');
+  }
 
   siteNavigationLinks.forEach(({ href, label }) => {
     const link = document.createElement('a');
