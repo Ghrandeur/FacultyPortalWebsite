@@ -48,6 +48,7 @@ select {
   flex-wrap: wrap;
   margin-bottom: 32px;
   overflow-x: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   position: relative;
 }
