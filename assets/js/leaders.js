@@ -14,7 +14,8 @@ async function loadLeaders() {
     }
 
     leaders.forEach(leader => {
-      const photoUrl = window.normalizeMediaUrl(leader.photoUrl) || '/assets/images/placeholder.svg';
+      const rawPhotoUrl = leader.photoUrl || leader.url || leader.image || '';
+      const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `

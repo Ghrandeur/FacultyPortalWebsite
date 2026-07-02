@@ -14,7 +14,8 @@ async function loadTeamMembers() {
     }
 
     members.forEach(member => {
-      const photoUrl = window.normalizeMediaUrl(member.photoUrl) || '/assets/images/placeholder.svg';
+      const rawPhotoUrl = member.photoUrl || member.url || member.image || '';
+      const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `

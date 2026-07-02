@@ -99,7 +99,8 @@
             throw new Error('Unable to load team member details');
           }
           const member = await response.json();
-          const photoUrl = window.normalizeMediaUrl(member.photoUrl) || '/assets/images/placeholder.svg';
+          const rawPhotoUrl = member.photoUrl || member.url || member.image || '';
+          const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
           container.innerHTML = `
             <div class="member-detail">
               <img src="${photoUrl}" alt="${member.name}" class="member-photo" onerror="this.src='/assets/images/placeholder.svg'">

@@ -99,7 +99,8 @@
             throw new Error('Unable to load leader details');
           }
           const leader = await response.json();
-          const photoUrl = window.normalizeMediaUrl(leader.photoUrl) || '/assets/images/placeholder.svg';
+          const rawPhotoUrl = leader.photoUrl || leader.url || leader.image || '';
+          const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
           container.innerHTML = `
             <div class="leader-detail">
               <img src="${photoUrl}" alt="${leader.name}" class="leader-photo" onerror="this.src='/assets/images/placeholder.svg'">
