@@ -32,13 +32,14 @@ router.get('/:id', async (req, res) => {
 // Create event (requires authentication)
 router.post('/', async (req, res) => {
   try {
-    const { title, description, image, content } = req.body;
+    const { title, description, image, content, date } = req.body;
+    const eventDate = date ? new Date(date) : null;
     const newEvent = await db.collection('archive').add({
       title,
       description,
       image,
       content,
-      date: new Date(),
+      date: eventDate || new Date(),
       createdAt: new Date()
     });
     res.status(201).json({ id: newEvent.id, message: 'Event created' });
@@ -50,7 +51,11 @@ router.post('/', async (req, res) => {
 // Update event
 router.put('/:id', async (req, res) => {
   try {
-    await db.collection('archive').doc(req.params.id).update(req.body);
+    const updateData = { ...req.body };
+    if (updateData.date) {
+      updateData.date = new Date(updateData.date);
+    }
+    await db.collection('archive').doc(req.params.id).update(updateData);
     res.json({ message: 'Event updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });

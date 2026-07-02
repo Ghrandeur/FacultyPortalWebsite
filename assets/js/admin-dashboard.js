@@ -152,6 +152,10 @@ function openArchiveForm() {
       <input type="text" id="archiveDescription" placeholder="Short description" required>
     </div>
     <div class="form-group">
+      <label for="archiveDate">Event Date</label>
+      <input type="date" id="archiveDate">
+    </div>
+    <div class="form-group">
       <label for="archiveImageFile">Upload Image From Device</label>
       <input type="file" id="archiveImageFile" accept="image/*">
     </div>
@@ -171,6 +175,7 @@ async function editArchiveEvent(id) {
     currentEditData = event;
     currentForm = 'archive';
 
+    const archiveDateValue = event.date ? new Date(event.date).toISOString().substring(0, 10) : '';
     const modalBody = document.getElementById('modalBody');
     modalBody.innerHTML = `
       <h3>Edit Archive Event</h3>
@@ -181,6 +186,10 @@ async function editArchiveEvent(id) {
       <div class="form-group">
         <label for="archiveDescription">Description</label>
         <input type="text" id="archiveDescription" value="${event.description || ''}" placeholder="Short description" required>
+      </div>
+      <div class="form-group">
+        <label for="archiveDate">Event Date</label>
+        <input type="date" id="archiveDate" value="${archiveDateValue}">
       </div>
       <div class="form-group">
         <label for="archiveImageFile">Upload New Image From Device (optional)</label>
@@ -201,6 +210,7 @@ async function editArchiveEvent(id) {
 async function handleArchiveSubmit() {
   const title = document.getElementById('archiveTitle').value;
   const description = document.getElementById('archiveDescription').value;
+  const date = document.getElementById('archiveDate')?.value;
   const fileInput = document.getElementById('archiveImageFile');
   const content = document.getElementById('archiveContent').value;
 
@@ -212,6 +222,10 @@ async function handleArchiveSubmit() {
 
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/archive/${currentEditId}` : `${API_URL}/archive`;
+    const body = { title, description, image: imageUrl, content };
+    if (date) {
+      body.date = date;
+    }
 
     const response = await fetch(url, {
       method,
@@ -219,7 +233,7 @@ async function handleArchiveSubmit() {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ title, description, image: imageUrl, content })
+      body: JSON.stringify(body)
     });
 
     if (response.ok) {
