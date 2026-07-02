@@ -63,7 +63,68 @@ router.post('/', upload.single('image'), async (req, res) => {
       awsRegion
     });
 
-    if (storage && storage.bucket) {
+    const localUploadDir = path.join(__dirname, '../uploads');
+    const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
+    const localFilePath = path.join(localFolder, safeName);
+
+    const saveLocalCopy = () => {
+      if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
+      fs.writeFileSync(localFilePath, req.file.buffer);
+    };
+
+    const sendLocalFallback = (warning) => {
+      try {
+        saveLocalCopy();
+        const localUrl = `/uploads/${relativePath}`;
+        return res.json({ url: localUrl, storage: 'local-fallback', warning });
+      } catch (localErr) {
+        console.error('Failed to save local fallback copy:', localErr && localErr.message);
+        return res.status(500).json({ error: 'Upload failed', details: localErr && localErr.message });
+      }
+    };
+
+    if (s3Enabled) {
+      try {
+        const s3ClientConfig = { region: awsRegion || 'us-east-1' };
+        if (s3Endpoint) s3ClientConfig.endpoint = s3Endpoint;
+        const s3 = new S3Client(s3ClientConfig);
+
+        const s3Key = `uploads/${relativePath}`;
+        const putParams = {
+          Bucket: s3Bucket,
+          Key: s3Key,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype || 'application/octet-stream',
+          CacheControl: 'public, max-age=31536000'
+        };
+
+        const s3ACL = process.env.S3_ACL || process.env.AWS_S3_ACL || process.env.AWS_ACL;
+        if (s3ACL) {
+          putParams.ACL = s3ACL;
+        }
+
+        await s3.send(new PutObjectCommand(putParams));
+
+        let publicUrl;
+        if (s3Endpoint) {
+          publicUrl = `${s3Endpoint.replace(/\/$/, '')}/${s3Bucket}/${s3Key}`;
+        } else if (awsRegion === 'us-east-1' || !awsRegion) {
+          publicUrl = `https://${s3Bucket}.s3.amazonaws.com/${s3Key}`;
+        } else {
+          publicUrl = `https://${s3Bucket}.s3.${awsRegion}.amazonaws.com/${s3Key}`;
+        }
+
+        saveLocalCopy();
+        return res.json({ url: publicUrl, storage: 's3' });
+      } catch (s3Err) {
+        console.warn('S3 upload failed, will attempt Firebase fallback if configured:', s3Err && s3Err.message);
+        if (!firebaseStorageEnabled) {
+          return sendLocalFallback('s3_failed');
+        }
+      }
+    }
+
+    if (firebaseStorageEnabled) {
       try {
         const bucket = storage.bucket();
         const fileName = `uploads/${relativePath}`;
@@ -76,81 +137,18 @@ router.post('/', upload.single('image'), async (req, res) => {
           }
         });
 
-        // makePublic can fail if bucket isn't configured for public access; ignore error but prefer to continue
         try { await remoteFile.makePublic(); } catch (e) { console.warn('remoteFile.makePublic() failed:', e && e.message); }
 
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+        saveLocalCopy();
         return res.json({ url: publicUrl, storage: 'firebase' });
       } catch (firebaseErr) {
-        console.warn('Firebase upload failed, will attempt S3 fallback if configured:', firebaseErr && firebaseErr.message);
-        if (!s3Enabled) {
-          // Save a local copy as a secondary fallback only when cloud storage is unavailable
-          try {
-            const localUploadDir = path.join(__dirname, '../uploads');
-            if (!fs.existsSync(localUploadDir)) fs.mkdirSync(localUploadDir, { recursive: true });
-            const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
-            if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
-            fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
-            const localUrl = `/uploads/${relativePath}`;
-            return res.json({ url: localUrl, storage: 'local-fallback', warning: 'firebase_failed' });
-          } catch (localErr) {
-            console.error('Failed to save local fallback copy:', localErr && localErr.message);
-            return res.status(500).json({ error: 'Upload failed', details: localErr && localErr.message });
-          }
-        }
+        console.warn('Firebase upload failed, will attempt local fallback:', firebaseErr && firebaseErr.message);
+        return sendLocalFallback('firebase_failed');
       }
     }
 
-    if (!s3Bucket || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      return res.status(500).json({ error: 'No valid upload backend configured', details: 'Firebase and S3 are unavailable' });
-    }
-
-    // configure S3 client
-    const s3ClientConfig = { region: awsRegion || 'us-east-1' };
-    if (s3Endpoint) s3ClientConfig.endpoint = s3Endpoint;
-    const s3 = new S3Client(s3ClientConfig);
-
-    const s3Key = `uploads/${relativePath}`;
-    const putParams = {
-      Bucket: s3Bucket,
-      Key: s3Key,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype || 'application/octet-stream',
-      CacheControl: 'public, max-age=31536000'
-    };
-
-    // Only send ACL when explicitly configured. Many AWS buckets now disallow ACLs.
-    const s3ACL = process.env.S3_ACL || process.env.AWS_S3_ACL || process.env.AWS_ACL;
-    if (s3ACL) {
-      putParams.ACL = s3ACL;
-    }
-
-    await s3.send(new PutObjectCommand(putParams));
-
-    // Construct public URL - to be compatible with AWS and DO Spaces
-    let publicUrl;
-    if (s3Endpoint) {
-      publicUrl = `${s3Endpoint.replace(/\/$/, '')}/${s3Bucket}/${s3Key}`;
-    } else if (awsRegion === 'us-east-1' || !awsRegion) {
-      publicUrl = `https://${s3Bucket}.s3.amazonaws.com/${s3Key}`;
-    } else {
-      publicUrl = `https://${s3Bucket}.s3.${awsRegion}.amazonaws.com/${s3Key}`;
-    }
-
-    // save local copy
-    const localUploadDir = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(localUploadDir)) {
-      fs.mkdirSync(localUploadDir, { recursive: true });
-    }
-
-    const localFolder = folder ? path.join(localUploadDir, folder) : localUploadDir;
-    if (!fs.existsSync(localFolder)) {
-      fs.mkdirSync(localFolder, { recursive: true });
-    }
-
-    fs.writeFileSync(path.join(localFolder, safeName), req.file.buffer);
-
-    return res.json({ url: publicUrl, storage: 's3' });
+    return res.status(500).json({ error: 'No valid upload backend configured', details: 'Firebase and S3 are unavailable' });
   } catch (error) {
     console.error('Image upload failed:', error);
     return res.status(500).json({ error: 'Image upload failed', details: error.message });

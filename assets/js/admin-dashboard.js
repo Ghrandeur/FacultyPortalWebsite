@@ -21,6 +21,7 @@ function checkAuth() {
       return;
     }
     currentUser = user;
+    window.currentUser = user;
     document.title = `Admin - ${user.email}`;
   });
 }
@@ -335,49 +336,34 @@ async function uploadImageToStorage(file, folderName) {
   if (!file) {
     return '';
   }
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const url = `${API_URL}/upload`;
-    const formData = new FormData();
-    formData.append('folder', folderName);
-    formData.append('image', file);
 
-    xhr.open('POST', url);
-    xhr.timeout = 30000; // 30s
+  const url = `${API_URL}/upload`;
+  const formData = new FormData();
+  formData.append('folder', folderName);
+  formData.append('image', file);
 
-    xhr.onload = function () {
-      try {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const data = JSON.parse(xhr.responseText);
-          resolve(data.url || '');
-        } else {
-          reject(new Error(xhr.responseText || `Upload failed (${xhr.status})`));
-        }
-      } catch (e) {
-        reject(e);
-      }
-    };
+  const headers = {};
+  try {
+    const user = currentUser || window.currentUser;
+    if (user && typeof user.getIdToken === 'function') {
+      headers.Authorization = await user.getIdToken();
+    }
+  } catch (e) {
+    console.warn('Unable to get auth token for upload:', e && e.message);
+  }
 
-    xhr.onerror = function () { reject(new Error('Network error during upload')); };
-    xhr.ontimeout = function () { reject(new Error('Upload timed out')); };
-
-    // Set Authorization header if available
-    (async () => {
-      try {
-        if (window.currentUser || currentUser) {
-          const user = currentUser || window.currentUser;
-          if (user && typeof user.getIdToken === 'function') {
-            const token = await user.getIdToken();
-            xhr.setRequestHeader('Authorization', token);
-          }
-        }
-      } catch (e) {
-        // ignore token errors, proceed without header
-      } finally {
-        xhr.send(formData);
-      }
-    })();
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: formData
   });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data.error || data.message || `Upload failed (${response.status})`;
+    throw new Error(message);
+  }
+  return data.url || '';
 }
 
 function openGalleryForm() {
@@ -448,6 +434,16 @@ async function handleGallerySubmit() {
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/gallery/${currentEditId}` : `${API_URL}/gallery`;
 
+    if (!event) {
+      alert('Please enter an event name for the photo.');
+      return;
+    }
+    if (!photoUrl) {
+      alert('Photo upload failed or no file was selected. Please try again.');
+      return;
+    }
+
+    console.log('Saving gallery item', { event, photoUrl, description, currentEditId });
     const response = await fetch(url, {
       method,
       headers: {
@@ -462,6 +458,10 @@ async function handleGallerySubmit() {
       loadGalleryPhotos();
       loadDashboardStats();
       alert('Photo added successfully!');
+    } else {
+      const errorText = await response.text();
+      console.error('Gallery save failed:', response.status, errorText);
+      alert('Error adding photo. Check the browser console for details.');
     }
   } catch (error) {
     console.error('Error:', error);

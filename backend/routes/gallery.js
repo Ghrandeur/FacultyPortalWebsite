@@ -2,13 +2,22 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+function normalizeGalleryDoc(doc) {
+  const data = doc.data() || {};
+  return {
+    id: doc.id,
+    ...data,
+    photoUrl: data.photoUrl || data.url || data.image || ''
+  };
+}
+
 // Get all gallery photos
 router.get('/', async (req, res) => {
   try {
     const snapshot = await db.collection('gallery').orderBy('date', 'desc').get();
     const photos = [];
     snapshot.forEach(doc => {
-      photos.push({ id: doc.id, ...doc.data() });
+      photos.push(normalizeGalleryDoc(doc));
     });
     res.json(photos);
   } catch (error) {
@@ -25,7 +34,7 @@ router.get('/event/:event', async (req, res) => {
       .get();
     const photos = [];
     snapshot.forEach(doc => {
-      photos.push({ id: doc.id, ...doc.data() });
+      photos.push(normalizeGalleryDoc(doc));
     });
     res.json(photos);
   } catch (error) {
@@ -40,7 +49,7 @@ router.get('/:id', async (req, res) => {
     if (!doc.exists) {
       return res.status(404).json({ error: 'Photo not found' });
     }
-    res.json({ id: doc.id, ...doc.data() });
+    res.json(normalizeGalleryDoc(doc));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -49,9 +58,10 @@ router.get('/:id', async (req, res) => {
 // Create photo
 router.post('/', async (req, res) => {
   try {
-    const { photoUrl, event, description } = req.body;
+    const { photoUrl, event, description, url, image } = req.body;
+    const finalPhotoUrl = photoUrl || url || image || '';
     const newPhoto = await db.collection('gallery').add({
-      photoUrl,
+      photoUrl: finalPhotoUrl,
       event,
       description,
       date: new Date()
@@ -65,7 +75,13 @@ router.post('/', async (req, res) => {
 // Update photo
 router.put('/:id', async (req, res) => {
   try {
-    await db.collection('gallery').doc(req.params.id).update(req.body);
+    const { photoUrl, url, image, event, description } = req.body;
+    const updateData = {
+      ...(event !== undefined ? { event } : {}),
+      ...(description !== undefined ? { description } : {}),
+      ...(photoUrl || url || image ? { photoUrl: photoUrl || url || image } : {})
+    };
+    await db.collection('gallery').doc(req.params.id).update(updateData);
     res.json({ message: 'Photo updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });

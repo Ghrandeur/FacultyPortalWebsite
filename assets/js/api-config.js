@@ -10,7 +10,15 @@ window.API_URL = runtimeBackendUrl.endsWith('/api') ? runtimeBackendUrl : `${run
 window.BACKEND_BASE_URL = backendBaseUrl;
 
 window.normalizeMediaUrl = function (url) {
-  if (!url || typeof url !== 'string') return '';
+  if (!url) return '';
+
+  if (typeof url === 'object') {
+    if (typeof url.url === 'string') return window.normalizeMediaUrl(url.url);
+    if (typeof url.path === 'string') return window.normalizeMediaUrl(url.path);
+    return '';
+  }
+
+  if (typeof url !== 'string') return '';
 
   const trimmedUrl = url.trim();
   if (!trimmedUrl) return '';

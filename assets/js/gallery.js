@@ -14,7 +14,8 @@ async function loadGalleryPhotos() {
     }
 
     photos.forEach(photo => {
-      const photoUrl = window.normalizeMediaUrl(photo.photoUrl) || '/assets/images/placeholder.svg';
+      const rawPhotoUrl = photo.photoUrl || photo.url || photo.image || '';
+      const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.innerHTML = `
@@ -29,7 +30,7 @@ async function loadGalleryPhotos() {
       item.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          openLightbox(photo.photoUrl, photo.event);
+          openLightbox(photoUrl, photo.event);
         }
       });
       const detailsLink = item.querySelector('.details-btn');
@@ -49,7 +50,8 @@ function openLightbox(imageUrl, caption) {
   const img = lightbox.querySelector('.lightbox-image');
   const cap = lightbox.querySelector('.lightbox-caption');
   
-  img.src = window.normalizeMediaUrl(imageUrl) || '/assets/images/placeholder.svg';
+  const normalizedUrl = window.normalizeMediaUrl(imageUrl);
+  img.src = normalizedUrl || '/assets/images/placeholder.svg';
   cap.textContent = caption;
   lightbox.style.display = 'block';
 }
