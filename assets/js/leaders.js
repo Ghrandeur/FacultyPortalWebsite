@@ -14,12 +14,27 @@ async function loadLeaders() {
     }
 
     leaders.forEach(leader => {
+      console.log('Processing leader:', { id: leader.id, name: leader.name, photoUrl: leader.photoUrl });
       const rawPhotoUrl = leader.photoUrl || leader.url || leader.image || '';
-      const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
+      
+      // Validate photo URL
+      let photoUrl = '/assets/images/placeholder.svg';
+      if (rawPhotoUrl && typeof rawPhotoUrl === 'string' && rawPhotoUrl.trim()) {
+        const normalized = window.normalizeMediaUrl(rawPhotoUrl);
+        if (normalized && normalized.trim()) {
+          photoUrl = normalized;
+          console.log('Using photo URL:', photoUrl);
+        } else {
+          console.warn('Photo URL normalization returned empty:', rawPhotoUrl);
+        }
+      } else {
+        console.warn('No valid photo URL for leader:', leader.id, '- using placeholder');
+      }
+      
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `
-        <img src="${photoUrl}" alt="${leader.name}" class="member-photo" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg'">
+        <img src="${photoUrl}" alt="${leader.name}" class="member-photo" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
         <div class="member-info">
           <h3>${leader.name}</h3>
           <p>${leader.department}</p>

@@ -649,9 +649,23 @@ async function handleLeaderSubmit() {
   const fileInput = document.getElementById('leaderPhotoFile');
 
   try {
+    console.log('Leader submit - starting', { name, department, position, hasFile: !!(fileInput?.files?.[0]) });
+    
     let photoUrl = currentEditData?.photoUrl || '';
     if (fileInput && fileInput.files && fileInput.files[0]) {
+      console.log('Uploading new photo');
       photoUrl = await uploadImageToStorage(fileInput.files[0], 'leaders');
+      console.log('Photo URL after upload:', photoUrl);
+      if (!photoUrl || !photoUrl.trim()) {
+        console.error('Photo upload returned empty URL');
+        alert('Warning: Photo upload may have failed. The leader will be saved without a photo.');
+        photoUrl = '';
+      }
+    } else {
+      console.log('No new photo provided, using existing:', photoUrl || 'none');
+      if (!photoUrl || !photoUrl.trim()) {
+        console.warn('No photo available for leader');
+      }
     }
 
     const method = currentEditId ? 'PUT' : 'POST';
@@ -661,13 +675,22 @@ async function handleLeaderSubmit() {
       throw new Error('User not authenticated');
     }
 
+    const body = { name, department, position };
+    
+    // Only include photoUrl if it has a non-empty value
+    if (photoUrl && typeof photoUrl === 'string' && photoUrl.trim()) {
+      body.photoUrl = photoUrl.trim();
+    }
+    
+    console.log('Sending to API:', { method, url, body });
+
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ name, department, position, photoUrl })
+      body: JSON.stringify(body)
     });
 
     if (!response.ok) {
