@@ -169,8 +169,19 @@ function openArchiveForm() {
 
 async function editArchiveEvent(id) {
   try {
+    console.log('Fetching archive event:', id);
     const response = await fetch(`${API_URL}/archive/${id}`);
+    console.log('Response status:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API error response:', errorText);
+      alert(`Failed to load event: ${response.status} ${response.statusText}\n${errorText}`);
+      return;
+    }
+    
     const event = await response.json();
+    console.log('Event loaded:', event);
     currentEditId = id;
     currentEditData = event;
     currentForm = 'archive';
@@ -203,9 +214,9 @@ async function editArchiveEvent(id) {
     openModal();
   } catch (error) {
     console.error('Error loading event for edit:', error);
-    alert('Unable to load event for editing');
+    alert(`Unable to load event for editing: ${error.message}`);
   }
-}
+
 
 async function handleArchiveSubmit() {
   const title = document.getElementById('archiveTitle').value;
@@ -215,9 +226,15 @@ async function handleArchiveSubmit() {
   const content = document.getElementById('archiveContent').value;
 
   try {
+    console.log('Archive submit - starting', { title, description, date, hasFile: !!(fileInput?.files?.[0]) });
+    
     let imageUrl = currentEditData?.image || '';
     if (fileInput && fileInput.files && fileInput.files[0]) {
+      console.log('Uploading new image');
       imageUrl = await uploadImageToStorage(fileInput.files[0], 'archive');
+      console.log('Image URL after upload:', imageUrl);
+    } else {
+      console.log('No new image, using existing:', imageUrl);
     }
 
     const method = currentEditId ? 'PUT' : 'POST';
@@ -227,6 +244,8 @@ async function handleArchiveSubmit() {
       body.date = date;
     }
 
+    console.log('Sending to API:', { method, url, body });
+    
     const response = await fetch(url, {
       method,
       headers: {
@@ -236,17 +255,22 @@ async function handleArchiveSubmit() {
       body: JSON.stringify(body)
     });
 
+    const responseData = await response.json().catch(() => ({}));
+    console.log('API response:', { status: response.status, data: responseData });
+
     if (response.ok) {
       closeModal();
       loadArchiveEvents();
       loadDashboardStats();
       alert('Event added successfully!');
     } else {
-      alert('Error adding event');
+      const errorMsg = responseData.error || 'Error adding event';
+      console.error('API error:', errorMsg);
+      alert(`Error: ${errorMsg}`);
     }
   } catch (error) {
     console.error('Error:', error);
-    alert('Error adding event');
+    alert(`Error adding event: ${error.message}`);
   }
 }
 
@@ -348,9 +372,11 @@ async function loadGalleryPhotos() {
 
 async function uploadImageToStorage(file, folderName) {
   if (!file) {
+    console.log('No file provided to uploadImageToStorage');
     return '';
   }
 
+  console.log('Uploading image:', { fileName: file.name, size: file.size, folderName });
   const url = `${API_URL}/upload`;
   const formData = new FormData();
   formData.append('folder', folderName);
@@ -366,18 +392,25 @@ async function uploadImageToStorage(file, folderName) {
     console.warn('Unable to get auth token for upload:', e && e.message);
   }
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: formData
-  });
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
 
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message = data.error || data.message || `Upload failed (${response.status})`;
-    throw new Error(message);
+    const data = await response.json().catch(() => ({}));
+    console.log('Upload response:', { status: response.status, data });
+    if (!response.ok) {
+      const message = data.error || data.message || `Upload failed (${response.status})`;
+      throw new Error(message);
+    }
+    console.log('Upload successful, URL:', data.url);
+    return data.url || '';
+  } catch (err) {
+    console.error('Upload error:', err);
+    throw err;
   }
-  return data.url || '';
 }
 
 function openGalleryForm() {
