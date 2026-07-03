@@ -34,16 +34,25 @@ router.post('/', async (req, res) => {
   try {
     const { title, description, image, content, date } = req.body;
     const eventDate = date ? new Date(date) : null;
-    const newEvent = await db.collection('archive').add({
+    
+    const eventData = {
       title,
       description,
-      image,
       content,
       date: eventDate || new Date(),
       createdAt: new Date()
-    });
+    };
+    
+    // Only store image if it has a valid value
+    if (image && typeof image === 'string' && image.trim()) {
+      eventData.image = image.trim();
+    }
+    
+    console.log('Creating archive event:', eventData);
+    const newEvent = await db.collection('archive').add(eventData);
     res.status(201).json({ id: newEvent.id, message: 'Event created' });
   } catch (error) {
+    console.error('Error creating archive event:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -51,13 +60,27 @@ router.post('/', async (req, res) => {
 // Update event
 router.put('/:id', async (req, res) => {
   try {
-    const updateData = { ...req.body };
-    if (updateData.date) {
-      updateData.date = new Date(updateData.date);
+    const updateData = {};
+    
+    // Only update fields that are explicitly provided and not empty
+    if (req.body.title !== undefined) updateData.title = req.body.title;
+    if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.content !== undefined) updateData.content = req.body.content;
+    
+    // Only update image if it's provided and has a value
+    if (req.body.image !== undefined && req.body.image && typeof req.body.image === 'string' && req.body.image.trim()) {
+      updateData.image = req.body.image.trim();
     }
+    
+    if (req.body.date !== undefined) {
+      updateData.date = req.body.date ? new Date(req.body.date) : new Date();
+    }
+    
+    console.log('Updating archive event:', { id: req.params.id, updateData });
     await db.collection('archive').doc(req.params.id).update(updateData);
     res.json({ message: 'Event updated' });
   } catch (error) {
+    console.error('Error updating archive event:', error);
     res.status(500).json({ error: error.message });
   }
 });

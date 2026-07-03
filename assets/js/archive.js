@@ -15,11 +15,27 @@ async function loadArchiveEvents() {
     }
 
     events.forEach((event) => {
-      const imageUrl = window.normalizeMediaUrl(event.image) || '/assets/images/placeholder.svg';
+      console.log('Processing archive event:', { id: event.id, title: event.title, image: event.image });
+      const rawImageUrl = event.image;
+      
+      // Validate image URL
+      let imageUrl = '/assets/images/placeholder.svg';
+      if (rawImageUrl && typeof rawImageUrl === 'string' && rawImageUrl.trim()) {
+        const normalized = window.normalizeMediaUrl(rawImageUrl);
+        if (normalized && normalized.trim()) {
+          imageUrl = normalized;
+          console.log('Using image URL:', imageUrl);
+        } else {
+          console.warn('Image URL normalization returned empty:', rawImageUrl);
+        }
+      } else {
+        console.warn('No valid image URL for event:', event.id, '- using placeholder');
+      }
+      
       const card = document.createElement('div');
       card.className = 'event-card';
       card.innerHTML = `
-        <img src="${imageUrl}" alt="${event.title || 'Archive event'}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">
+        <img src="${imageUrl}" alt="${event.title || 'Archive event'}" loading="lazy" onerror="console.warn('Image failed to load:', '${imageUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg';">
         <div class="event-card-content">
           <h3>${event.title || 'Untitled event'}</h3>
           <p>${(event.description || '').replace(/\n/g, '<br>')}</p>

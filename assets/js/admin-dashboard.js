@@ -233,13 +233,27 @@ async function handleArchiveSubmit() {
       console.log('Uploading new image');
       imageUrl = await uploadImageToStorage(fileInput.files[0], 'archive');
       console.log('Image URL after upload:', imageUrl);
+      if (!imageUrl || !imageUrl.trim()) {
+        console.error('Image upload returned empty URL');
+        alert('Warning: Image upload may have failed. The event will be saved without an image.');
+        imageUrl = '';
+      }
     } else {
-      console.log('No new image, using existing:', imageUrl);
+      console.log('No new image provided, using existing:', imageUrl || 'none');
+      if (!imageUrl || !imageUrl.trim()) {
+        console.warn('No image available for event');
+      }
     }
 
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/archive/${currentEditId}` : `${API_URL}/archive`;
-    const body = { title, description, image: imageUrl, content };
+    const body = { title, description, content };
+    
+    // Only include image if it has a non-empty value
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+      body.image = imageUrl.trim();
+    }
+    
     if (date) {
       body.date = date;
     }
@@ -1105,6 +1119,115 @@ async function editPastQuestion(id) {
     console.error('Error loading resource for edit:', error);
     alert('Unable to load resource for editing');
   }
+}
+
+async function handleQuestionSubmit() {
+  const fileName = document.getElementById('questionName').value;
+  const subject = document.getElementById('questionSubject').value;
+  const semester = document.getElementById('questionSemester').value;
+  const fileUrl = document.getElementById('questionUrl').value;
+  const description = document.getElementById('questionDescription').value;
+
+  try {
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/past-questions/${currentEditId}` : `${API_URL}/past-questions`;
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ fileName, subject, semester, fileUrl, description })
+    });
+
+    if (response.ok) {
+      closeModal();
+      loadPastQuestions();
+      loadDashboardStats();
+      alert('Resource saved successfully!');
+    } else {
+      alert('Error saving resource');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error saving resource');
+  }
+}
+
+async function deletePastQuestion(id) {
+  if (!confirm('Are you sure you want to delete this resource?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/past-questions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadPastQuestions();
+      loadDashboardStats();
+      alert('Resource deleted successfully!');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error deleting resource');
+  }
+}
+
+// ===== MODAL FUNCTIONS =====
+function openModal() {
+  document.getElementById('modal').classList.add('show');
+  
+  document.getElementById('modalForm').onsubmit = async (e) => {
+    e.preventDefault();
+    
+    if (currentForm === 'archive') {
+      await handleArchiveSubmit();
+    } else if (currentForm === 'gallery') {
+      await handleGallerySubmit();
+    } else if (currentForm === 'leaders') {
+      await handleLeaderSubmit();
+    } else if (currentForm === 'documents') {
+      await handleDocumentSubmit();
+    } else if (currentForm === 'team') {
+      await handleTeamSubmit();
+    } else if (currentForm === 'past-questions') {
+      await handleQuestionSubmit();
+    }
+  };
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  document.getElementById('modalForm').reset();
+  document.getElementById('modalBody').innerHTML = '';
+  currentEditId = null;
+  currentEditData = null;
+}
+
+// Export functions globally
+window.openArchiveForm = openArchiveForm;
+window.openGalleryForm = openGalleryForm;
+window.openLeaderForm = openLeaderForm;
+window.openDocumentForm = openDocumentForm;
+window.openTeamForm = openTeamForm;
+window.openQuestionForm = openQuestionForm;
+window.editArchiveEvent = editArchiveEvent;
+window.deleteArchiveEvent = deleteArchiveEvent;
+window.editGalleryPhoto = editGalleryPhoto;
+window.deleteGalleryPhoto = deleteGalleryPhoto;
+window.editLeader = editLeader;
+window.deleteLeader = deleteLeader;
+window.editDocument = editDocument;
+window.deleteDocument = deleteDocument;
+window.editTeamMember = editTeamMember;
+window.deleteTeamMember = deleteTeamMember;
+window.editPastQuestion = editPastQuestion;
+window.deletePastQuestion = deletePastQuestion;
+
 }
 
 async function handleQuestionSubmit() {
