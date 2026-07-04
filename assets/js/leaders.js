@@ -31,10 +31,11 @@ async function loadLeaders() {
         console.warn('No valid photo URL for leader:', leader.id, '- using placeholder');
       }
       
+      const escapedName = (leader.name || 'Leader').replace(/['"`<>]/g, '');
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `
-        <img src="${photoUrl}" alt="${leader.name}" class="member-photo" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
+        <img src="${photoUrl}" alt="${escapedName}" class="member-photo" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
         <div class="member-info">
           <h3>${leader.name}</h3>
           <p>${leader.department}</p>

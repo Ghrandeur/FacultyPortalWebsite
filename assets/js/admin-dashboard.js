@@ -216,7 +216,7 @@ async function editArchiveEvent(id) {
     console.error('Error loading event for edit:', error);
     alert(`Unable to load event for editing: ${error.message}`);
   }
-
+}
 
 async function handleArchiveSubmit() {
   const title = document.getElementById('archiveTitle').value;

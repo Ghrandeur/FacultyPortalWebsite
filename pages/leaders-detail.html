@@ -114,9 +114,10 @@
             console.warn('No valid photo URL for leader:', id, '- using placeholder');
           }
           
+          const escapedName = (leader.name || 'Leader').replace(/['"`<>]/g, '');
           container.innerHTML = `
             <div class="leader-detail">
-              <img src="${photoUrl}" alt="${leader.name}" class="leader-photo" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
+              <img src="${photoUrl}" alt="${escapedName}" class="leader-photo" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
               <div class="leader-info">
                 <h2>${leader.name}</h2>
                 <p class="leader-badge"><i class="fa-solid fa-briefcase"></i> ${leader.position}</p>

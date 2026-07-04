@@ -70,12 +70,13 @@ router.post('/', upload.single('image'), async (req, res) => {
     const saveLocalCopy = () => {
       if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
       fs.writeFileSync(localFilePath, req.file.buffer);
+      return `/uploads/${relativePath}`;
     };
+
+    const localUrl = saveLocalCopy();
 
     const sendLocalFallback = (warning) => {
       try {
-        saveLocalCopy();
-        const localUrl = `/uploads/${relativePath}`;
         return res.json({ url: localUrl, storage: 'local-fallback', warning });
       } catch (localErr) {
         console.error('Failed to save local fallback copy:', localErr && localErr.message);
@@ -114,13 +115,10 @@ router.post('/', upload.single('image'), async (req, res) => {
           publicUrl = `https://${s3Bucket}.s3.${awsRegion}.amazonaws.com/${s3Key}`;
         }
 
-        saveLocalCopy();
         return res.json({ url: publicUrl, storage: 's3' });
       } catch (s3Err) {
-        console.warn('S3 upload failed, will attempt Firebase fallback if configured:', s3Err && s3Err.message);
-        if (!firebaseStorageEnabled) {
-          return sendLocalFallback('s3_failed');
-        }
+        console.warn('S3 upload failed, will use local fallback:', s3Err && s3Err.message);
+        return sendLocalFallback('s3_failed');
       }
     }
 
@@ -140,15 +138,14 @@ router.post('/', upload.single('image'), async (req, res) => {
         try { await remoteFile.makePublic(); } catch (e) { console.warn('remoteFile.makePublic() failed:', e && e.message); }
 
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-        saveLocalCopy();
         return res.json({ url: publicUrl, storage: 'firebase' });
       } catch (firebaseErr) {
-        console.warn('Firebase upload failed, will attempt local fallback:', firebaseErr && firebaseErr.message);
+        console.warn('Firebase upload failed, will use local fallback:', firebaseErr && firebaseErr.message);
         return sendLocalFallback('firebase_failed');
       }
     }
 
-    return res.status(500).json({ error: 'No valid upload backend configured', details: 'Firebase and S3 are unavailable' });
+    return sendLocalFallback('remote_storage_unavailable');
   } catch (error) {
     console.error('Image upload failed:', error);
     return res.status(500).json({ error: 'Image upload failed', details: error.message });

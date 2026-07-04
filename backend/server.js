@@ -65,17 +65,44 @@ app.use(express.static(path.join(__dirname, '../')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 // Upload fallback: serve local files if available, then fall back to Firebase Storage if the local upload path is missing.
-app.use('/uploads', async (req, res, next) => {
-  const requestPath = (req.path || '').replace(/^[/\\]+/, '');
-  const requestedFile = path.join(__dirname, 'uploads', requestPath);
-  const fallbackFile = path.join(__dirname, 'uploads', path.basename(requestPath));
-
-  if (fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
-    return res.sendFile(requestedFile);
+function findUploadedFile(requestPath) {
+  if (!requestPath || requestPath.includes('..') || path.isAbsolute(requestPath)) {
+    return null;
   }
 
-  if (fs.existsSync(fallbackFile) && fs.statSync(fallbackFile).isFile()) {
-    return res.sendFile(fallbackFile);
+  const normalizedPath = requestPath.replace(/\\/g, '/');
+  const targetPath = path.join(__dirname, 'uploads', normalizedPath);
+  if (fs.existsSync(targetPath) && fs.statSync(targetPath).isFile()) {
+    return targetPath;
+  }
+
+  const uploadRoot = path.join(__dirname, 'uploads');
+  const baseName = path.basename(normalizedPath);
+  const matches = [];
+
+  function walk(currentDir) {
+    if (!fs.existsSync(currentDir)) return;
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else if (entry.isFile() && entry.name === baseName) {
+        matches.push(fullPath);
+      }
+    }
+  }
+
+  walk(uploadRoot);
+  return matches[0] || null;
+}
+
+app.use('/uploads', async (req, res, next) => {
+  const requestPath = (req.path || '').replace(/^[/\\]+/, '');
+  const requestedFile = findUploadedFile(requestPath);
+
+  if (requestedFile) {
+    return res.sendFile(requestedFile);
   }
 
   if (storage && storage.bucket) {

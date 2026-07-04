@@ -1,0 +1,10 @@
+from pathlib import Path
+text = Path('../assets/js/admin-dashboard.js').read_text(encoding='utf-8')
+print('length', len(text))
+print('lines', text.count('\n')+1)
+print('backticks', text.count('`'))
+print('single quotes', text.count("'"))
+print('double quotes', text.count('"'))
+print('open paren', text.count('('), 'close paren', text.count(')'))
+print('open brace', text.count('{'), 'close brace', text.count('}'))
+print('open bracket', text.count('['), 'close bracket', text.count(']'))
