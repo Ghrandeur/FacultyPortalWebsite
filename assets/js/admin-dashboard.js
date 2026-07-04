@@ -186,7 +186,21 @@ async function editArchiveEvent(id) {
     currentEditData = event;
     currentForm = 'archive';
 
-    const archiveDateValue = event.date ? new Date(event.date).toISOString().substring(0, 10) : '';
+    const archiveDateValue = (() => {
+      if (!event.date) return '';
+      if (typeof event.date === 'object' && event.date !== null) {
+        if (typeof event.date.toDate === 'function') {
+          const dateObj = event.date.toDate();
+          return !isNaN(dateObj.getTime()) ? dateObj.toISOString().substring(0, 10) : '';
+        }
+        if (typeof event.date._seconds === 'number') {
+          const dateObj = new Date(event.date._seconds * 1000 + (event.date._nanoseconds || 0) / 1e6);
+          return !isNaN(dateObj.getTime()) ? dateObj.toISOString().substring(0, 10) : '';
+        }
+      }
+      const dateObj = new Date(event.date);
+      return !isNaN(dateObj.getTime()) ? dateObj.toISOString().substring(0, 10) : '';
+    })();
     const modalBody = document.getElementById('modalBody');
     modalBody.innerHTML = `
       <h3>Edit Archive Event</h3>
