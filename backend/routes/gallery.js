@@ -60,14 +60,23 @@ router.post('/', async (req, res) => {
   try {
     const { photoUrl, event, description, url, image } = req.body;
     const finalPhotoUrl = photoUrl || url || image || '';
-    const newPhoto = await db.collection('gallery').add({
-      photoUrl: finalPhotoUrl,
+    
+    const photoData = {
       event,
       description,
       date: new Date()
-    });
+    };
+    
+    // Only store photoUrl if it has a valid value
+    if (finalPhotoUrl && typeof finalPhotoUrl === 'string' && finalPhotoUrl.trim()) {
+      photoData.photoUrl = finalPhotoUrl.trim();
+    }
+    
+    console.log('Creating gallery photo:', photoData);
+    const newPhoto = await db.collection('gallery').add(photoData);
     res.status(201).json({ id: newPhoto.id, message: 'Photo added' });
   } catch (error) {
+    console.error('Error creating gallery photo:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -76,14 +85,22 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { photoUrl, url, image, event, description } = req.body;
-    const updateData = {
-      ...(event !== undefined ? { event } : {}),
-      ...(description !== undefined ? { description } : {}),
-      ...(photoUrl || url || image ? { photoUrl: photoUrl || url || image } : {})
-    };
+    const updateData = {};
+    
+    if (event !== undefined) updateData.event = event;
+    if (description !== undefined) updateData.description = description;
+    
+    // Only update photoUrl if provided and has a value
+    const finalPhotoUrl = photoUrl || url || image;
+    if (finalPhotoUrl && typeof finalPhotoUrl === 'string' && finalPhotoUrl.trim()) {
+      updateData.photoUrl = finalPhotoUrl.trim();
+    }
+    
+    console.log('Updating gallery photo:', { id: req.params.id, updateData });
     await db.collection('gallery').doc(req.params.id).update(updateData);
     res.json({ message: 'Photo updated' });
   } catch (error) {
+    console.error('Error updating gallery photo:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -487,9 +487,23 @@ async function handleGallerySubmit() {
   const description = document.getElementById('galleryDescription').value;
 
   try {
+    console.log('Gallery submit - starting', { event, description, hasFile: !!(fileInput?.files?.[0]) });
+    
     let photoUrl = currentEditData?.photoUrl || '';
     if (fileInput && fileInput.files && fileInput.files[0]) {
+      console.log('Uploading new photo');
       photoUrl = await uploadImageToStorage(fileInput.files[0], 'gallery');
+      console.log('Photo URL after upload:', photoUrl);
+      if (!photoUrl || !photoUrl.trim()) {
+        console.error('Photo upload returned empty URL');
+        alert('Warning: Photo upload may have failed. The photo will be saved without an image.');
+        photoUrl = '';
+      }
+    } else {
+      console.log('No new photo provided, using existing:', photoUrl || 'none');
+      if (!photoUrl || !photoUrl.trim()) {
+        console.warn('No photo available for gallery');
+      }
     }
 
     const method = currentEditId ? 'PUT' : 'POST';
@@ -499,19 +513,22 @@ async function handleGallerySubmit() {
       alert('Please enter an event name for the photo.');
       return;
     }
-    if (!photoUrl) {
-      alert('Photo upload failed or no file was selected. Please try again.');
-      return;
+
+    const body = { event, description };
+    
+    // Only include photoUrl if it has a non-empty value
+    if (photoUrl && typeof photoUrl === 'string' && photoUrl.trim()) {
+      body.photoUrl = photoUrl.trim();
     }
 
-    console.log('Saving gallery item', { event, photoUrl, description, currentEditId });
+    console.log('Sending to API:', { method, url, body });
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ photoUrl, event, description })
+      body: JSON.stringify(body)
     });
 
     if (response.ok) {
@@ -983,13 +1000,36 @@ async function handleTeamSubmit() {
   const fileInput = document.getElementById('teamPhotoFile');
 
   try {
+    console.log('Team submit - starting', { name, department, position, hasFile: !!(fileInput?.files?.[0]) });
+    
     let photoUrl = currentEditData?.photoUrl || '';
     if (fileInput && fileInput.files && fileInput.files[0]) {
+      console.log('Uploading new photo');
       photoUrl = await uploadImageToStorage(fileInput.files[0], 'team');
+      console.log('Photo URL after upload:', photoUrl);
+      if (!photoUrl || !photoUrl.trim()) {
+        console.error('Photo upload returned empty URL');
+        alert('Warning: Photo upload may have failed. The team member will be saved without a photo.');
+        photoUrl = '';
+      }
+    } else {
+      console.log('No new photo provided, using existing:', photoUrl || 'none');
+      if (!photoUrl || !photoUrl.trim()) {
+        console.warn('No photo available for team member');
+      }
     }
 
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/team/${currentEditId}` : `${API_URL}/team`;
+
+    const body = { name, department, position };
+    
+    // Only include photoUrl if it has a non-empty value
+    if (photoUrl && typeof photoUrl === 'string' && photoUrl.trim()) {
+      body.photoUrl = photoUrl.trim();
+    }
+    
+    console.log('Sending to API:', { method, url, body });
 
     const response = await fetch(url, {
       method,
@@ -997,7 +1037,7 @@ async function handleTeamSubmit() {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ name, department, position, photoUrl })
+      body: JSON.stringify(body)
     });
 
     if (response.ok) {
@@ -1005,10 +1045,14 @@ async function handleTeamSubmit() {
       loadTeamMembers();
       loadDashboardStats();
       alert('Team member added successfully!');
+    } else {
+      const errorText = await response.text();
+      console.error('Team save failed:', response.status, errorText);
+      throw new Error(errorText || `Team add failed (${response.status})`);
     }
   } catch (error) {
-    console.error('Error:', error);
-    alert('Error adding team member');
+    console.error('Error adding team member:', error);
+    alert(`Error adding team member: ${error.message || 'Unknown error'}`);
   }
 }
 
@@ -1232,113 +1276,6 @@ function closeModal() {
 }
 
 // Export functions globally
-window.openArchiveForm = openArchiveForm;
-window.openGalleryForm = openGalleryForm;
-window.openLeaderForm = openLeaderForm;
-window.openDocumentForm = openDocumentForm;
-window.openTeamForm = openTeamForm;
-window.openQuestionForm = openQuestionForm;
-window.editArchiveEvent = editArchiveEvent;
-window.deleteArchiveEvent = deleteArchiveEvent;
-window.editGalleryPhoto = editGalleryPhoto;
-window.deleteGalleryPhoto = deleteGalleryPhoto;
-window.editLeader = editLeader;
-window.deleteLeader = deleteLeader;
-window.editDocument = editDocument;
-window.deleteDocument = deleteDocument;
-window.editTeamMember = editTeamMember;
-window.deleteTeamMember = deleteTeamMember;
-window.editPastQuestion = editPastQuestion;
-window.deletePastQuestion = deletePastQuestion;
-
-}
-
-async function handleQuestionSubmit() {
-  const fileName = document.getElementById('questionName').value;
-  const subject = document.getElementById('questionSubject').value;
-  const semester = document.getElementById('questionSemester').value;
-  const fileUrl = document.getElementById('questionUrl').value;
-  const description = document.getElementById('questionDescription').value;
-
-  try {
-    const method = currentEditId ? 'PUT' : 'POST';
-    const url = currentEditId ? `${API_URL}/past-questions/${currentEditId}` : `${API_URL}/past-questions`;
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': await currentUser.getIdToken()
-      },
-      body: JSON.stringify({ fileName, fileUrl, subject, semester, description })
-    });
-
-    if (response.ok) {
-      closeModal();
-      loadPastQuestions();
-      loadDashboardStats();
-      alert('Resource uploaded successfully!');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('Error uploading resource');
-  }
-}
-
-async function deletePastQuestion(id) {
-  if (!confirm('Are you sure you want to delete this resource?')) return;
-
-  try {
-    const response = await fetch(`${API_URL}/past-questions/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': await currentUser.getIdToken()
-      }
-    });
-
-    if (response.ok) {
-      loadPastQuestions();
-      loadDashboardStats();
-      alert('Resource deleted successfully!');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('Error deleting resource');
-  }
-}
-
-// ===== MODAL FUNCTIONS =====
-function openModal() {
-  document.getElementById('modal').classList.add('show');
-  
-  document.getElementById('modalForm').onsubmit = async (e) => {
-    e.preventDefault();
-    
-    if (currentForm === 'archive') {
-      await handleArchiveSubmit();
-    } else if (currentForm === 'gallery') {
-      await handleGallerySubmit();
-    } else if (currentForm === 'leaders') {
-      await handleLeaderSubmit();
-    } else if (currentForm === 'documents') {
-      await handleDocumentSubmit();
-    } else if (currentForm === 'team') {
-      await handleTeamSubmit();
-    } else if (currentForm === 'past-questions') {
-      await handleQuestionSubmit();
-    }
-  };
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('show');
-  document.getElementById('modalForm').reset();
-  document.getElementById('modalBody').innerHTML = '';
-  currentEditId = null;
-  currentEditData = null;
-}
-
-// Expose functions used by inline onclick handlers in module-loaded admin dashboard
 window.openArchiveForm = openArchiveForm;
 window.openGalleryForm = openGalleryForm;
 window.openLeaderForm = openLeaderForm;

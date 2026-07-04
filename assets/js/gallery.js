@@ -14,12 +14,27 @@ async function loadGalleryPhotos() {
     }
 
     photos.forEach(photo => {
+      console.log('Processing gallery photo:', { id: photo.id, event: photo.event, photoUrl: photo.photoUrl });
       const rawPhotoUrl = photo.photoUrl || photo.url || photo.image || '';
-      const photoUrl = window.normalizeMediaUrl(rawPhotoUrl) || '/assets/images/placeholder.svg';
+      
+      // Validate photo URL
+      let photoUrl = '/assets/images/placeholder.svg';
+      if (rawPhotoUrl && typeof rawPhotoUrl === 'string' && rawPhotoUrl.trim()) {
+        const normalized = window.normalizeMediaUrl(rawPhotoUrl);
+        if (normalized && normalized.trim()) {
+          photoUrl = normalized;
+          console.log('Using photo URL:', photoUrl);
+        } else {
+          console.warn('Photo URL normalization returned empty:', rawPhotoUrl);
+        }
+      } else {
+        console.warn('No valid photo URL for gallery item:', photo.id, '- using placeholder');
+      }
+      
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.innerHTML = `
-        <img src="${photoUrl}" alt="${photo.event}" loading="lazy" onerror="this.src='/assets/images/placeholder.svg'">
+        <img src="${photoUrl}" alt="${photo.event}" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
         <div class="gallery-caption">
           ${photo.event}
           <a class="details-btn" href="/pages/gallery-detail.html?id=${encodeURIComponent(photo.id)}">View Details</a>
