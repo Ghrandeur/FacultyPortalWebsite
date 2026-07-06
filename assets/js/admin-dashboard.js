@@ -441,20 +441,62 @@ async function uploadImageToStorage(file, folderName) {
   }
 }
 
+function normalizeGalleryImageLink(rawValue) {
+  if (typeof rawValue !== 'string') return '';
+
+  const trimmed = rawValue.trim();
+  if (!trimmed) return '';
+
+  try {
+    const url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
+    const hostname = url.hostname.toLowerCase();
+
+    if (hostname === 'drive.google.com' || hostname === 'www.drive.google.com') {
+      const fileId = url.searchParams.get('id');
+      if (fileId) {
+        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+      }
+
+      const match = trimmed.match(/\/file\/d\/([^/]+)/i);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+    }
+
+    return trimmed;
+  } catch (error) {
+    return trimmed;
+  }
+}
+
+function parseGalleryImageLinks(rawValue) {
+  if (typeof rawValue !== 'string') return [];
+
+  return rawValue
+    .split(/\r?\n|,|;/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => normalizeGalleryImageLink(item));
+}
+
 function openGalleryForm() {
   currentEditId = null;
   currentEditData = null;
   currentForm = 'gallery';
   const modalBody = document.getElementById('modalBody');
   modalBody.innerHTML = `
-    <h3>Add Photo</h3>
+    <h3>Add Photos</h3>
     <div class="form-group">
       <label for="galleryEvent">Event Name</label>
       <input type="text" id="galleryEvent" placeholder="Event name" required>
     </div>
     <div class="form-group">
-      <label for="galleryPhotoFile">Upload Image From Device</label>
-      <input type="file" id="galleryPhotoFile" accept="image/*" required>
+      <label for="galleryPhotoFile">Upload Images From Device</label>
+      <input type="file" id="galleryPhotoFile" accept="image/*" multiple>
+    </div>
+    <div class="form-group">
+      <label for="galleryImageLinks">Or paste image links (one per line, Drive links supported)</label>
+      <textarea id="galleryImageLinks" rows="4" placeholder="https://drive.google.com/uc?export=view&id=...\nhttps://example.com/photo.jpg"></textarea>
     </div>
     <div class="form-group">
       <label for="galleryDescription">Description</label>
@@ -480,8 +522,12 @@ async function editGalleryPhoto(id) {
         <input type="text" id="galleryEvent" value="${photo.event || ''}" placeholder="Event name" required>
       </div>
       <div class="form-group">
-        <label for="galleryPhotoFile">Upload New Image From Device (optional)</label>
-        <input type="file" id="galleryPhotoFile" accept="image/*">
+        <label for="galleryPhotoFile">Upload New Images From Device (optional)</label>
+        <input type="file" id="galleryPhotoFile" accept="image/*" multiple>
+      </div>
+      <div class="form-group">
+        <label for="galleryImageLinks">Or paste a replacement image link</label>
+        <textarea id="galleryImageLinks" rows="4" placeholder="https://drive.google.com/uc?export=view&id=..."></textarea>
       </div>
       <div class="form-group">
         <label for="galleryDescription">Description</label>
@@ -498,41 +544,84 @@ async function editGalleryPhoto(id) {
 async function handleGallerySubmit() {
   const event = document.getElementById('galleryEvent').value;
   const fileInput = document.getElementById('galleryPhotoFile');
+  const linkInput = document.getElementById('galleryImageLinks');
   const description = document.getElementById('galleryDescription').value;
 
   try {
-    console.log('Gallery submit - starting', { event, description, hasFile: !!(fileInput?.files?.[0]) });
-    
-    let photoUrl = currentEditData?.photoUrl || '';
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-      console.log('Uploading new photo');
-      photoUrl = await uploadImageToStorage(fileInput.files[0], 'gallery');
-      console.log('Photo URL after upload:', photoUrl);
-      if (!photoUrl || !photoUrl.trim()) {
-        console.error('Photo upload returned empty URL');
-        alert('Warning: Photo upload may have failed. The photo will be saved without an image.');
-        photoUrl = '';
-      }
-    } else {
-      console.log('No new photo provided, using existing:', photoUrl || 'none');
-      if (!photoUrl || !photoUrl.trim()) {
-        console.warn('No photo available for gallery');
-      }
-    }
-
-    const method = currentEditId ? 'PUT' : 'POST';
-    const url = currentEditId ? `${API_URL}/gallery/${currentEditId}` : `${API_URL}/gallery`;
-
     if (!event) {
       alert('Please enter an event name for the photo.');
       return;
     }
 
+    const selectedFiles = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
+    const pastedLinks = parseGalleryImageLinks(linkInput?.value || '');
+    console.log('Gallery submit - starting', { event, description, selectedFileCount: selectedFiles.length, pastedLinkCount: pastedLinks.length });
+
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/gallery/${currentEditId}` : `${API_URL}/gallery`;
+
+    if (currentEditId) {
+      let photoUrl = currentEditData?.photoUrl || '';
+      if (selectedFiles.length > 0) {
+        console.log('Uploading replacement gallery photo');
+        photoUrl = await uploadImageToStorage(selectedFiles[0], 'gallery');
+        console.log('Photo URL after upload:', photoUrl);
+        if (!photoUrl || !photoUrl.trim()) {
+          console.error('Photo upload returned empty URL');
+          alert('Warning: Photo upload may have failed. The photo will be saved without an image.');
+          photoUrl = '';
+        }
+      } else if (pastedLinks.length > 0) {
+        photoUrl = pastedLinks[0];
+      } else {
+        console.log('No new photo provided, using existing:', photoUrl || 'none');
+        if (!photoUrl || !photoUrl.trim()) {
+          console.warn('No photo available for gallery');
+        }
+      }
+
+      const body = { event, description };
+      if (photoUrl && typeof photoUrl === 'string' && photoUrl.trim()) {
+        body.photoUrl = photoUrl.trim();
+      }
+
+      console.log('Sending to API:', { method, url, body });
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': await currentUser.getIdToken()
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        closeModal();
+        loadGalleryPhotos();
+        loadDashboardStats();
+        alert('Photo updated successfully!');
+      } else {
+        const errorText = await response.text();
+        console.error('Gallery save failed:', response.status, errorText);
+        alert('Error updating photo. Check the browser console for details.');
+      }
+      return;
+    }
+
+    const uploadedUrls = [];
+    if (selectedFiles.length > 0) {
+      for (const file of selectedFiles) {
+        const uploadedUrl = await uploadImageToStorage(file, 'gallery');
+        if (uploadedUrl && uploadedUrl.trim()) {
+          uploadedUrls.push(uploadedUrl.trim());
+        }
+      }
+    }
+
     const body = { event, description };
-    
-    // Only include photoUrl if it has a non-empty value
-    if (photoUrl && typeof photoUrl === 'string' && photoUrl.trim()) {
-      body.photoUrl = photoUrl.trim();
+    const allPhotoUrls = [...uploadedUrls, ...pastedLinks];
+    if (allPhotoUrls.length > 0) {
+      body.photoUrls = allPhotoUrls;
     }
 
     console.log('Sending to API:', { method, url, body });
@@ -549,7 +638,7 @@ async function handleGallerySubmit() {
       closeModal();
       loadGalleryPhotos();
       loadDashboardStats();
-      alert('Photo added successfully!');
+      alert(allPhotoUrls.length > 1 ? 'Photos added successfully!' : 'Photo added successfully!');
     } else {
       const errorText = await response.text();
       console.error('Gallery save failed:', response.status, errorText);

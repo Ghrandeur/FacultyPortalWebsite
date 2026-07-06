@@ -11,6 +11,29 @@ function normalizeGalleryDoc(doc) {
   };
 }
 
+function getPhotoUrls(body = {}) {
+  const photoUrls = [];
+  const singlePhoto = body.photoUrl || body.url || body.image;
+
+  if (typeof singlePhoto === 'string' && singlePhoto.trim()) {
+    photoUrls.push(singlePhoto.trim());
+  }
+
+  const additionalPhotoSources = Array.isArray(body.photoUrls)
+    ? body.photoUrls
+    : (Array.isArray(body.photos) ? body.photos : []);
+
+  additionalPhotoSources.forEach((item) => {
+    if (typeof item === 'string' && item.trim()) {
+      photoUrls.push(item.trim());
+    } else if (item && typeof item === 'object' && typeof item.url === 'string' && item.url.trim()) {
+      photoUrls.push(item.url.trim());
+    }
+  });
+
+  return photoUrls;
+}
+
 // Get all gallery photos
 router.get('/', async (req, res) => {
   try {
@@ -58,23 +81,30 @@ router.get('/:id', async (req, res) => {
 // Create photo
 router.post('/', async (req, res) => {
   try {
-    const { photoUrl, event, description, url, image } = req.body;
-    const finalPhotoUrl = photoUrl || url || image || '';
-    
-    const photoData = {
+    const { event, description } = req.body;
+    const photoUrls = getPhotoUrls(req.body);
+
+    const createdIds = [];
+    const basePhotoData = {
       event,
       description,
       date: new Date()
     };
-    
-    // Only store photoUrl if it has a valid value
-    if (finalPhotoUrl && typeof finalPhotoUrl === 'string' && finalPhotoUrl.trim()) {
-      photoData.photoUrl = finalPhotoUrl.trim();
+
+    if (photoUrls.length > 0) {
+      for (const photoUrl of photoUrls) {
+        const photoData = { ...basePhotoData };
+        photoData.photoUrl = photoUrl;
+        const newPhoto = await db.collection('gallery').add(photoData);
+        createdIds.push(newPhoto.id);
+      }
+    } else {
+      const newPhoto = await db.collection('gallery').add(basePhotoData);
+      createdIds.push(newPhoto.id);
     }
-    
-    console.log('Creating gallery photo:', photoData);
-    const newPhoto = await db.collection('gallery').add(photoData);
-    res.status(201).json({ id: newPhoto.id, message: 'Photo added' });
+
+    console.log('Creating gallery photo(s):', { count: createdIds.length, event });
+    res.status(201).json({ ids: createdIds, message: createdIds.length > 1 ? 'Photos added' : 'Photo added' });
   } catch (error) {
     console.error('Error creating gallery photo:', error);
     res.status(500).json({ error: error.message });
