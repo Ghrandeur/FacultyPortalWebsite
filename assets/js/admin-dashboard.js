@@ -398,17 +398,20 @@ async function loadGalleryPhotos() {
   }
 }
 
-async function uploadImageToStorage(file, folderName) {
-  if (!file) {
-    console.log('No file provided to uploadImageToStorage');
+async function uploadImageToStorage(fileOrFiles, folderName) {
+  if (!fileOrFiles) {
+    console.log('No file(s) provided to uploadImageToStorage');
     return '';
   }
 
-  console.log('Uploading image:', { fileName: file.name, size: file.size, folderName });
+  const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
+  if (files.length === 0) return '';
+
+  console.log('Uploading image(s):', { count: files.length, folderName });
   const url = `${API_URL}/upload`;
   const formData = new FormData();
   formData.append('folder', folderName);
-  formData.append('image', file);
+  files.forEach((f) => formData.append('image', f));
 
   const headers = {};
   try {
@@ -433,8 +436,13 @@ async function uploadImageToStorage(file, folderName) {
       const message = data.error || data.message || `Upload failed (${response.status})`;
       throw new Error(message);
     }
-    console.log('Upload successful, URL:', data.url);
-    return data.url || '';
+
+    // Normalize response: if backend returns single url or multiple
+    if (data.urls && Array.isArray(data.urls)) {
+      return data.urls;
+    }
+    if (data.url) return [data.url];
+    return [];
   } catch (err) {
     console.error('Upload error:', err);
     throw err;
@@ -563,11 +571,13 @@ async function handleGallerySubmit() {
     if (currentEditId) {
       let photoUrl = currentEditData?.photoUrl || '';
       if (selectedFiles.length > 0) {
-        console.log('Uploading replacement gallery photo');
-        photoUrl = await uploadImageToStorage(selectedFiles[0], 'gallery');
-        console.log('Photo URL after upload:', photoUrl);
-        if (!photoUrl || !photoUrl.trim()) {
-          console.error('Photo upload returned empty URL');
+        console.log('Uploading replacement gallery photo(s)');
+        const uploaded = await uploadImageToStorage(selectedFiles, 'gallery');
+        console.log('Photo URLs after upload:', uploaded);
+        if (Array.isArray(uploaded) && uploaded.length > 0) {
+          photoUrl = uploaded[0] || '';
+        } else {
+          console.error('Photo upload returned empty URLs');
           alert('Warning: Photo upload may have failed. The photo will be saved without an image.');
           photoUrl = '';
         }
@@ -608,12 +618,24 @@ async function handleGallerySubmit() {
       return;
     }
 
-    const uploadedUrls = [];
+    let uploadedUrls = [];
     if (selectedFiles.length > 0) {
-      for (const file of selectedFiles) {
-        const uploadedUrl = await uploadImageToStorage(file, 'gallery');
-        if (uploadedUrl && uploadedUrl.trim()) {
-          uploadedUrls.push(uploadedUrl.trim());
+      // Send all selected files in one request
+      try {
+        const uploaded = await uploadImageToStorage(selectedFiles, 'gallery');
+        if (Array.isArray(uploaded)) uploadedUrls = uploaded.map(u => (typeof u === 'string' ? u.trim() : '')).filter(Boolean);
+      } catch (e) {
+        console.error('Batch upload failed, attempting per-file fallback:', e && e.message);
+        // Fallback: upload one by one
+        for (const file of selectedFiles) {
+          try {
+            const res = await uploadImageToStorage(file, 'gallery');
+            if (Array.isArray(res)) {
+              uploadedUrls.push(...res.map(u => (typeof u === 'string' ? u.trim() : '')).filter(Boolean));
+            }
+          } catch (err) {
+            console.warn('Per-file upload failed for', file.name, err && err.message);
+          }
         }
       }
     }
