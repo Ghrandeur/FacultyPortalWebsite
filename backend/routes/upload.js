@@ -110,7 +110,7 @@ async function processSingleFile(file, folder, s3Enabled, firebaseStorageEnabled
   return { url: localUrl, storage: 'local-fallback', warning: 'remote_storage_unavailable' };
 }
 
-router.post('/', upload.any(), async (req, res) => {
+router.post('/', upload.array('image'), async (req, res) => {
   try {
     const files = Array.isArray(req.files) && req.files.length ? req.files : (req.file ? [req.file] : []);
     if (!files || files.length === 0) {
