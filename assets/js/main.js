@@ -23,13 +23,18 @@ if (themeToggle) {
 }
 
 const siteNavigationLinks = [
-  { href: '/pages/archive.html', label: 'Archive' },
   { href: '/pages/faculty.html', label: 'Faculty' },
-  { href: '/pages/gallery.html', label: 'Gallery' },
   { href: '/pages/leaders.html', label: 'Leaders' },
+  { href: '/pages/parliamentarians.html', label: 'Parliamentarians' },
+  { href: '/pages/departments.html', label: 'Departments' },
+  { href: '/pages/newsletter-login.html', label: 'Newsletter' },
+  { href: '/pages/marketplace.html', label: 'Marketplace' },
+  { href: '/pages/archive.html', label: 'Archive' },
+  { href: '/pages/gallery.html', label: 'Gallery' },
   { href: '/pages/documents.html', label: 'Documents' },
-  { href: '/pages/team.html', label: 'Team' },
   { href: '/pages/past-questions.html', label: 'Past Questions' },
+  { href: '/pages/companion.html', label: 'Companion' },
+  { href: '/pages/social-handles.html', label: 'Social Handles' },
   { href: '/admin/login.html', label: 'Admin' },
 ];
 
