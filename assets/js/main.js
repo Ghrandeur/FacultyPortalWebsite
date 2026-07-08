@@ -110,29 +110,6 @@ if (topbar && !isHomePage && !document.getElementById('pageNavButton')) {
   });
 }
 
-if (topbar && !document.getElementById('pageBackButton') && !isHomePage) {
-  const backButton = document.createElement('button');
-  backButton.id = 'pageBackButton';
-  backButton.type = 'button';
-  backButton.className = 'theme-button page-back-button';
-  // use FontAwesome icon for consistent styling and avoid emoji swapping
-  backButton.innerHTML = '<i class="fa-solid fa-arrow-left back-icon" aria-hidden="true"></i>';
-  backButton.title = 'Go back';
-  backButton.addEventListener('click', () => {
-    if (window.history.length > 1 && document.referrer) {
-      window.history.back();
-    } else {
-      window.location.href = '/index.html';
-    }
-  });
-
-  if (themeToggle) {
-    topbar.insertBefore(backButton, themeToggle);
-  } else {
-    topbar.appendChild(backButton);
-  }
-}
-
 const updateGreeting = () => {
   const greetingElement = document.getElementById('timeGreeting');
   if (!greetingElement) return;

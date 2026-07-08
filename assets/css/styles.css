@@ -179,24 +179,6 @@ select {
   padding: 8px;
 }
 
-.page-back-button {
-  width: 56px;
-  height: 56px;
-  font-size: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 2px solid var(--primary-blue);
-  background: var(--white);
-  color: var(--primary-blue);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: background 180ms ease, transform 180ms ease;
-}
-
-.page-back-button .back-icon {
-  color: inherit;
-}
 
 h1 {
   margin: 0;
@@ -383,8 +365,7 @@ h1 {
     width: 100%;
   }
 
-  .theme-button,
-  .page-back-button {
+  .theme-button {
     width: 56px;
     max-width: 56px;
     flex-shrink: 0;
@@ -396,15 +377,13 @@ h1 {
   }
 }
 
-.dark-mode .theme-button,
-.dark-mode .page-back-button {
+.dark-mode .theme-button {
   background: #111827;
   border-color: #60A5FA;
   color: #BFDBFE;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.dark-mode .theme-button:hover,
-.dark-mode .page-back-button:hover {
+.dark-mode .theme-button:hover {
   background: rgba(59, 130, 246, 0.2);
 }
