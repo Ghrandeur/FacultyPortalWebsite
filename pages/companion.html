@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Companion | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/companion.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <div class="header-box header-with-logos">
+                <a href="/" class="page-back-button" type="button">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="header-logos">
+                    <img src="../fahssa.png" alt="FAHSSA logo" class="header-logo">
+                    <img src="../uniuyo.jpg" alt="University of Uyo logo" class="header-logo">
+                </div>
+                <h1>Academic Companion | FAHSSA</h1>
+            </div>
+            <button id="themeToggle" class="theme-button" type="button">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </header>
+
+        <main class="content-card">
+            <section class="companion-section">
+                <div class="companion-header">
+                    <h2>Academic Companion</h2>
+                    <p>Get advice, support, and guidance for your academic journey</p>
+                </div>
+
+                <!-- Quick Help Categories -->
+                <div class="quick-categories">
+                    <h3>What Do You Need Help With?</h3>
+                    <div class="categories-grid">
+                        <button class="category-btn" data-category="academic">
+                            <i class="fa-solid fa-book"></i>
+                            <span>Academic Issues</span>
+                        </button>
+                        <button class="category-btn" data-category="career">
+                            <i class="fa-solid fa-briefcase"></i>
+                            <span>Career Guidance</span>
+                        </button>
+                        <button class="category-btn" data-category="personal">
+                            <i class="fa-solid fa-heart"></i>
+                            <span>Personal Development</span>
+                        </button>
+                        <button class="category-btn" data-category="wellness">
+                            <i class="fa-solid fa-spa"></i>
+                            <span>Mental Wellness</span>
+                        </button>
+                        <button class="category-btn" data-category="projects">
+                            <i class="fa-solid fa-project-diagram"></i>
+                            <span>Project Guidance</span>
+                        </button>
+                        <button class="category-btn" data-category="skills">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <span>Skill Development</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Post Your Question -->
+                <div class="ask-question-section">
+                    <h3>Post a Question</h3>
+                    <button id="postQuestionBtn" class="post-question-btn">
+                        <i class="fa-solid fa-plus"></i> Ask a Question
+                    </button>
+                </div>
+
+                <!-- Featured Advisors/Mentors -->
+                <div class="advisors-section">
+                    <h3>Our Advisors & Mentors</h3>
+                    <div class="advisors-grid" id="advisorsList">
+                        <div class="loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Loading advisors...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Common Questions/Resources -->
+                <div class="resources-section">
+                    <h3>Frequently Asked Questions & Resources</h3>
+                    <div class="faq-container">
+                        <div class="faq-list" id="faqList">
+                            <div class="loading">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                <p>Loading resources...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Questions/Topics -->
+                <div class="topics-section">
+                    <h3>Recent Topics</h3>
+                    <div class="topics-grid" id="topicsList">
+                        <div class="loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Loading topics...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Post Question Modal -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content question-modal">
+            <button class="modal-close">&times;</button>
+            <h2>Post Your Question</h2>
+            <form id="questionForm" class="companion-form">
+                <div class="form-group">
+                    <label for="studentName">Your Name *</label>
+                    <input type="text" id="studentName" name="studentName" required placeholder="Your full name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="studentEmail">Email *</label>
+                    <input type="email" id="studentEmail" name="studentEmail" required placeholder="your.email@student.uniuyo.edu.ng" />
+                </div>
+
+                <div class="form-group">
+                    <label for="questionCategory">Category *</label>
+                    <select id="questionCategory" name="questionCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="academic">Academic Issues</option>
+                        <option value="career">Career Guidance</option>
+                        <option value="personal">Personal Development</option>
+                        <option value="wellness">Mental Wellness</option>
+                        <option value="projects">Project Guidance</option>
+                        <option value="skills">Skill Development</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="questionTitle">Question Title *</label>
+                    <input type="text" id="questionTitle" name="questionTitle" required placeholder="Brief title of your question" />
+                </div>
+
+                <div class="form-group">
+                    <label for="questionText">Your Question *</label>
+                    <textarea id="questionText" name="questionText" required placeholder="Describe your question in detail..." rows="6"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="anonymousQuestion">
+                        <input type="checkbox" id="anonymousQuestion" name="anonymousQuestion" />
+                        Post Anonymously
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">Submit Question</button>
+                <p id="formError" class="error-message" style="display: none;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Question Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content detail-modal">
+            <button class="modal-close">&times;</button>
+            <div id="modalBody" class="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/companion.js"></script>
+</body>
+</html>

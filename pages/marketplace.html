@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Marketplace | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/marketplace.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <div class="header-box header-with-logos">
+                <a href="/" class="page-back-button" type="button">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="header-logos">
+                    <img src="../fahssa.png" alt="FAHSSA logo" class="header-logo">
+                    <img src="../uniuyo.jpg" alt="University of Uyo logo" class="header-logo">
+                </div>
+                <h1>Student Marketplace | FAHSSA</h1>
+            </div>
+            <button id="themeToggle" class="theme-button" type="button">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </header>
+
+        <main class="content-card">
+            <section class="marketplace-section">
+                <div class="marketplace-header">
+                    <h2>Buy & Sell Student Goods</h2>
+                    <p>Connect with fellow students to buy and sell items</p>
+                    <button id="uploadItemBtn" class="upload-btn">
+                        <i class="fa-solid fa-plus"></i> Upload an Item
+                    </button>
+                </div>
+
+                <div class="marketplace-filters">
+                    <div class="filter-group">
+                        <input type="text" id="searchInput" placeholder="Search items..." class="search-box" />
+                    </div>
+                    <div class="filter-group">
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="textbooks">Textbooks</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="supplies">School Supplies</option>
+                            <option value="housing">Housing</option>
+                            <option value="services">Services</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="sortFilter" class="filter-select">
+                            <option value="newest">Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="popular">Most Popular</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="itemsList" class="items-grid">
+                    <div class="loading">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p>Loading marketplace items...</p>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fa-solid fa-inbox"></i>
+                    <h3>No Items Available</h3>
+                    <p>Be the first to upload an item!</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Upload Item Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content upload-modal">
+            <button class="modal-close">&times;</button>
+            <h2>Upload Item for Sale</h2>
+            <form id="uploadForm" class="marketplace-form">
+                <div class="form-group">
+                    <label for="itemName">Item Name *</label>
+                    <input type="text" id="itemName" name="itemName" required placeholder="e.g., Used Physics Textbook" />
+                </div>
+
+                <div class="form-group">
+                    <label for="itemCategory">Category *</label>
+                    <select id="itemCategory" name="itemCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="textbooks">Textbooks</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="accessories">Accessories</option>
+                        <option value="supplies">School Supplies</option>
+                        <option value="housing">Housing</option>
+                        <option value="services">Services</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemPrice">Price (₦) *</label>
+                    <input type="number" id="itemPrice" name="itemPrice" required min="0" placeholder="e.g., 5000" />
+                </div>
+
+                <div class="form-group">
+                    <label for="itemDescription">Description *</label>
+                    <textarea id="itemDescription" name="itemDescription" required placeholder="Describe your item in detail..." rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactPhone">Contact Phone *</label>
+                    <input type="tel" id="contactPhone" name="contactPhone" required placeholder="Your phone number" />
+                </div>
+
+                <div class="form-group">
+                    <label for="contactWhatsApp">WhatsApp Number (Optional)</label>
+                    <input type="tel" id="contactWhatsApp" name="contactWhatsApp" placeholder="Your WhatsApp number" />
+                </div>
+
+                <div class="form-group">
+                    <label for="itemImage">Upload Image</label>
+                    <input type="file" id="itemImage" name="itemImage" accept="image/*" />
+                </div>
+
+                <button type="submit" class="upload-submit-btn">Upload Item</button>
+                <p id="uploadError" class="error-message" style="display: none;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Item Detail Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content item-modal">
+            <button class="modal-close">&times;</button>
+            <div id="modalBody" class="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/marketplace.js"></script>
+</body>
+</html>

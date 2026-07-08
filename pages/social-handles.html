@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Social Handles | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/social-handles.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <div class="header-box header-with-logos">
+                <a href="/" class="page-back-button" type="button">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="header-logos">
+                    <img src="../fahssa.png" alt="FAHSSA logo" class="header-logo">
+                    <img src="../uniuyo.jpg" alt="University of Uyo logo" class="header-logo">
+                </div>
+                <h1>Connect With Us | FAHSSA</h1>
+            </div>
+            <button id="themeToggle" class="theme-button" type="button">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </header>
+
+        <main class="content-card">
+            <section class="social-section">
+                <div class="social-header">
+                    <h2>Follow Our Social Handles</h2>
+                    <p>Stay connected and never miss important updates from FAHSSA</p>
+                </div>
+
+                <!-- Main Social Platforms -->
+                <div class="social-platforms">
+                    <h3>Official FAHSSA Channels</h3>
+                    <div class="social-grid" id="mainSocialList">
+                        <div class="loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Loading social handles...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Department Social Channels -->
+                <div class="department-social">
+                    <h3>Department Social Channels</h3>
+                    <div class="dept-social-grid" id="departmentSocialList">
+                        <div class="loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Loading department channels...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="contact-info-section">
+                    <h3>Direct Contact</h3>
+                    <div class="contact-cards">
+                        <div class="contact-card">
+                            <i class="fa-solid fa-envelope"></i>
+                            <h4>Email</h4>
+                            <p id="facultyEmail">Loading...</p>
+                        </div>
+                        <div class="contact-card">
+                            <i class="fa-solid fa-phone"></i>
+                            <h4>Phone</h4>
+                            <p id="facultyPhone">Loading...</p>
+                        </div>
+                        <div class="contact-card">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <h4>Office Location</h4>
+                            <p id="facultyLocation">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="quick-links">
+                    <h3>Quick Links</h3>
+                    <div class="links-grid">
+                        <a href="#" class="quick-link-card" id="website">
+                            <i class="fa-solid fa-globe"></i>
+                            <span>Visit Website</span>
+                        </a>
+                        <a href="mailto:#" class="quick-link-card" id="emailLink">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span>Send Email</span>
+                        </a>
+                        <a href="#" class="quick-link-card" id="chat">
+                            <i class="fa-solid fa-comments"></i>
+                            <span>Send Message</span>
+                        </a>
+                        <a href="#" class="quick-link-card" id="subscribe">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Subscribe Newsletter</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/social-handles.js"></script>
+</body>
+</html>

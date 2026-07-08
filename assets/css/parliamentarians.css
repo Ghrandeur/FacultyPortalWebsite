@@ -1,0 +1,390 @@
+/* Faculty Parliamentarians Page Styles */
+
+.parliamentarians-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.parliamentarians-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.parliamentarians-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 2rem;
+  color: var(--text-dark);
+}
+
+.parliamentarians-header p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+.parliamentarians-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+.parliamentarian-card {
+  background: white;
+  border: 2px solid #E5E7EB;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 300ms ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.parliamentarian-card:hover {
+  border-color: #EF4444;
+  box-shadow: 0 16px 40px rgba(239, 68, 68, 0.2);
+  transform: translateY(-8px);
+}
+
+.parl-image-section {
+  width: 100%;
+  height: 220px;
+  background: linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.parl-image-section img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.parl-image-placeholder {
+  font-size: 4rem;
+  color: #EF4444;
+  opacity: 0.5;
+}
+
+.parl-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  background: #EF4444;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.parl-card-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.parl-card-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.parl-card-position {
+  margin: 0;
+  color: #EF4444;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.parl-card-department {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.parl-card-department i {
+  color: #EF4444;
+}
+
+.parl-card-bio {
+  margin: 8px 0 0 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.parl-card-footer {
+  padding-top: 12px;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.parl-contact-badge {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.parl-contact-badge i {
+  color: #EF4444;
+}
+
+.parl-view-btn {
+  padding: 8px 16px;
+  background: #EF4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.parl-view-btn:hover {
+  background: #DC2626;
+  transform: translateX(2px);
+}
+
+/* Parliamentarian Detail Modal */
+
+.parliamentarian-modal {
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.parl-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.parl-image-container {
+  width: 100%;
+  height: 280px;
+  background: linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.parl-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.parl-detail h2 {
+  margin: 0 0 4px 0;
+  color: var(--text-dark);
+  font-size: 1.8rem;
+}
+
+.parl-position {
+  margin: 0 0 4px 0;
+  color: #EF4444;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.parl-department {
+  margin: 0 0 16px 0;
+  color: var(--text-light);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.parl-department i {
+  color: #EF4444;
+}
+
+.parl-bio {
+  border-top: 2px solid #E5E7EB;
+  padding-top: 16px;
+}
+
+.parl-bio h3,
+.parl-portfolio h3,
+.parl-contact h3,
+.parl-achievements h3 {
+  margin: 0 0 12px 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.parl-bio p,
+.parl-portfolio p {
+  margin: 0;
+  color: var(--text-dark);
+  line-height: 1.8;
+}
+
+.parl-portfolio {
+  border-top: 2px solid #E5E7EB;
+  padding-top: 16px;
+}
+
+.parl-contact {
+  border-top: 2px solid #E5E7EB;
+  padding-top: 16px;
+}
+
+.parl-contact p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.parl-contact a {
+  color: #0EA5E9;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.parl-contact a:hover {
+  text-decoration: underline;
+}
+
+.parl-achievements {
+  border-top: 2px solid #E5E7EB;
+  padding-top: 16px;
+}
+
+.parl-achievements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.parl-achievements li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #F3F4F6;
+  border-radius: 8px;
+  color: var(--text-dark);
+  line-height: 1.5;
+}
+
+.parl-achievements i {
+  color: #EF4444;
+  margin-top: 2px;
+  min-width: 20px;
+}
+
+/* Loading and Empty States */
+
+.loading,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.loading i {
+  font-size: 3rem;
+  color: #EF4444;
+  margin-bottom: 16px;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  color: #D1D5DB;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  margin: 8px 0 0 0;
+  color: var(--text-light);
+}
+
+/* Dark Mode */
+
+.dark-mode .parliamentarian-card {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+.dark-mode .parliamentarian-card:hover {
+  border-color: #EF4444;
+  box-shadow: 0 16px 40px rgba(239, 68, 68, 0.15);
+}
+
+.dark-mode .parl-card-footer {
+  border-color: #374151;
+}
+
+.dark-mode .parl-detail h2,
+.dark-mode .parl-position,
+.dark-mode .parl-bio h3,
+.dark-mode .parl-portfolio h3,
+.dark-mode .parl-contact h3,
+.dark-mode .parl-achievements h3 {
+  color: #F3F4F6;
+}
+
+.dark-mode .parl-bio p,
+.dark-mode .parl-portfolio p,
+.dark-mode .parl-department {
+  color: #D1D5DB;
+}
+
+.dark-mode .parl-achievements li {
+  background: #374151;
+  color: #E5E7EB;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .parliamentarians-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .parl-detail h2 {
+    font-size: 1.5rem;
+  }
+
+  .parl-image-container {
+    height: 220px;
+  }
+}

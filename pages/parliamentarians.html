@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faculty Parliamentarians | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/parliamentarians.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <div class="header-box header-with-logos">
+                <a href="/" class="page-back-button" type="button">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="header-logos">
+                    <img src="../fahssa.png" alt="FAHSSA logo" class="header-logo">
+                    <img src="../uniuyo.jpg" alt="University of Uyo logo" class="header-logo">
+                </div>
+                <h1>Faculty Parliamentarians | FAHSSA</h1>
+            </div>
+            <button id="themeToggle" class="theme-button" type="button">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </header>
+
+        <main class="content-card">
+            <section class="parliamentarians-section">
+                <div class="parliamentarians-header">
+                    <h2>Faculty Parliamentarians</h2>
+                    <p>Meet the voices representing the faculty's interests and vision</p>
+                </div>
+
+                <div class="parliamentarians-container">
+                    <div class="parliamentarians-grid" id="parliamentariansList">
+                        <div class="loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Loading parliamentarians...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fa-solid fa-gavel"></i>
+                    <h3>No Parliamentarians Found</h3>
+                    <p>Please check back later</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Parliamentarian Detail Modal -->
+    <div id="parliamentarianModal" class="modal">
+        <div class="modal-content parliamentarian-modal">
+            <button class="modal-close">&times;</button>
+            <div id="modalBody" class="modal-body">
+                <div class="parl-detail">
+                    <div class="parl-image-container">
+                        <img id="parlImage" src="" alt="Parliamentarian" class="parl-image" />
+                    </div>
+                    <h2 id="parlName"></h2>
+                    <p id="parlPosition" class="parl-position"></p>
+                    <p id="parlDepartment" class="parl-department"></p>
+                    
+                    <div class="parl-bio">
+                        <h3>Biography</h3>
+                        <p id="parlBio"></p>
+                    </div>
+
+                    <div class="parl-portfolio">
+                        <h3>Portfolio & Responsibilities</h3>
+                        <p id="parlPortfolio"></p>
+                    </div>
+
+                    <div class="parl-contact">
+                        <h3>Get in Touch</h3>
+                        <p id="parlEmail"></p>
+                        <p id="parlPhone"></p>
+                    </div>
+
+                    <div class="parl-achievements">
+                        <h3>Key Achievements</h3>
+                        <ul id="parlAchievements"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/parliamentarians.js"></script>
+</body>
+</html>

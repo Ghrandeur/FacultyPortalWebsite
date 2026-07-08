@@ -1,0 +1,436 @@
+/* Social Handles Page Styles */
+
+.social-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.social-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.social-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 2rem;
+  color: var(--text-dark);
+}
+
+.social-header p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+/* Main Social Platforms */
+
+.social-platforms,
+.department-social,
+.contact-info-section,
+.quick-links {
+  margin-bottom: 50px;
+}
+
+.social-platforms h3,
+.department-social h3,
+.contact-info-section h3,
+.quick-links h3 {
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.social-grid,
+.dept-social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.social-card {
+  background: white;
+  border: 2px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: all 300ms ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.social-card:hover {
+  border-color: #EC4899;
+  box-shadow: 0 12px 32px rgba(236, 72, 153, 0.2);
+  transform: translateY(-4px);
+}
+
+.social-icon {
+  font-size: 3rem;
+  color: #EC4899;
+}
+
+.social-card h4 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.social-card p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.social-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #EC4899;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 200ms ease;
+  text-decoration: none;
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+}
+
+.social-card-link:hover {
+  background: #DB2777;
+  transform: translateX(2px);
+}
+
+/* Contact Information */
+
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.contact-card {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(59, 130, 246, 0.1));
+  border: 2px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: all 300ms ease;
+}
+
+.contact-card:hover {
+  border-color: #EC4899;
+  box-shadow: 0 12px 32px rgba(236, 72, 153, 0.15);
+}
+
+.contact-card i {
+  font-size: 2.5rem;
+  color: #EC4899;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.contact-card h4 {
+  margin: 0 0 8px 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.contact-card p {
+  margin: 0;
+  color: var(--text-dark);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.contact-card a {
+  color: #0EA5E9;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.contact-card a:hover {
+  text-decoration: underline;
+}
+
+/* Quick Links */
+
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.quick-link-card {
+  background: white;
+  border: 2px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: all 300ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.quick-link-card:hover {
+  border-color: #EC4899;
+  box-shadow: 0 12px 32px rgba(236, 72, 153, 0.2);
+  transform: translateY(-4px);
+}
+
+.quick-link-card i {
+  font-size: 2.5rem;
+  color: #EC4899;
+}
+
+.quick-link-card span {
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.quick-link-card:hover span {
+  color: #EC4899;
+}
+
+/* Platform-specific styling */
+
+.facebook-card {
+  border-color: #1877F2;
+}
+
+.facebook-card .social-icon {
+  color: #1877F2;
+}
+
+.facebook-card:hover {
+  border-color: #1877F2;
+  box-shadow: 0 12px 32px rgba(24, 119, 242, 0.2);
+}
+
+.facebook-card .social-card-link {
+  background: #1877F2;
+}
+
+.facebook-card .social-card-link:hover {
+  background: #145dbf;
+}
+
+.twitter-card {
+  border-color: #1DA1F2;
+}
+
+.twitter-card .social-icon {
+  color: #1DA1F2;
+}
+
+.twitter-card:hover {
+  border-color: #1DA1F2;
+  box-shadow: 0 12px 32px rgba(29, 161, 242, 0.2);
+}
+
+.twitter-card .social-card-link {
+  background: #1DA1F2;
+}
+
+.twitter-card .social-card-link:hover {
+  background: #1a91da;
+}
+
+.instagram-card {
+  border-color: #E1306C;
+}
+
+.instagram-card .social-icon {
+  color: #E1306C;
+}
+
+.instagram-card:hover {
+  border-color: #E1306C;
+  box-shadow: 0 12px 32px rgba(225, 48, 108, 0.2);
+}
+
+.instagram-card .social-card-link {
+  background: #E1306C;
+}
+
+.instagram-card .social-card-link:hover {
+  background: #c41e5e;
+}
+
+.linkedin-card {
+  border-color: #0A66C2;
+}
+
+.linkedin-card .social-icon {
+  color: #0A66C2;
+}
+
+.linkedin-card:hover {
+  border-color: #0A66C2;
+  box-shadow: 0 12px 32px rgba(10, 102, 194, 0.2);
+}
+
+.linkedin-card .social-card-link {
+  background: #0A66C2;
+}
+
+.linkedin-card .social-card-link:hover {
+  background: #084d8e;
+}
+
+.whatsapp-card {
+  border-color: #25D366;
+}
+
+.whatsapp-card .social-icon {
+  color: #25D366;
+}
+
+.whatsapp-card:hover {
+  border-color: #25D366;
+  box-shadow: 0 12px 32px rgba(37, 211, 102, 0.2);
+}
+
+.whatsapp-card .social-card-link {
+  background: #25D366;
+}
+
+.whatsapp-card .social-card-link:hover {
+  background: #1ea94e;
+}
+
+.telegram-card {
+  border-color: #0088cc;
+}
+
+.telegram-card .social-icon {
+  color: #0088cc;
+}
+
+.telegram-card:hover {
+  border-color: #0088cc;
+  box-shadow: 0 12px 32px rgba(0, 136, 204, 0.2);
+}
+
+.telegram-card .social-card-link {
+  background: #0088cc;
+}
+
+.telegram-card .social-card-link:hover {
+  background: #006da3;
+}
+
+/* Loading and Empty States */
+
+.loading,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading i {
+  font-size: 3rem;
+  color: #EC4899;
+  margin-bottom: 16px;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  color: #D1D5DB;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  margin: 8px 0 0 0;
+  color: var(--text-light);
+}
+
+/* Dark Mode */
+
+.dark-mode .social-card,
+.dark-mode .contact-card,
+.dark-mode .quick-link-card {
+  background: #1F2937;
+  border-color: #374151;
+  color: #E5E7EB;
+}
+
+.dark-mode .social-card:hover,
+.dark-mode .contact-card:hover,
+.dark-mode .quick-link-card:hover {
+  border-color: #EC4899;
+  box-shadow: 0 12px 32px rgba(236, 72, 153, 0.15);
+}
+
+.dark-mode .social-card h4,
+.dark-mode .contact-card h4,
+.dark-mode .quick-link-card span,
+.dark-mode .contact-card p {
+  color: #F3F4F6;
+}
+
+.dark-mode .social-card p,
+.dark-mode .contact-card p {
+  color: #D1D5DB;
+}
+
+.dark-mode .contact-card {
+  background: rgba(236, 72, 153, 0.05);
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .social-grid,
+  .dept-social-grid,
+  .contact-cards,
+  .links-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  .social-card,
+  .contact-card,
+  .quick-link-card {
+    padding: 16px;
+  }
+
+  .social-icon {
+    font-size: 2.2rem;
+  }
+
+  .social-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .social-platforms h3,
+  .department-social h3,
+  .contact-info-section h3,
+  .quick-links h3 {
+    font-size: 1.2rem;
+  }
+}
