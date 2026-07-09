@@ -64,6 +64,24 @@
           <a href="#past-questions" class="nav-item" data-section="past-questions">
             <i class="fa-solid fa-file-pdf"></i> Past Questions
           </a>
+          <a href="#newsletter" class="nav-item" data-section="newsletter">
+            <i class="fa-solid fa-newspaper"></i> Newsletter
+          </a>
+          <a href="#marketplace" class="nav-item" data-section="marketplace">
+            <i class="fa-solid fa-store"></i> Marketplace
+          </a>
+          <a href="#departments" class="nav-item" data-section="departments">
+            <i class="fa-solid fa-building-columns"></i> Departments
+          </a>
+          <a href="#parliamentarians" class="nav-item" data-section="parliamentarians">
+            <i class="fa-solid fa-person-chalkboard"></i> Parliamentarians
+          </a>
+          <a href="#social-handles" class="nav-item" data-section="social-handles">
+            <i class="fa-solid fa-hashtag"></i> Social Handles
+          </a>
+          <a href="#companion" class="nav-item" data-section="companion">
+            <i class="fa-solid fa-headset"></i> Companion
+          </a>
         </nav>
       </aside>
 
@@ -88,6 +106,30 @@
             <div class="stat-card">
               <h3>Documents</h3>
               <p id="docsCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Newsletters</h3>
+              <p id="newsletterCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Marketplace</h3>
+              <p id="marketplaceCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Departments</h3>
+              <p id="departmentsCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Parliamentarians</h3>
+              <p id="parliamentarianCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Social Handles</h3>
+              <p id="socialHandlesCount">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Companion Topics</h3>
+              <p id="companionTopicsCount">0</p>
             </div>
           </div>
         </section>
@@ -168,6 +210,70 @@
             <i class="fa-solid fa-plus"></i> Upload Resource
           </button>
           <div id="questionsList" class="items-list"></div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section id="newsletter" class="admin-section">
+          <h2>Manage Newsletters</h2>
+          <button class="add-btn" onclick="openNewsletterForm()">
+            <i class="fa-solid fa-plus"></i> Add Newsletter
+          </button>
+          <div id="newsletterList" class="items-list"></div>
+        </section>
+
+        <!-- Marketplace Section -->
+        <section id="marketplace" class="admin-section">
+          <h2>Manage Marketplace Listings</h2>
+          <button class="add-btn" onclick="openMarketplaceForm()">
+            <i class="fa-solid fa-plus"></i> Add Listing
+          </button>
+          <div id="marketplaceList" class="items-list"></div>
+        </section>
+
+        <!-- Departments Section -->
+        <section id="departments" class="admin-section">
+          <h2>Manage Departments</h2>
+          <button class="add-btn" onclick="openDepartmentForm()">
+            <i class="fa-solid fa-plus"></i> Add Department
+          </button>
+          <div id="departmentsList" class="items-list"></div>
+        </section>
+
+        <!-- Parliamentarians Section -->
+        <section id="parliamentarians" class="admin-section">
+          <h2>Manage Parliamentarians</h2>
+          <button class="add-btn" onclick="openParliamentarianForm()">
+            <i class="fa-solid fa-plus"></i> Add Parliamentarian
+          </button>
+          <div id="parliamentariansList" class="items-list"></div>
+        </section>
+
+        <!-- Social Handles Section -->
+        <section id="social-handles" class="admin-section">
+          <h2>Manage Social Handles</h2>
+          <button class="add-btn" onclick="openSocialHandleForm()">
+            <i class="fa-solid fa-plus"></i> Add Social Handle
+          </button>
+          <div id="socialHandlesList" class="items-list"></div>
+        </section>
+
+        <!-- Companion Section -->
+        <section id="companion" class="admin-section">
+          <h2>Companion Page Content</h2>
+          <div class="items-list">
+            <div class="item-info">
+              <h4>Advisors</h4>
+            </div>
+            <div id="companionAdvisorsList" class="items-list"></div>
+            <div class="item-info">
+              <h4>FAQ</h4>
+            </div>
+            <div id="companionFaqList" class="items-list"></div>
+            <div class="item-info">
+              <h4>Topics</h4>
+            </div>
+            <div id="companionTopicsList" class="items-list"></div>
+          </div>
         </section>
       </main>
     </div>

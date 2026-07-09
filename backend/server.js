@@ -136,6 +136,7 @@ app.use('/api/documents', require('./routes/documents'));
 app.use('/api/team', require('./routes/team'));
 app.use('/api/past-questions', require('./routes/pastQuestions'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api', require('./routes/new-features'));
 
 // Serve main index page
 app.get('/', (req, res) => {

@@ -89,6 +89,24 @@ function loadSectionData(section) {
     case 'faculty':
       loadFacultyInfo();
       break;
+    case 'newsletter':
+      loadNewsletters();
+      break;
+    case 'marketplace':
+      loadMarketplaceItems();
+      break;
+    case 'departments':
+      loadDepartments();
+      break;
+    case 'parliamentarians':
+      loadParliamentarians();
+      break;
+    case 'social-handles':
+      loadSocialHandles();
+      break;
+    case 'companion':
+      loadCompanionContent();
+      break;
   }
 }
 
@@ -98,11 +116,23 @@ async function loadDashboardStats() {
     const gallery = await fetch(`${API_URL}/gallery`).then(r => r.json());
     const leaders = await fetch(`${API_URL}/leaders`).then(r => r.json());
     const documents = await fetch(`${API_URL}/documents`).then(r => r.json());
+    const newsletters = await fetch(`${API_URL}/newsletter/all`).then(r => r.json());
+    const marketplace = await fetch(`${API_URL}/marketplace/items`).then(r => r.json());
+    const departments = await fetch(`${API_URL}/departments/all`).then(r => r.json());
+    const parliamentarians = await fetch(`${API_URL}/parliamentarians/all`).then(r => r.json());
+    const socialHandles = await fetch(`${API_URL}/social-handles/all`).then(r => r.json());
+    const companionTopics = await fetch(`${API_URL}/companion/topics`).then(r => r.json());
 
     document.getElementById('archiveCount').textContent = archive.length;
     document.getElementById('galleryCount').textContent = gallery.length;
     document.getElementById('leadersCount').textContent = leaders.length;
     document.getElementById('docsCount').textContent = documents.length;
+    document.getElementById('newsletterCount').textContent = newsletters.length;
+    document.getElementById('marketplaceCount').textContent = marketplace.length;
+    document.getElementById('departmentsCount').textContent = departments.length;
+    document.getElementById('parliamentarianCount').textContent = parliamentarians.length;
+    document.getElementById('socialHandlesCount').textContent = socialHandles.length;
+    document.getElementById('companionTopicsCount').textContent = companionTopics.length;
   } catch (error) {
     console.error('Error loading stats:', error);
   }
@@ -1369,7 +1399,538 @@ async function deletePastQuestion(id) {
   }
 }
 
-// ===== MODAL FUNCTIONS =====
+// ===== NEW FEATURE FUNCTIONS =====
+async function loadNewsletters() {
+  try {
+    const response = await fetch(`${API_URL}/newsletter/all`);
+    const items = await response.json();
+    const container = document.getElementById('newsletterList');
+    container.innerHTML = '';
+
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${item.title}</h3>
+          <p>${item.preview || item.content?.substring(0, 120) || ''}</p>
+          <p>${item.category || 'General'}</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading newsletters:', error);
+  }
+}
+
+function openNewsletterForm() {
+  currentEditId = null;
+  currentEditData = null;
+  currentForm = 'newsletter';
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <h3>Add Newsletter</h3>
+    <div class="form-group">
+      <label for="newsletterTitle">Title</label>
+      <input type="text" id="newsletterTitle" placeholder="Newsletter title" required>
+    </div>
+    <div class="form-group">
+      <label for="newsletterCategory">Category</label>
+      <input type="text" id="newsletterCategory" placeholder="Category (optional)">
+    </div>
+    <div class="form-group">
+      <label for="newsletterPreview">Preview Text</label>
+      <textarea id="newsletterPreview" rows="3" placeholder="Short preview text"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="newsletterContent">Content</label>
+      <textarea id="newsletterContent" rows="6" placeholder="Full newsletter content" required></textarea>
+    </div>
+  `;
+  openModal();
+}
+
+async function handleNewsletterSubmit() {
+  const title = document.getElementById('newsletterTitle').value;
+  const category = document.getElementById('newsletterCategory').value;
+  const preview = document.getElementById('newsletterPreview').value;
+  const content = document.getElementById('newsletterContent').value;
+
+  try {
+    const response = await fetch(`${API_URL}/newsletter/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ title, category, preview, content })
+    });
+
+    if (response.ok) {
+      closeModal();
+      loadNewsletters();
+      loadDashboardStats();
+      alert('Newsletter created successfully!');
+    } else {
+      const err = await response.json().catch(() => ({}));
+      alert(err.error || 'Error creating newsletter');
+    }
+  } catch (error) {
+    console.error('Error creating newsletter:', error);
+    alert('Error creating newsletter');
+  }
+}
+
+async function loadMarketplaceItems() {
+  try {
+    const response = await fetch(`${API_URL}/marketplace/items`);
+    const items = await response.json();
+    const container = document.getElementById('marketplaceList');
+    container.innerHTML = '';
+
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${item.name}</h3>
+          <p>${item.category} • ₦${item.price}</p>
+          <p>${item.description || ''}</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading marketplace items:', error);
+  }
+}
+
+function openMarketplaceForm() {
+  currentEditId = null;
+  currentEditData = null;
+  currentForm = 'marketplace';
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <h3>Add Marketplace Item</h3>
+    <div class="form-group">
+      <label for="marketplaceName">Name</label>
+      <input type="text" id="marketplaceName" placeholder="Item name" required>
+    </div>
+    <div class="form-group">
+      <label for="marketplaceCategory">Category</label>
+      <input type="text" id="marketplaceCategory" placeholder="Category" required>
+    </div>
+    <div class="form-group">
+      <label for="marketplacePrice">Price</label>
+      <input type="text" id="marketplacePrice" placeholder="Price" required>
+    </div>
+    <div class="form-group">
+      <label for="marketplaceDescription">Description</label>
+      <textarea id="marketplaceDescription" rows="4" placeholder="Item description" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="marketplaceContactPhone">Contact Phone</label>
+      <input type="text" id="marketplaceContactPhone" placeholder="Phone number" required>
+    </div>
+    <div class="form-group">
+      <label for="marketplaceContactWhatsApp">WhatsApp (optional)</label>
+      <input type="text" id="marketplaceContactWhatsApp" placeholder="WhatsApp contact">
+    </div>
+  `;
+  openModal();
+}
+
+async function handleMarketplaceSubmit() {
+  const name = document.getElementById('marketplaceName').value;
+  const category = document.getElementById('marketplaceCategory').value;
+  const price = document.getElementById('marketplacePrice').value;
+  const description = document.getElementById('marketplaceDescription').value;
+  const contactPhone = document.getElementById('marketplaceContactPhone').value;
+  const contactWhatsApp = document.getElementById('marketplaceContactWhatsApp').value;
+
+  try {
+    const response = await fetch(`${API_URL}/marketplace/item/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ name, category, price, description, contactPhone, contactWhatsApp })
+    });
+
+    if (response.ok) {
+      closeModal();
+      loadMarketplaceItems();
+      loadDashboardStats();
+      alert('Marketplace item created successfully!');
+    } else {
+      const err = await response.json().catch(() => ({}));
+      alert(err.error || 'Error creating marketplace item');
+    }
+  } catch (error) {
+    console.error('Error creating marketplace item:', error);
+    alert('Error creating marketplace item');
+  }
+}
+
+async function loadDepartments() {
+  try {
+    const response = await fetch(`${API_URL}/departments/all`);
+    const departments = await response.json();
+    const container = document.getElementById('departmentsList');
+    container.innerHTML = '';
+
+    departments.forEach(dept => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${dept.name}</h3>
+          <p>${dept.hod || 'HOD: N/A'}</p>
+          <p>${dept.location || ''}</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading departments:', error);
+  }
+}
+
+function openDepartmentForm() {
+  currentEditId = null;
+  currentEditData = null;
+  currentForm = 'departments';
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <h3>Add Department</h3>
+    <div class="form-group">
+      <label for="departmentName">Name</label>
+      <input type="text" id="departmentName" placeholder="Department name" required>
+    </div>
+    <div class="form-group">
+      <label for="departmentDescription">Description</label>
+      <textarea id="departmentDescription" rows="4" placeholder="Department description" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="departmentHod">Head of Department</label>
+      <input type="text" id="departmentHod" placeholder="HOD name">
+    </div>
+    <div class="form-group">
+      <label for="departmentContact">Contact</label>
+      <input type="text" id="departmentContact" placeholder="Contact details">
+    </div>
+    <div class="form-group">
+      <label for="departmentLocation">Location</label>
+      <input type="text" id="departmentLocation" placeholder="Location">
+    </div>
+    <div class="form-group">
+      <label for="departmentPrograms">Programs</label>
+      <textarea id="departmentPrograms" rows="3" placeholder="Programs offered, comma separated"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="departmentAchievements">Achievements</label>
+      <textarea id="departmentAchievements" rows="3" placeholder="Key achievements"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="departmentOrder">Display Order</label>
+      <input type="number" id="departmentOrder" placeholder="Order" min="0">
+    </div>
+  `;
+  openModal();
+}
+
+async function handleDepartmentSubmit() {
+  const name = document.getElementById('departmentName').value;
+  const description = document.getElementById('departmentDescription').value;
+  const hod = document.getElementById('departmentHod').value;
+  const contact = document.getElementById('departmentContact').value;
+  const location = document.getElementById('departmentLocation').value;
+  const programs = document.getElementById('departmentPrograms').value
+    .split(/\r?\n|,/) 
+    .map(p => p.trim())
+    .filter(Boolean);
+  const achievements = document.getElementById('departmentAchievements').value;
+  const order = Number(document.getElementById('departmentOrder').value || 0);
+
+  try {
+    const response = await fetch(`${API_URL}/departments/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ name, description, hod, contact, location, programs, achievements, order })
+    });
+
+    if (response.ok) {
+      closeModal();
+      loadDepartments();
+      loadDashboardStats();
+      alert('Department created successfully!');
+    } else {
+      const err = await response.json().catch(() => ({}));
+      alert(err.error || 'Error creating department');
+    }
+  } catch (error) {
+    console.error('Error creating department:', error);
+    alert('Error creating department');
+  }
+}
+
+async function loadParliamentarians() {
+  try {
+    const response = await fetch(`${API_URL}/parliamentarians/all`);
+    const items = await response.json();
+    const container = document.getElementById('parliamentariansList');
+    container.innerHTML = '';
+
+    items.forEach(person => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${person.name}</h3>
+          <p>${person.position}</p>
+          <p>${person.department || ''}</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading parliamentarians:', error);
+  }
+}
+
+function openParliamentarianForm() {
+  currentEditId = null;
+  currentEditData = null;
+  currentForm = 'parliamentarians';
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <h3>Add Parliamentarian</h3>
+    <div class="form-group">
+      <label for="parlName">Name</label>
+      <input type="text" id="parlName" placeholder="Full name" required>
+    </div>
+    <div class="form-group">
+      <label for="parlPosition">Position</label>
+      <input type="text" id="parlPosition" placeholder="Position" required>
+    </div>
+    <div class="form-group">
+      <label for="parlDepartment">Department</label>
+      <input type="text" id="parlDepartment" placeholder="Department">
+    </div>
+    <div class="form-group">
+      <label for="parlBio">Bio</label>
+      <textarea id="parlBio" rows="4" placeholder="Short biography"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="parlPortfolio">Portfolio</label>
+      <input type="text" id="parlPortfolio" placeholder="Portfolio link or summary">
+    </div>
+    <div class="form-group">
+      <label for="parlEmail">Email</label>
+      <input type="email" id="parlEmail" placeholder="Email address">
+    </div>
+    <div class="form-group">
+      <label for="parlPhone">Phone</label>
+      <input type="text" id="parlPhone" placeholder="Phone number">
+    </div>
+    <div class="form-group">
+      <label for="parlOrder">Display Order</label>
+      <input type="number" id="parlOrder" placeholder="Order" min="0">
+    </div>
+  `;
+  openModal();
+}
+
+async function handleParliamentarianSubmit() {
+  const name = document.getElementById('parlName').value;
+  const position = document.getElementById('parlPosition').value;
+  const department = document.getElementById('parlDepartment').value;
+  const bio = document.getElementById('parlBio').value;
+  const portfolio = document.getElementById('parlPortfolio').value;
+  const email = document.getElementById('parlEmail').value;
+  const phone = document.getElementById('parlPhone').value;
+  const order = Number(document.getElementById('parlOrder').value || 0);
+
+  try {
+    const response = await fetch(`${API_URL}/parliamentarians/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ name, position, department, bio, portfolio, email, phone, order })
+    });
+
+    if (response.ok) {
+      closeModal();
+      loadParliamentarians();
+      loadDashboardStats();
+      alert('Parliamentarian created successfully!');
+    } else {
+      const err = await response.json().catch(() => ({}));
+      alert(err.error || 'Error creating parliamentarian');
+    }
+  } catch (error) {
+    console.error('Error creating parliamentarian:', error);
+    alert('Error creating parliamentarian');
+  }
+}
+
+async function loadSocialHandles() {
+  try {
+    const response = await fetch(`${API_URL}/social-handles/all`);
+    const items = await response.json();
+    const container = document.getElementById('socialHandlesList');
+    container.innerHTML = '';
+
+    items.forEach(handle => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${handle.name}</h3>
+          <p>${handle.platform}</p>
+          <p>${handle.handle || ''}</p>
+          <p>${handle.url || ''}</p>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading social handles:', error);
+  }
+}
+
+function openSocialHandleForm() {
+  currentEditId = null;
+  currentEditData = null;
+  currentForm = 'social-handles';
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <h3>Add Social Handle</h3>
+    <div class="form-group">
+      <label for="socialName">Name</label>
+      <input type="text" id="socialName" placeholder="Name" required>
+    </div>
+    <div class="form-group">
+      <label for="socialPlatform">Platform</label>
+      <input type="text" id="socialPlatform" placeholder="Platform" required>
+    </div>
+    <div class="form-group">
+      <label for="socialHandle">Handle</label>
+      <input type="text" id="socialHandle" placeholder="Handle">
+    </div>
+    <div class="form-group">
+      <label for="socialUrl">URL</label>
+      <input type="url" id="socialUrl" placeholder="https://example.com">
+    </div>
+    <div class="form-group">
+      <label for="socialType">Type</label>
+      <input type="text" id="socialType" placeholder="Type (e.g. main)">
+    </div>
+  `;
+  openModal();
+}
+
+async function handleSocialHandleSubmit() {
+  const name = document.getElementById('socialName').value;
+  const platform = document.getElementById('socialPlatform').value;
+  const handle = document.getElementById('socialHandle').value;
+  const url = document.getElementById('socialUrl').value;
+  const type = document.getElementById('socialType').value;
+
+  try {
+    const response = await fetch(`${API_URL}/social-handles/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ name, platform, handle, url, type })
+    });
+
+    if (response.ok) {
+      closeModal();
+      loadSocialHandles();
+      loadDashboardStats();
+      alert('Social handle created successfully!');
+    } else {
+      const err = await response.json().catch(() => ({}));
+      alert(err.error || 'Error creating social handle');
+    }
+  } catch (error) {
+    console.error('Error creating social handle:', error);
+    alert('Error creating social handle');
+  }
+}
+
+async function loadCompanionContent() {
+  try {
+    const [advisorsRes, faqRes, topicsRes] = await Promise.all([
+      fetch(`${API_URL}/companion/advisors`),
+      fetch(`${API_URL}/companion/faq`),
+      fetch(`${API_URL}/companion/topics`)
+    ]);
+
+    const advisors = await advisorsRes.json();
+    const faq = await faqRes.json();
+    const topics = await topicsRes.json();
+
+    const advisorContainer = document.getElementById('companionAdvisorsList');
+    const faqContainer = document.getElementById('companionFaqList');
+    const topicContainer = document.getElementById('companionTopicsList');
+
+    advisorContainer.innerHTML = '';
+    faqContainer.innerHTML = '';
+    topicContainer.innerHTML = '';
+
+    advisors.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${item.name || item.title || 'Advisor'}</h3>
+          <p>${item.title || item.position || ''}</p>
+          <p>${item.bio || item.description || ''}</p>
+        </div>
+      `;
+      advisorContainer.appendChild(div);
+    });
+
+    faq.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${item.question || item.title || 'FAQ'}</h3>
+          <p>${item.answer || item.content || ''}</p>
+        </div>
+      `;
+      faqContainer.appendChild(div);
+    });
+
+    topics.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-info">
+          <h3>${item.title || 'Topic'}</h3>
+          <p>${item.category || ''}</p>
+          <p>${item.preview || item.content || ''}</p>
+        </div>
+      `;
+      topicContainer.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading companion content:', error);
+  }
+}
+
 function openModal() {
   document.getElementById('modal').classList.add('show');
   
@@ -1388,6 +1949,16 @@ function openModal() {
       await handleTeamSubmit();
     } else if (currentForm === 'past-questions') {
       await handleQuestionSubmit();
+    } else if (currentForm === 'newsletter') {
+      await handleNewsletterSubmit();
+    } else if (currentForm === 'marketplace') {
+      await handleMarketplaceSubmit();
+    } else if (currentForm === 'departments') {
+      await handleDepartmentSubmit();
+    } else if (currentForm === 'parliamentarians') {
+      await handleParliamentarianSubmit();
+    } else if (currentForm === 'social-handles') {
+      await handleSocialHandleSubmit();
     }
   };
 }
@@ -1407,6 +1978,11 @@ window.openLeaderForm = openLeaderForm;
 window.openDocumentForm = openDocumentForm;
 window.openTeamForm = openTeamForm;
 window.openQuestionForm = openQuestionForm;
+window.openNewsletterForm = openNewsletterForm;
+window.openMarketplaceForm = openMarketplaceForm;
+window.openDepartmentForm = openDepartmentForm;
+window.openParliamentarianForm = openParliamentarianForm;
+window.openSocialHandleForm = openSocialHandleForm;
 window.editArchiveEvent = editArchiveEvent;
 window.deleteArchiveEvent = deleteArchiveEvent;
 window.editGalleryPhoto = editGalleryPhoto;

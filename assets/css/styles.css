@@ -235,12 +235,14 @@ select {
   /* responsive heading size so titles don't overflow on small screens */
   font-size: clamp(1.6rem, 3.2vw, 2.6rem);
   line-height: 1.04;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-/* leave room on the right inside header box for back button */
-.header-with-logos h1 {
+  /* prefer hyphenation at syllable boundaries, avoid breaking inside words */
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  /* ensure words break only at allowed points (spaces or syllable hyphenation) */
+  overflow-wrap: normal;
+  word-break: normal;
+  /* leave room on the right inside header box for back button */
   padding-right: 72px;
 }
 
