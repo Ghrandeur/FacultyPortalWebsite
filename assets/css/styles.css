@@ -57,6 +57,24 @@ select {
   min-width: 0;
 }
 
+.topbar .page-back-button {
+  position: absolute;
+  top: 50%;
+  right: 86px;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+
+@media (max-width: 720px) {
+  .topbar .page-back-button {
+    position: static;
+    transform: none;
+    right: auto;
+    width: 52px;
+    margin-bottom: 8px;
+  }
+}
+
 .page-nav-button {
   width: 56px;
   height: 56px;
