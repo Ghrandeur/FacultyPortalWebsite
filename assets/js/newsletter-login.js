@@ -13,6 +13,20 @@ const form = document.getElementById("newsletterLoginForm");
 const errorMessage = document.getElementById("errorMessage");
 const successMessage = document.getElementById("successMessage");
 
+// Fail fast if API_URL is not configured correctly on the page
+if (!API_URL || typeof API_URL !== 'string' || API_URL.indexOf('undefined') !== -1) {
+  console.error('Configuration error: API_URL is not set or invalid:', API_URL);
+  if (errorMessage) {
+    errorMessage.textContent = 'Configuration error: API URL not set. Please contact the site administrator.';
+    errorMessage.style.display = 'block';
+  }
+  const submitBtn = form?.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Unavailable';
+  }
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
