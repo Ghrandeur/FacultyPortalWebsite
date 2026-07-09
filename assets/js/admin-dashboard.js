@@ -1416,6 +1416,10 @@ async function loadNewsletters() {
           <p>${item.preview || item.content?.substring(0, 120) || ''}</p>
           <p>${item.category || 'General'}</p>
         </div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="editNewsletter('${item.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteNewsletter('${item.id}')">Delete</button>
+        </div>
       `;
       container.appendChild(div);
     });
@@ -1458,8 +1462,11 @@ async function handleNewsletterSubmit() {
   const content = document.getElementById('newsletterContent').value;
 
   try {
-    const response = await fetch(`${API_URL}/newsletter/create`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/newsletter/${currentEditId}` : `${API_URL}/newsletter/create`;
+    
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -1471,16 +1478,81 @@ async function handleNewsletterSubmit() {
       closeModal();
       loadNewsletters();
       loadDashboardStats();
-      alert('Newsletter created successfully!');
+      alert(currentEditId ? 'Newsletter updated successfully!' : 'Newsletter created successfully!');
     } else {
       const err = await response.json().catch(() => ({}));
-      alert(err.error || 'Error creating newsletter');
+      alert(err.error || 'Error saving newsletter');
     }
   } catch (error) {
-    console.error('Error creating newsletter:', error);
-    alert('Error creating newsletter');
+    console.error('Error saving newsletter:', error);
+    alert(`Error saving newsletter: ${error.message}`);
   }
 }
+
+async function editNewsletter(id) {
+  try {
+    const response = await fetch(`${API_URL}/newsletter/${id}`);
+    if (!response.ok) {
+      alert('Failed to load newsletter for editing');
+      return;
+    }
+    
+    const item = await response.json();
+    currentEditId = id;
+    currentEditData = item;
+    currentForm = 'newsletter';
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Newsletter</h3>
+      <div class="form-group">
+        <label for="newsletterTitle">Title</label>
+        <input type="text" id="newsletterTitle" value="${item.title || ''}" placeholder="Newsletter title" required>
+      </div>
+      <div class="form-group">
+        <label for="newsletterCategory">Category</label>
+        <input type="text" id="newsletterCategory" value="${item.category || ''}" placeholder="Category (optional)">
+      </div>
+      <div class="form-group">
+        <label for="newsletterPreview">Preview Text</label>
+        <textarea id="newsletterPreview" rows="3" placeholder="Short preview text">${item.preview || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="newsletterContent">Content</label>
+        <textarea id="newsletterContent" rows="6" placeholder="Full newsletter content" required>${item.content || ''}</textarea>
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading newsletter for edit:', error);
+    alert('Error loading newsletter for editing');
+  }
+}
+
+async function deleteNewsletter(id) {
+  if (!confirm('Are you sure you want to delete this newsletter?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/newsletter/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadNewsletters();
+      loadDashboardStats();
+      alert('Newsletter deleted successfully!');
+    } else {
+      alert('Failed to delete newsletter');
+    }
+  } catch (error) {
+    console.error('Error deleting newsletter:', error);
+    alert(`Error deleting newsletter: ${error.message}`);
+  }
+}
+
 
 async function loadMarketplaceItems() {
   try {
@@ -1497,6 +1569,10 @@ async function loadMarketplaceItems() {
           <h3>${item.name}</h3>
           <p>${item.category} • ₦${item.price}</p>
           <p>${item.description || ''}</p>
+        </div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="editMarketplaceItem('${item.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteMarketplaceItem('${item.id}')">Delete</button>
         </div>
       `;
       container.appendChild(div);
@@ -1550,8 +1626,11 @@ async function handleMarketplaceSubmit() {
   const contactWhatsApp = document.getElementById('marketplaceContactWhatsApp').value;
 
   try {
-    const response = await fetch(`${API_URL}/marketplace/item/create`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/marketplace/${currentEditId}` : `${API_URL}/marketplace/item/create`;
+    
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -1563,14 +1642,86 @@ async function handleMarketplaceSubmit() {
       closeModal();
       loadMarketplaceItems();
       loadDashboardStats();
-      alert('Marketplace item created successfully!');
+      alert(currentEditId ? 'Marketplace item updated successfully!' : 'Marketplace item created successfully!');
     } else {
       const err = await response.json().catch(() => ({}));
-      alert(err.error || 'Error creating marketplace item');
+      alert(err.error || 'Error saving marketplace item');
     }
   } catch (error) {
-    console.error('Error creating marketplace item:', error);
-    alert('Error creating marketplace item');
+    console.error('Error saving marketplace item:', error);
+    alert(`Error saving marketplace item: ${error.message}`);
+  }
+}
+
+async function editMarketplaceItem(id) {
+  try {
+    const response = await fetch(`${API_URL}/marketplace/${id}`);
+    if (!response.ok) {
+      alert('Failed to load marketplace item for editing');
+      return;
+    }
+    
+    const item = await response.json();
+    currentEditId = id;
+    currentEditData = item;
+    currentForm = 'marketplace';
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Marketplace Item</h3>
+      <div class="form-group">
+        <label for="marketplaceName">Name</label>
+        <input type="text" id="marketplaceName" value="${item.name || ''}" placeholder="Item name" required>
+      </div>
+      <div class="form-group">
+        <label for="marketplaceCategory">Category</label>
+        <input type="text" id="marketplaceCategory" value="${item.category || ''}" placeholder="Category" required>
+      </div>
+      <div class="form-group">
+        <label for="marketplacePrice">Price</label>
+        <input type="text" id="marketplacePrice" value="${item.price || ''}" placeholder="Price" required>
+      </div>
+      <div class="form-group">
+        <label for="marketplaceDescription">Description</label>
+        <textarea id="marketplaceDescription" rows="4" placeholder="Item description" required>${item.description || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="marketplaceContactPhone">Contact Phone</label>
+        <input type="text" id="marketplaceContactPhone" value="${item.contactPhone || ''}" placeholder="Phone number" required>
+      </div>
+      <div class="form-group">
+        <label for="marketplaceContactWhatsApp">WhatsApp (optional)</label>
+        <input type="text" id="marketplaceContactWhatsApp" value="${item.contactWhatsApp || ''}" placeholder="WhatsApp contact">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading marketplace item for edit:', error);
+    alert('Error loading marketplace item for editing');
+  }
+}
+
+async function deleteMarketplaceItem(id) {
+  if (!confirm('Are you sure you want to delete this marketplace item?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/marketplace/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadMarketplaceItems();
+      loadDashboardStats();
+      alert('Marketplace item deleted successfully!');
+    } else {
+      alert('Failed to delete marketplace item');
+    }
+  } catch (error) {
+    console.error('Error deleting marketplace item:', error);
+    alert(`Error deleting marketplace item: ${error.message}`);
   }
 }
 
@@ -1589,6 +1740,10 @@ async function loadDepartments() {
           <h3>${dept.name}</h3>
           <p>${dept.hod || 'HOD: N/A'}</p>
           <p>${dept.location || ''}</p>
+        </div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="editDepartment('${dept.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteDepartment('${dept.id}')">Delete</button>
         </div>
       `;
       container.appendChild(div);
@@ -1655,8 +1810,11 @@ async function handleDepartmentSubmit() {
   const order = Number(document.getElementById('departmentOrder').value || 0);
 
   try {
-    const response = await fetch(`${API_URL}/departments/create`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/departments/${currentEditId}` : `${API_URL}/departments/create`;
+    
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -1668,15 +1826,95 @@ async function handleDepartmentSubmit() {
       closeModal();
       loadDepartments();
       loadDashboardStats();
-      alert('Department created successfully!');
+      alert(currentEditId ? 'Department updated successfully!' : 'Department created successfully!');
     } else {
       const err = await response.json().catch(() => ({}));
-      console.error('Department create failed:', response.status, err);
-      alert(err.error || `Error creating department (${response.status})`);
+      console.error('Department save failed:', response.status, err);
+      alert(err.error || `Error saving department (${response.status})`);
     }
   } catch (error) {
-    console.error('Error creating department:', error);
-    alert('Error creating department');
+    console.error('Error saving department:', error);
+    alert(`Error saving department: ${error.message}`);
+  }
+}
+
+async function editDepartment(id) {
+  try {
+    const response = await fetch(`${API_URL}/departments/${id}`);
+    if (!response.ok) {
+      alert('Failed to load department for editing');
+      return;
+    }
+    
+    const dept = await response.json();
+    currentEditId = id;
+    currentEditData = dept;
+    currentForm = 'departments';
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Department</h3>
+      <div class="form-group">
+        <label for="departmentName">Name</label>
+        <input type="text" id="departmentName" value="${dept.name || ''}" placeholder="Department name" required>
+      </div>
+      <div class="form-group">
+        <label for="departmentDescription">Description</label>
+        <textarea id="departmentDescription" rows="4" placeholder="Department description" required>${dept.description || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="departmentHod">Head of Department</label>
+        <input type="text" id="departmentHod" value="${dept.hod || ''}" placeholder="HOD name">
+      </div>
+      <div class="form-group">
+        <label for="departmentContact">Contact</label>
+        <input type="text" id="departmentContact" value="${dept.contact || ''}" placeholder="Contact details">
+      </div>
+      <div class="form-group">
+        <label for="departmentLocation">Location</label>
+        <input type="text" id="departmentLocation" value="${dept.location || ''}" placeholder="Location">
+      </div>
+      <div class="form-group">
+        <label for="departmentPrograms">Programs</label>
+        <textarea id="departmentPrograms" rows="3" placeholder="Programs offered, comma separated">${Array.isArray(dept.programs) ? dept.programs.join(', ') : dept.programs || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="departmentAchievements">Achievements</label>
+        <textarea id="departmentAchievements" rows="3" placeholder="Key achievements">${dept.achievements || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="departmentOrder">Display Order</label>
+        <input type="number" id="departmentOrder" value="${dept.order || 0}" placeholder="Order" min="0">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading department for edit:', error);
+    alert('Error loading department for editing');
+  }
+}
+
+async function deleteDepartment(id) {
+  if (!confirm('Are you sure you want to delete this department?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/departments/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadDepartments();
+      loadDashboardStats();
+      alert('Department deleted successfully!');
+    } else {
+      alert('Failed to delete department');
+    }
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    alert(`Error deleting department: ${error.message}`);
   }
 }
 
@@ -1695,6 +1933,10 @@ async function loadParliamentarians() {
           <h3>${person.name}</h3>
           <p>${person.position}</p>
           <p>${person.department || ''}</p>
+        </div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="editParliamentarian('${person.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteParliamentarian('${person.id}')">Delete</button>
         </div>
       `;
       container.appendChild(div);
@@ -1758,8 +2000,11 @@ async function handleParliamentarianSubmit() {
   const order = Number(document.getElementById('parlOrder').value || 0);
 
   try {
-    const response = await fetch(`${API_URL}/parliamentarians/create`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const url = currentEditId ? `${API_URL}/parliamentarians/${currentEditId}` : `${API_URL}/parliamentarians/create`;
+    
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -1771,14 +2016,94 @@ async function handleParliamentarianSubmit() {
       closeModal();
       loadParliamentarians();
       loadDashboardStats();
-      alert('Parliamentarian created successfully!');
+      alert(currentEditId ? 'Parliamentarian updated successfully!' : 'Parliamentarian created successfully!');
     } else {
       const err = await response.json().catch(() => ({}));
-      alert(err.error || 'Error creating parliamentarian');
+      alert(err.error || 'Error saving parliamentarian');
     }
   } catch (error) {
-    console.error('Error creating parliamentarian:', error);
-    alert('Error creating parliamentarian');
+    console.error('Error saving parliamentarian:', error);
+    alert(`Error saving parliamentarian: ${error.message}`);
+  }
+}
+
+async function editParliamentarian(id) {
+  try {
+    const response = await fetch(`${API_URL}/parliamentarians/${id}`);
+    if (!response.ok) {
+      alert('Failed to load parliamentarian for editing');
+      return;
+    }
+    
+    const person = await response.json();
+    currentEditId = id;
+    currentEditData = person;
+    currentForm = 'parliamentarians';
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Parliamentarian</h3>
+      <div class="form-group">
+        <label for="parlName">Name</label>
+        <input type="text" id="parlName" value="${person.name || ''}" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label for="parlPosition">Position</label>
+        <input type="text" id="parlPosition" value="${person.position || ''}" placeholder="Position" required>
+      </div>
+      <div class="form-group">
+        <label for="parlDepartment">Department</label>
+        <input type="text" id="parlDepartment" value="${person.department || ''}" placeholder="Department">
+      </div>
+      <div class="form-group">
+        <label for="parlBio">Bio</label>
+        <textarea id="parlBio" rows="4" placeholder="Short biography">${person.bio || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="parlPortfolio">Portfolio</label>
+        <input type="text" id="parlPortfolio" value="${person.portfolio || ''}" placeholder="Portfolio link or summary">
+      </div>
+      <div class="form-group">
+        <label for="parlEmail">Email</label>
+        <input type="email" id="parlEmail" value="${person.email || ''}" placeholder="Email address">
+      </div>
+      <div class="form-group">
+        <label for="parlPhone">Phone</label>
+        <input type="text" id="parlPhone" value="${person.phone || ''}" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label for="parlOrder">Display Order</label>
+        <input type="number" id="parlOrder" value="${person.order || 0}" placeholder="Order" min="0">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading parliamentarian for edit:', error);
+    alert('Error loading parliamentarian for editing');
+  }
+}
+
+async function deleteParliamentarian(id) {
+  if (!confirm('Are you sure you want to delete this parliamentarian?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/parliamentarians/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadParliamentarians();
+      loadDashboardStats();
+      alert('Parliamentarian deleted successfully!');
+    } else {
+      alert('Failed to delete parliamentarian');
+    }
+  } catch (error) {
+    console.error('Error deleting parliamentarian:', error);
+    alert(`Error deleting parliamentarian: ${error.message}`);
   }
 }
 
@@ -1798,6 +2123,10 @@ async function loadSocialHandles() {
           <p>${handle.platform}</p>
           <p>${handle.handle || ''}</p>
           <p>${handle.url || ''}</p>
+        </div>
+        <div class="item-actions">
+          <button class="edit-btn" onclick="editSocialHandle('${handle.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteSocialHandle('${handle.id}')">Delete</button>
         </div>
       `;
       container.appendChild(div);
@@ -1846,8 +2175,11 @@ async function handleSocialHandleSubmit() {
   const type = document.getElementById('socialType').value;
 
   try {
-    const response = await fetch(`${API_URL}/social-handles/create`, {
-      method: 'POST',
+    const method = currentEditId ? 'PUT' : 'POST';
+    const apiUrl = currentEditId ? `${API_URL}/social-handles/${currentEditId}` : `${API_URL}/social-handles/create`;
+    
+    const response = await fetch(apiUrl, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
@@ -1859,14 +2191,82 @@ async function handleSocialHandleSubmit() {
       closeModal();
       loadSocialHandles();
       loadDashboardStats();
-      alert('Social handle created successfully!');
+      alert(currentEditId ? 'Social handle updated successfully!' : 'Social handle created successfully!');
     } else {
       const err = await response.json().catch(() => ({}));
-      alert(err.error || 'Error creating social handle');
+      alert(err.error || 'Error saving social handle');
     }
   } catch (error) {
-    console.error('Error creating social handle:', error);
-    alert('Error creating social handle');
+    console.error('Error saving social handle:', error);
+    alert(`Error saving social handle: ${error.message}`);
+  }
+}
+
+async function editSocialHandle(id) {
+  try {
+    const response = await fetch(`${API_URL}/social-handles/${id}`);
+    if (!response.ok) {
+      alert('Failed to load social handle for editing');
+      return;
+    }
+    
+    const handle = await response.json();
+    currentEditId = id;
+    currentEditData = handle;
+    currentForm = 'social-handles';
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+      <h3>Edit Social Handle</h3>
+      <div class="form-group">
+        <label for="socialName">Name</label>
+        <input type="text" id="socialName" value="${handle.name || ''}" placeholder="Name" required>
+      </div>
+      <div class="form-group">
+        <label for="socialPlatform">Platform</label>
+        <input type="text" id="socialPlatform" value="${handle.platform || ''}" placeholder="Platform" required>
+      </div>
+      <div class="form-group">
+        <label for="socialHandle">Handle</label>
+        <input type="text" id="socialHandle" value="${handle.handle || ''}" placeholder="Handle">
+      </div>
+      <div class="form-group">
+        <label for="socialUrl">URL</label>
+        <input type="url" id="socialUrl" value="${handle.url || ''}" placeholder="https://example.com">
+      </div>
+      <div class="form-group">
+        <label for="socialType">Type</label>
+        <input type="text" id="socialType" value="${handle.type || ''}" placeholder="Type (e.g. main)">
+      </div>
+    `;
+    openModal();
+  } catch (error) {
+    console.error('Error loading social handle for edit:', error);
+    alert('Error loading social handle for editing');
+  }
+}
+
+async function deleteSocialHandle(id) {
+  if (!confirm('Are you sure you want to delete this social handle?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/social-handles/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadSocialHandles();
+      loadDashboardStats();
+      alert('Social handle deleted successfully!');
+    } else {
+      alert('Failed to delete social handle');
+    }
+  } catch (error) {
+    console.error('Error deleting social handle:', error);
+    alert(`Error deleting social handle: ${error.message}`);
   }
 }
 
@@ -1924,11 +2324,38 @@ async function loadCompanionContent() {
           <p>${item.category || ''}</p>
           <p>${item.preview || item.content || ''}</p>
         </div>
+        <div class="item-actions">
+          <button class="delete-btn" onclick="deleteCompanionTopic('${item.id}')">Delete</button>
+        </div>
       `;
       topicContainer.appendChild(div);
     });
   } catch (error) {
     console.error('Error loading companion content:', error);
+  }
+}
+
+async function deleteCompanionTopic(id) {
+  if (!confirm('Are you sure you want to delete this topic?')) return;
+
+  try {
+    const response = await fetch(`${API_URL}/companion/topics/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (response.ok) {
+      loadCompanionContent();
+      loadDashboardStats();
+      alert('Topic deleted successfully!');
+    } else {
+      alert('Failed to delete topic');
+    }
+  } catch (error) {
+    console.error('Error deleting topic:', error);
+    alert(`Error deleting topic: ${error.message}`);
   }
 }
 
@@ -1996,3 +2423,15 @@ window.editTeamMember = editTeamMember;
 window.deleteTeamMember = deleteTeamMember;
 window.editPastQuestion = editPastQuestion;
 window.deletePastQuestion = deletePastQuestion;
+// New features exports
+window.editNewsletter = editNewsletter;
+window.deleteNewsletter = deleteNewsletter;
+window.editMarketplaceItem = editMarketplaceItem;
+window.deleteMarketplaceItem = deleteMarketplaceItem;
+window.editDepartment = editDepartment;
+window.deleteDepartment = deleteDepartment;
+window.editParliamentarian = editParliamentarian;
+window.deleteParliamentarian = deleteParliamentarian;
+window.editSocialHandle = editSocialHandle;
+window.deleteSocialHandle = deleteSocialHandle;
+window.deleteCompanionTopic = deleteCompanionTopic;

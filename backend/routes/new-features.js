@@ -84,6 +84,50 @@ router.post("/newsletter/create", async (req, res) => {
   }
 });
 
+// Get single newsletter
+router.get("/newsletter/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("newsletters").doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Newsletter not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("Get newsletter error:", error);
+    res.status(500).json({ error: error.message || "Failed to get newsletter" });
+  }
+});
+
+// Update newsletter (Admin)
+router.put("/newsletter/:id", async (req, res) => {
+  try {
+    const { title, content, category, preview } = req.body;
+    const updateData = {};
+    
+    if (title !== undefined) updateData.title = title;
+    if (content !== undefined) updateData.content = content;
+    if (category !== undefined) updateData.category = category;
+    if (preview !== undefined) updateData.preview = preview;
+    
+    await db.collection("newsletters").doc(req.params.id).update(updateData);
+    res.json({ success: true, message: "Newsletter updated" });
+  } catch (error) {
+    console.error("Update newsletter error:", error);
+    res.status(500).json({ error: error.message || "Failed to update newsletter" });
+  }
+});
+
+// Delete newsletter (Admin)
+router.delete("/newsletter/:id", async (req, res) => {
+  try {
+    await db.collection("newsletters").doc(req.params.id).delete();
+    res.json({ success: true, message: "Newsletter deleted" });
+  } catch (error) {
+    console.error("Delete newsletter error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete newsletter" });
+  }
+});
+
 // ==================== MARKETPLACE ROUTES ====================
 
 // Get all marketplace items
@@ -125,6 +169,52 @@ router.post("/marketplace/item/create", async (req, res) => {
   }
 });
 
+// Get single marketplace item
+router.get("/marketplace/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("marketplace_items").doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("Get marketplace item error:", error);
+    res.status(500).json({ error: error.message || "Failed to get item" });
+  }
+});
+
+// Update marketplace item (Admin)
+router.put("/marketplace/:id", async (req, res) => {
+  try {
+    const { name, category, price, description, contactPhone, contactWhatsApp } = req.body;
+    const updateData = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (category !== undefined) updateData.category = category;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    if (description !== undefined) updateData.description = description;
+    if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
+    if (contactWhatsApp !== undefined) updateData.contactWhatsApp = contactWhatsApp;
+    
+    await db.collection("marketplace_items").doc(req.params.id).update(updateData);
+    res.json({ success: true, message: "Item updated" });
+  } catch (error) {
+    console.error("Update marketplace item error:", error);
+    res.status(500).json({ error: error.message || "Failed to update item" });
+  }
+});
+
+// Delete marketplace item (Admin)
+router.delete("/marketplace/:id", async (req, res) => {
+  try {
+    await db.collection("marketplace_items").doc(req.params.id).delete();
+    res.json({ success: true, message: "Item deleted" });
+  } catch (error) {
+    console.error("Delete marketplace item error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete item" });
+  }
+});
+
 // ==================== DEPARTMENTS ROUTES ====================
 
 // Get all departments
@@ -163,6 +253,54 @@ router.post("/departments/create", async (req, res) => {
   } catch (error) {
     console.error("Create department error:", error);
     res.status(500).json({ error: error.message || "Failed to create department" });
+  }
+});
+
+// Get single department
+router.get("/departments/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("departments").doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("Get department error:", error);
+    res.status(500).json({ error: error.message || "Failed to get department" });
+  }
+});
+
+// Update department (Admin)
+router.put("/departments/:id", async (req, res) => {
+  try {
+    const { name, description, hod, contact, location, programs, achievements, order } = req.body;
+    const updateData = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (hod !== undefined) updateData.hod = hod;
+    if (contact !== undefined) updateData.contact = contact;
+    if (location !== undefined) updateData.location = location;
+    if (programs !== undefined) updateData.programs = programs;
+    if (achievements !== undefined) updateData.achievements = achievements;
+    if (order !== undefined) updateData.order = order;
+    
+    await db.collection("departments").doc(req.params.id).update(updateData);
+    res.json({ success: true, message: "Department updated" });
+  } catch (error) {
+    console.error("Update department error:", error);
+    res.status(500).json({ error: error.message || "Failed to update department" });
+  }
+});
+
+// Delete department (Admin)
+router.delete("/departments/:id", async (req, res) => {
+  try {
+    await db.collection("departments").doc(req.params.id).delete();
+    res.json({ success: true, message: "Department deleted" });
+  } catch (error) {
+    console.error("Delete department error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete department" });
   }
 });
 
@@ -208,6 +346,55 @@ router.post("/parliamentarians/create", async (req, res) => {
   }
 });
 
+// Get single parliamentarian
+router.get("/parliamentarians/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("parliamentarians").doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Parliamentarian not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("Get parliamentarian error:", error);
+    res.status(500).json({ error: error.message || "Failed to get parliamentarian" });
+  }
+});
+
+// Update parliamentarian (Admin)
+router.put("/parliamentarians/:id", async (req, res) => {
+  try {
+    const { name, position, department, bio, portfolio, email, phone, achievements, order } = req.body;
+    const updateData = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (position !== undefined) updateData.position = position;
+    if (department !== undefined) updateData.department = department;
+    if (bio !== undefined) updateData.bio = bio;
+    if (portfolio !== undefined) updateData.portfolio = portfolio;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (achievements !== undefined) updateData.achievements = achievements;
+    if (order !== undefined) updateData.order = order;
+    
+    await db.collection("parliamentarians").doc(req.params.id).update(updateData);
+    res.json({ success: true, message: "Parliamentarian updated" });
+  } catch (error) {
+    console.error("Update parliamentarian error:", error);
+    res.status(500).json({ error: error.message || "Failed to update parliamentarian" });
+  }
+});
+
+// Delete parliamentarian (Admin)
+router.delete("/parliamentarians/:id", async (req, res) => {
+  try {
+    await db.collection("parliamentarians").doc(req.params.id).delete();
+    res.json({ success: true, message: "Parliamentarian deleted" });
+  } catch (error) {
+    console.error("Delete parliamentarian error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete parliamentarian" });
+  }
+});
+
 // ==================== SOCIAL HANDLES ROUTES ====================
 
 // Get all social handles
@@ -242,6 +429,51 @@ router.post("/social-handles/create", async (req, res) => {
   } catch (error) {
     console.error("Create social handle error:", error);
     res.status(500).json({ error: error.message || "Failed to create social handle" });
+  }
+});
+
+// Get single social handle
+router.get("/social-handles/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("social_handles").doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Social handle not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("Get social handle error:", error);
+    res.status(500).json({ error: error.message || "Failed to get social handle" });
+  }
+});
+
+// Update social handle (Admin)
+router.put("/social-handles/:id", async (req, res) => {
+  try {
+    const { name, platform, handle, url, type } = req.body;
+    const updateData = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (platform !== undefined) updateData.platform = platform;
+    if (handle !== undefined) updateData.handle = handle;
+    if (url !== undefined) updateData.url = url;
+    if (type !== undefined) updateData.type = type;
+    
+    await db.collection("social_handles").doc(req.params.id).update(updateData);
+    res.json({ success: true, message: "Social handle updated" });
+  } catch (error) {
+    console.error("Update social handle error:", error);
+    res.status(500).json({ error: error.message || "Failed to update social handle" });
+  }
+});
+
+// Delete social handle (Admin)
+router.delete("/social-handles/:id", async (req, res) => {
+  try {
+    await db.collection("social_handles").doc(req.params.id).delete();
+    res.json({ success: true, message: "Social handle deleted" });
+  } catch (error) {
+    console.error("Delete social handle error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete social handle" });
   }
 });
 
@@ -308,6 +540,31 @@ router.get("/companion/topics", async (req, res) => {
   } catch (error) {
     console.error("Get topics error:", error);
     res.status(500).json({ error: error.message || "Failed to get topics" });
+  }
+});
+
+// Get single companion topic
+router.get("/companion/topics/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("companion_topics").doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Topic not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("Get topic error:", error);
+    res.status(500).json({ error: error.message || "Failed to get topic" });
+  }
+});
+
+// Delete companion topic (Admin - for moderation)
+router.delete("/companion/topics/:id", async (req, res) => {
+  try {
+    await db.collection("companion_topics").doc(req.params.id).delete();
+    res.json({ success: true, message: "Topic deleted" });
+  } catch (error) {
+    console.error("Delete topic error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete topic" });
   }
 });
 
