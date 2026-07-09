@@ -7,6 +7,10 @@ import {
   orderBy,
   getDocs,
   serverTimestamp,
+  where,
+  doc,
+  updateDoc,
+  increment,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -169,9 +173,16 @@ function displayTopics() {
         <span><i class="fa-solid fa-comment"></i> ${replies} replies</span>
         <span><i class="fa-solid fa-calendar"></i> ${date}</span>
       </div>
+      <div class="topic-actions">
+        <button class="topic-reply-btn" type="button">Reply</button>
+      </div>
     `;
 
     card.addEventListener("click", () => openTopicDetail(topic));
+    card.querySelector(".topic-reply-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      openTopicDetail(topic);
+    });
     container.appendChild(card);
   });
 }
@@ -214,42 +225,141 @@ async function handlePostQuestion(e) {
   }
 }
 
-function openTopicDetail(topic) {
+async function fetchTopicReplies(topicId) {
+  try {
+    const repliesSnapshot = await getDocs(
+      query(
+        collection(db, "companion_replies"),
+        where("topicId", "==", topicId),
+        orderBy("createdAt", "asc")
+      )
+    );
+
+    const replies = [];
+    repliesSnapshot.forEach((doc) => {
+      replies.push({ id: doc.id, ...doc.data() });
+    });
+
+    return replies;
+  } catch (error) {
+    console.error("Error loading topic replies:", error);
+    return [];
+  }
+}
+
+function createReplyCard(reply) {
+  const card = document.createElement("div");
+  card.className = "reply-card";
+  const replyDate = reply.createdAt?.toDate ? formatDate(reply.createdAt.toDate()) : "N/A";
+  card.innerHTML = `
+    <div class="reply-card-header">
+      <strong>${escapeHtml(reply.studentName || "Anonymous")}</strong>
+      <span>${replyDate}</span>
+    </div>
+    <p>${escapeHtml(reply.content)}</p>
+  `;
+  return card;
+}
+
+async function handleReplySubmit(e, topic) {
+  e.preventDefault();
+
+  const name = document.getElementById("replyName").value.trim() || "Anonymous";
+  const email = document.getElementById("replyEmail").value.trim();
+  const content = document.getElementById("replyMessage").value.trim();
+  const errorEl = document.getElementById("replyFormError");
+
+  if (!content) {
+    errorEl.textContent = "Please type your reply before submitting.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "companion_replies"), {
+      topicId: topic.id,
+      studentName: name,
+      email,
+      content,
+      createdAt: serverTimestamp(),
+    });
+
+    try {
+      const topicRef = doc(db, "companion_topics", topic.id);
+      await updateDoc(topicRef, { replies: increment(1) });
+    } catch (updateError) {
+      console.warn("Could not update reply count on topic document:", updateError);
+    }
+
+    document.getElementById("replyForm").reset();
+    await openTopicDetail({ ...topic, replies: (topic.replies || 0) + 1 });
+    loadAllData();
+  } catch (error) {
+    console.error("Error posting reply:", error);
+    errorEl.textContent = "Could not post reply. Please try again.";
+    errorEl.style.display = "block";
+  }
+}
+
+async function openTopicDetail(topic) {
   const modal = document.getElementById("detailModal");
   const modalBody = document.getElementById("modalBody");
-
+  const replies = await fetchTopicReplies(topic.id);
   const date = topic.createdAt?.toDate ? formatDate(topic.createdAt.toDate()) : "N/A";
+  const replyCount = replies.length;
 
   modalBody.innerHTML = `
     <div class="detail-modal">
       <h2>${escapeHtml(topic.title)}</h2>
       <span class="topic-category-badge">${escapeHtml(topic.category)}</span>
-      
-      <div style="margin-top: 16px; padding: 16px; background: #F3F4F6; border-radius: 8px; font-size: 0.9rem;">
-        <p style="margin: 0;">
-          <strong>Asked by:</strong> ${escapeHtml(topic.studentName || "Anonymous")}
-        </p>
-        <p style="margin: 8px 0 0 0;">
-          <i class="fa-solid fa-calendar"></i> ${date}
-        </p>
+
+      <div class="topic-meta detail-meta">
+        <span><i class="fa-solid fa-user"></i> ${escapeHtml(topic.studentName || "Anonymous")}</span>
+        <span><i class="fa-solid fa-comment"></i> ${replyCount} ${replyCount === 1 ? "reply" : "replies"}</span>
+        <span><i class="fa-solid fa-calendar"></i> ${date}</span>
       </div>
 
-      <div style="margin-top: 20px; line-height: 1.8;">
+      <div class="topic-content">
         ${escapeHtml(topic.content)}
       </div>
 
-      ${
-        topic.replies && topic.replies > 0
-          ? `
-        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #E5E7EB;">
-          <p><strong>${topic.replies} ${topic.replies === 1 ? "reply" : "replies"}</strong></p>
-          <p style="color: #6B7280; font-size: 0.9rem;">Check back for community responses and advisor guidance.</p>
+      <div class="reply-section">
+        <h3>Comments</h3>
+        <div id="replyList" class="reply-list">
+          ${replies.length === 0 ? '<div class="empty-state"><p>No comments yet. Be the first to reply!</p></div>' : ''}
         </div>
-      `
-          : ""
-      }
+      </div>
+
+      <div class="reply-form-section">
+        <h3>Leave a Reply</h3>
+        <form id="replyForm" class="reply-form">
+          <div class="form-group">
+            <label for="replyName">Name</label>
+            <input type="text" id="replyName" placeholder="Your name or Anonymous" />
+          </div>
+          <div class="form-group">
+            <label for="replyEmail">Email</label>
+            <input type="email" id="replyEmail" placeholder="Email (optional)" />
+          </div>
+          <div class="form-group">
+            <label for="replyMessage">Comment</label>
+            <textarea id="replyMessage" rows="4" placeholder="Write your reply here..." required></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Post Reply</button>
+          <p id="replyFormError" class="error-message" style="display:none;"></p>
+        </form>
+      </div>
     </div>
   `;
+
+  const replyList = document.getElementById("replyList");
+  replies.forEach((reply) => {
+    replyList.appendChild(createReplyCard(reply));
+  });
+
+  document.getElementById("replyForm").addEventListener("submit", async (e) => {
+    await handleReplySubmit(e, topic);
+  });
 
   modal.classList.add("show");
 }
