@@ -5,11 +5,9 @@ import {
   query,
   orderBy,
   getDocs,
-  deleteDoc,
-  doc,
-  writeBatch,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { API_URL } from "./api-config.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -40,22 +38,31 @@ document.getElementById("unsubscribeBtn").addEventListener("click", async () => 
   if (confirm("Are you sure you want to unsubscribe from our newsletter?")) {
     try {
       const email = localStorage.getItem("subscriberEmail");
-      if (email) {
-        // Delete from newsletter_subscribers collection
-        const q = query(collection(db, "newsletter_subscribers"), where("email", "==", email));
-        const docs = await getDocs(q);
-        const batch = writeBatch(db);
+      if (!email) {
+        alert("Email not found. Please try again.");
+        return;
+      }
 
-        docs.forEach((d) => {
-          batch.delete(d.ref);
-        });
+      const response = await fetch(`${API_URL}/newsletter/unsubscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+      });
 
-        await batch.commit();
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         alert("You have been unsubscribed from our newsletter");
+        localStorage.removeItem("subscriberEmail");
         window.location.href = "/";
+      } else {
+        alert(data.error || "Error unsubscribing. Please try again.");
       }
     } catch (error) {
       console.error("Error unsubscribing:", error);
+      alert("Error unsubscribing. Please try again.");
     }
   }
 });

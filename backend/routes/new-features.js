@@ -4,6 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const { db, admin } = require("../config/firebase");
+const { sendSubscriptionConfirmation, sendNewsletterToAll } = require("../config/email");
 
 function toSnapshotArray(snapshot) {
   const items = [];
@@ -42,7 +43,15 @@ router.post("/newsletter/subscribe", async (req, res) => {
       active: true,
     });
 
-    res.json({ success: true, id: docRef.id, message: "Subscription successful" });
+    // Send confirmation email
+    const emailSent = await sendSubscriptionConfirmation(email, regNo);
+
+    res.json({ 
+      success: true, 
+      id: docRef.id, 
+      message: "Subscription successful",
+      emailConfirmation: emailSent
+    });
   } catch (error) {
     console.error("Newsletter subscription error:", error);
     res.status(500).json({ error: error.message || "Failed to subscribe" });
@@ -77,7 +86,22 @@ router.post("/newsletter/create", async (req, res) => {
       createdAt: serverTimestamp(),
     });
 
-    res.json({ success: true, id: docRef.id });
+    // Send newsletter to all active subscribers
+    const newsletterData = {
+      id: docRef.id,
+      title,
+      content,
+      category: category || "General",
+      preview: preview || content.substring(0, 150),
+    };
+
+    const emailResult = await sendNewsletterToAll(newsletterData, db);
+
+    res.json({ 
+      success: true, 
+      id: docRef.id,
+      emailDistribution: emailResult
+    });
   } catch (error) {
     console.error("Create newsletter error:", error);
     res.status(500).json({ error: error.message || "Failed to create newsletter" });
@@ -125,6 +149,67 @@ router.delete("/newsletter/:id", async (req, res) => {
   } catch (error) {
     console.error("Delete newsletter error:", error);
     res.status(500).json({ error: error.message || "Failed to delete newsletter" });
+  }
+});
+
+// Get all newsletter subscribers (Admin only)
+router.get("/newsletter/subscribers/list", async (req, res) => {
+  try {
+    const subscribersSnapshot = await db.collection("newsletter_subscribers").get();
+    const subscribers = [];
+    const activeCount = 0;
+
+    subscribersSnapshot.forEach((doc) => {
+      subscribers.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    const active = subscribers.filter(s => s.active).length;
+    const inactive = subscribers.filter(s => !s.active).length;
+
+    res.json({
+      success: true,
+      total: subscribers.length,
+      active,
+      inactive,
+      subscribers,
+    });
+  } catch (error) {
+    console.error("Get subscribers error:", error);
+    res.status(500).json({ error: error.message || "Failed to get subscribers" });
+  }
+});
+
+// Unsubscribe from newsletter
+router.post("/newsletter/unsubscribe", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const subscribersSnapshot = await db.collection("newsletter_subscribers")
+      .where("email", "==", email)
+      .get();
+
+    if (subscribersSnapshot.empty) {
+      return res.status(404).json({ error: "Subscriber not found" });
+    }
+
+    // Mark as inactive instead of deleting
+    const batch = admin.firestore().batch();
+    subscribersSnapshot.forEach((doc) => {
+      batch.update(doc.ref, { active: false });
+    });
+
+    await batch.commit();
+    res.json({ success: true, message: "Unsubscribed successfully" });
+  } catch (error) {
+    console.error("Unsubscribe error:", error);
+    res.status(500).json({ error: error.message || "Failed to unsubscribe" });
   }
 });
 

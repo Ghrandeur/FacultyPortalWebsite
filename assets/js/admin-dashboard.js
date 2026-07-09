@@ -122,6 +122,7 @@ async function loadDashboardStats() {
     const parliamentarians = await fetch(`${API_URL}/parliamentarians/all`).then(r => r.json());
     const socialHandles = await fetch(`${API_URL}/social-handles/all`).then(r => r.json());
     const companionTopics = await fetch(`${API_URL}/companion/topics`).then(r => r.json());
+    const subscribers = await fetch(`${API_URL}/newsletter/subscribers/list`).then(r => r.json());
 
     document.getElementById('archiveCount').textContent = archive.length;
     document.getElementById('galleryCount').textContent = gallery.length;
@@ -133,6 +134,11 @@ async function loadDashboardStats() {
     document.getElementById('parliamentarianCount').textContent = parliamentarians.length;
     document.getElementById('socialHandlesCount').textContent = socialHandles.length;
     document.getElementById('companionTopicsCount').textContent = companionTopics.length;
+    
+    // Update subscriber count if element exists
+    if (document.getElementById('subscriberCount')) {
+      document.getElementById('subscriberCount').textContent = subscribers.active || 0;
+    }
   } catch (error) {
     console.error('Error loading stats:', error);
   }
@@ -1475,10 +1481,22 @@ async function handleNewsletterSubmit() {
     });
 
     if (response.ok) {
+      const data = await response.json();
       closeModal();
       loadNewsletters();
       loadDashboardStats();
-      alert(currentEditId ? 'Newsletter updated successfully!' : 'Newsletter created successfully!');
+      
+      // Show email distribution status if available
+      let message = currentEditId ? 'Newsletter updated successfully!' : 'Newsletter created successfully!';
+      if (data.emailDistribution && !currentEditId) {
+        const { sent, failed, total } = data.emailDistribution;
+        message += `\n\n📧 Email Distribution:\n✅ Sent: ${sent}/${total}\n❌ Failed: ${failed}`;
+        if (failed === 0 && sent > 0) {
+          message += '\n\n🎉 All subscribers notified!';
+        }
+      }
+      
+      alert(message);
     } else {
       const err = await response.json().catch(() => ({}));
       alert(err.error || 'Error saving newsletter');
@@ -1486,6 +1504,77 @@ async function handleNewsletterSubmit() {
   } catch (error) {
     console.error('Error saving newsletter:', error);
     alert(`Error saving newsletter: ${error.message}`);
+  }
+}
+
+// View newsletter subscribers
+async function viewNewsletterSubscribers() {
+  try {
+    const response = await fetch(`${API_URL}/newsletter/subscribers/list`, {
+      headers: {
+        'Authorization': await currentUser.getIdToken()
+      }
+    });
+
+    if (!response.ok) {
+      alert('Failed to load subscribers');
+      return;
+    }
+
+    const data = await response.json();
+    const { active, inactive, total, subscribers } = data;
+
+    const modalBody = document.getElementById('modalBody');
+    
+    let subscribersHTML = `
+      <h3>📧 Newsletter Subscribers</h3>
+      <div style="margin: 15px 0; padding: 15px; background: #f0f4ff; border-radius: 8px;">
+        <p style="margin: 5px 0;"><strong>Active Subscribers:</strong> ${active}</p>
+        <p style="margin: 5px 0;"><strong>Inactive Subscribers:</strong> ${inactive}</p>
+        <p style="margin: 5px 0;"><strong>Total:</strong> ${total}</p>
+      </div>
+      <div style="max-height: 400px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+              <th style="padding: 10px; text-align: left;">Email</th>
+              <th style="padding: 10px; text-align: left;">Department</th>
+              <th style="padding: 10px; text-align: left;">Status</th>
+              <th style="padding: 10px; text-align: left;">Subscribed</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    subscribers.forEach((sub, index) => {
+      const bgColor = index % 2 === 0 ? '#fff' : '#f9f9f9';
+      const statusBadge = sub.active 
+        ? '<span style="background: #4CAF50; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Active</span>'
+        : '<span style="background: #999; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Inactive</span>';
+      
+      const subscribedDate = sub.subscribedAt?.toDate ? sub.subscribedAt.toDate().toLocaleDateString() : 'N/A';
+      
+      subscribersHTML += `
+        <tr style="background: ${bgColor}; border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">${sub.email}</td>
+          <td style="padding: 10px;">${sub.department || 'N/A'}</td>
+          <td style="padding: 10px;">${statusBadge}</td>
+          <td style="padding: 10px; font-size: 12px;">${subscribedDate}</td>
+        </tr>
+      `;
+    });
+
+    subscribersHTML += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    modalBody.innerHTML = subscribersHTML;
+    openModal();
+  } catch (error) {
+    console.error('Error loading subscribers:', error);
+    alert('Error loading subscribers: ' + error.message);
   }
 }
 
@@ -2480,6 +2569,7 @@ window.deletePastQuestion = deletePastQuestion;
 // New features exports
 window.editNewsletter = editNewsletter;
 window.deleteNewsletter = deleteNewsletter;
+window.viewNewsletterSubscribers = viewNewsletterSubscribers;
 window.editMarketplaceItem = editMarketplaceItem;
 window.deleteMarketplaceItem = deleteMarketplaceItem;
 window.editDepartment = editDepartment;

@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: path.join(__dirname, '.env') });
 const cfg = require('./config/firebase');
 const { storage, db, auth } = cfg;
+const emailService = require('./config/email');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -166,4 +167,15 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Visit http://localhost:${PORT}`);
+  // Initialize email transporter and verify connection
+  try {
+    emailService.initializeTransporter();
+    emailService.testEmailConnection().then(result => {
+      console.log('Email connection test:', result);
+    }).catch(err => {
+      console.warn('Email connection test failed:', err && err.message ? err.message : err);
+    });
+  } catch (e) {
+    console.warn('Email service initialization error:', e && e.message ? e.message : e);
+  }
 });
