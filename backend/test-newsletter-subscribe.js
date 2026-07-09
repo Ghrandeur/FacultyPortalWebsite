@@ -1,5 +1,5 @@
 const http = require('http');
-const data = JSON.stringify({regNo:'ENG/2026/001', department:'Computer Science', email:'promiseetok211@gmail.com'});
+const data = JSON.stringify({regNo:'ENG/2026/001', department:'Computer Science', email:'student@example.com'});
 const options = {
   hostname: '127.0.0.1',
   port: 5000,
