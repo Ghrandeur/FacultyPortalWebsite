@@ -3,20 +3,19 @@
 
 const express = require("express");
 const router = express.Router();
-const {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  deleteDoc,
-  doc,
-  updateDoc,
-  serverTimestamp,
-} = require("firebase/firestore");
-const { db } = require("../config/firebase");
+const { db, admin } = require("../config/firebase");
+
+function toSnapshotArray(snapshot) {
+  const items = [];
+  snapshot.forEach((doc) => {
+    items.push({ id: doc.id, ...doc.data() });
+  });
+  return items;
+}
+
+function serverTimestamp() {
+  return admin.firestore.FieldValue.serverTimestamp();
+}
 
 // ==================== NEWSLETTER ROUTES ====================
 
@@ -29,16 +28,13 @@ router.post("/newsletter/subscribe", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Check if already subscribed
-    const q = query(collection(db, "newsletter_subscribers"), where("email", "==", email));
-    const existingDocs = await getDocs(q);
+    const existingSnapshot = await db.collection("newsletter_subscribers").where("email", "==", email).get();
 
-    if (!existingDocs.empty) {
+    if (!existingSnapshot.empty) {
       return res.status(400).json({ error: "Email already subscribed" });
     }
 
-    // Add subscriber
-    const docRef = await addDoc(collection(db, "newsletter_subscribers"), {
+    const docRef = await db.collection("newsletter_subscribers").add({
       regNo,
       department,
       email,
@@ -49,25 +45,18 @@ router.post("/newsletter/subscribe", async (req, res) => {
     res.json({ success: true, id: docRef.id, message: "Subscription successful" });
   } catch (error) {
     console.error("Newsletter subscription error:", error);
-    res.status(500).json({ error: "Failed to subscribe" });
+    res.status(500).json({ error: error.message || "Failed to subscribe" });
   }
 });
 
 // Get all newsletters
 router.get("/newsletter/all", async (req, res) => {
   try {
-    const q = query(collection(db, "newsletters"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    const newsletters = [];
-    querySnapshot.forEach((doc) => {
-      newsletters.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(newsletters);
+    const querySnapshot = await db.collection("newsletters").orderBy("createdAt", "desc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get newsletters error:", error);
-    res.status(500).json({ error: "Failed to get newsletters" });
+    res.status(500).json({ error: error.message || "Failed to get newsletters" });
   }
 });
 
@@ -80,7 +69,7 @@ router.post("/newsletter/create", async (req, res) => {
       return res.status(400).json({ error: "Title and content required" });
     }
 
-    const docRef = await addDoc(collection(db, "newsletters"), {
+    const docRef = await db.collection("newsletters").add({
       title,
       content,
       category: category || "General",
@@ -91,7 +80,7 @@ router.post("/newsletter/create", async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error("Create newsletter error:", error);
-    res.status(500).json({ error: "Failed to create newsletter" });
+    res.status(500).json({ error: error.message || "Failed to create newsletter" });
   }
 });
 
@@ -100,18 +89,11 @@ router.post("/newsletter/create", async (req, res) => {
 // Get all marketplace items
 router.get("/marketplace/items", async (req, res) => {
   try {
-    const q = query(collection(db, "marketplace_items"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    const items = [];
-    querySnapshot.forEach((doc) => {
-      items.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(items);
+    const querySnapshot = await db.collection("marketplace_items").orderBy("createdAt", "desc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get marketplace items error:", error);
-    res.status(500).json({ error: "Failed to get items" });
+    res.status(500).json({ error: error.message || "Failed to get items" });
   }
 });
 
@@ -124,7 +106,7 @@ router.post("/marketplace/item/create", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const docRef = await addDoc(collection(db, "marketplace_items"), {
+    const docRef = await db.collection("marketplace_items").add({
       name,
       category,
       price: parseFloat(price),
@@ -139,7 +121,7 @@ router.post("/marketplace/item/create", async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error("Create marketplace item error:", error);
-    res.status(500).json({ error: "Failed to create item" });
+    res.status(500).json({ error: error.message || "Failed to create item" });
   }
 });
 
@@ -148,18 +130,11 @@ router.post("/marketplace/item/create", async (req, res) => {
 // Get all departments
 router.get("/departments/all", async (req, res) => {
   try {
-    const q = query(collection(db, "departments"), orderBy("order", "asc"));
-    const querySnapshot = await getDocs(q);
-
-    const departments = [];
-    querySnapshot.forEach((doc) => {
-      departments.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(departments);
+    const querySnapshot = await db.collection("departments").orderBy("order", "asc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get departments error:", error);
-    res.status(500).json({ error: "Failed to get departments" });
+    res.status(500).json({ error: error.message || "Failed to get departments" });
   }
 });
 
@@ -172,7 +147,7 @@ router.post("/departments/create", async (req, res) => {
       return res.status(400).json({ error: "Name and description required" });
     }
 
-    const docRef = await addDoc(collection(db, "departments"), {
+    const docRef = await db.collection("departments").add({
       name,
       description,
       hod: hod || "N/A",
@@ -187,7 +162,7 @@ router.post("/departments/create", async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error("Create department error:", error);
-    res.status(500).json({ error: "Failed to create department" });
+    res.status(500).json({ error: error.message || "Failed to create department" });
   }
 });
 
@@ -196,18 +171,11 @@ router.post("/departments/create", async (req, res) => {
 // Get all parliamentarians
 router.get("/parliamentarians/all", async (req, res) => {
   try {
-    const q = query(collection(db, "parliamentarians"), orderBy("order", "asc"));
-    const querySnapshot = await getDocs(q);
-
-    const parliamentarians = [];
-    querySnapshot.forEach((doc) => {
-      parliamentarians.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(parliamentarians);
+    const querySnapshot = await db.collection("parliamentarians").orderBy("order", "asc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get parliamentarians error:", error);
-    res.status(500).json({ error: "Failed to get parliamentarians" });
+    res.status(500).json({ error: error.message || "Failed to get parliamentarians" });
   }
 });
 
@@ -220,7 +188,7 @@ router.post("/parliamentarians/create", async (req, res) => {
       return res.status(400).json({ error: "Name and position required" });
     }
 
-    const docRef = await addDoc(collection(db, "parliamentarians"), {
+    const docRef = await db.collection("parliamentarians").add({
       name,
       position,
       department: department || "N/A",
@@ -236,7 +204,7 @@ router.post("/parliamentarians/create", async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error("Create parliamentarian error:", error);
-    res.status(500).json({ error: "Failed to create parliamentarian" });
+    res.status(500).json({ error: error.message || "Failed to create parliamentarian" });
   }
 });
 
@@ -245,17 +213,11 @@ router.post("/parliamentarians/create", async (req, res) => {
 // Get all social handles
 router.get("/social-handles/all", async (req, res) => {
   try {
-    const querySnapshot = await getDocs(collection(db, "social_handles"));
-
-    const handles = [];
-    querySnapshot.forEach((doc) => {
-      handles.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(handles);
+    const querySnapshot = await db.collection("social_handles").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get social handles error:", error);
-    res.status(500).json({ error: "Failed to get social handles" });
+    res.status(500).json({ error: error.message || "Failed to get social handles" });
   }
 });
 
@@ -268,7 +230,7 @@ router.post("/social-handles/create", async (req, res) => {
       return res.status(400).json({ error: "Name and platform required" });
     }
 
-    const docRef = await addDoc(collection(db, "social_handles"), {
+    const docRef = await db.collection("social_handles").add({
       name,
       platform,
       handle: handle || "",
@@ -279,7 +241,7 @@ router.post("/social-handles/create", async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error("Create social handle error:", error);
-    res.status(500).json({ error: "Failed to create social handle" });
+    res.status(500).json({ error: error.message || "Failed to create social handle" });
   }
 });
 
@@ -288,36 +250,22 @@ router.post("/social-handles/create", async (req, res) => {
 // Get all advisors
 router.get("/companion/advisors", async (req, res) => {
   try {
-    const q = query(collection(db, "advisors"), orderBy("order", "asc"));
-    const querySnapshot = await getDocs(q);
-
-    const advisors = [];
-    querySnapshot.forEach((doc) => {
-      advisors.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(advisors);
+    const querySnapshot = await db.collection("advisors").orderBy("order", "asc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get advisors error:", error);
-    res.status(500).json({ error: "Failed to get advisors" });
+    res.status(500).json({ error: error.message || "Failed to get advisors" });
   }
 });
 
 // Get all FAQ
 router.get("/companion/faq", async (req, res) => {
   try {
-    const q = query(collection(db, "faq"), orderBy("order", "asc"));
-    const querySnapshot = await getDocs(q);
-
-    const faq = [];
-    querySnapshot.forEach((doc) => {
-      faq.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(faq);
+    const querySnapshot = await db.collection("faq").orderBy("order", "asc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get FAQ error:", error);
-    res.status(500).json({ error: "Failed to get FAQ" });
+    res.status(500).json({ error: error.message || "Failed to get FAQ" });
   }
 });
 
@@ -333,7 +281,7 @@ router.post("/companion/question", async (req, res) => {
       return res.status(400).json({ error: "Category, title, and content required" });
     }
 
-    const docRef = await addDoc(collection(db, "companion_topics"), {
+    const docRef = await db.collection("companion_topics").add({
       studentName: anonymous ? "Anonymous" : studentName,
       email,
       category,
@@ -348,25 +296,18 @@ router.post("/companion/question", async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error("Post question error:", error);
-    res.status(500).json({ error: "Failed to post question" });
+    res.status(500).json({ error: error.message || "Failed to post question" });
   }
 });
 
 // Get all companion topics
 router.get("/companion/topics", async (req, res) => {
   try {
-    const q = query(collection(db, "companion_topics"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    const topics = [];
-    querySnapshot.forEach((doc) => {
-      topics.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(topics);
+    const querySnapshot = await db.collection("companion_topics").orderBy("createdAt", "desc").get();
+    res.json(toSnapshotArray(querySnapshot));
   } catch (error) {
     console.error("Get topics error:", error);
-    res.status(500).json({ error: "Failed to get topics" });
+    res.status(500).json({ error: error.message || "Failed to get topics" });
   }
 });
 
