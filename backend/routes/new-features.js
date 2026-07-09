@@ -50,13 +50,13 @@ router.post("/newsletter/subscribe", async (req, res) => {
     });
 
     // Send confirmation email
-    const emailSent = await sendSubscriptionConfirmation(email, regNo);
+    const emailResult = await sendSubscriptionConfirmation(email, regNo);
 
     res.json({ 
       success: true, 
       id: docRef.id, 
       message: "Subscription successful",
-      emailConfirmation: emailSent
+      emailConfirmation: emailResult
     });
   } catch (error) {
     console.error("Newsletter subscription error:", error);
@@ -216,6 +216,19 @@ router.post("/newsletter/unsubscribe", async (req, res) => {
   } catch (error) {
     console.error("Unsubscribe error:", error);
     res.status(500).json({ error: error.message || "Failed to unsubscribe" });
+  }
+});
+
+// Test send subscription confirmation (for admin/testing)
+router.post('/newsletter/test-send', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email) return res.status(400).json({ success: false, error: 'Email is required' });
+    const result = await sendSubscriptionConfirmation(email, name || 'Test User');
+    res.json({ success: true, result });
+  } catch (err) {
+    console.error('Test send error:', err);
+    res.status(500).json({ success: false, error: err && err.message ? err.message : String(err) });
   }
 });
 

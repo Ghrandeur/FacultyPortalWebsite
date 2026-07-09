@@ -31,13 +31,14 @@ const getTransporter = () => {
   return transporter;
 };
 
-// Send confirmation email to new subscriber
+// Send confirmation email to new subscriber (returns structured result)
 const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
   try {
     const trans = getTransporter();
     if (!trans) {
-      console.warn('⚠️ Email service not configured, skipping confirmation email');
-      return false;
+      const msg = 'Email service not configured';
+      console.warn('⚠️', msg, 'skipping confirmation email');
+      return { success: false, error: msg };
     }
 
     const fromAddress = process.env.EMAIL_FROM && /@/.test(process.env.EMAIL_FROM)
@@ -45,8 +46,9 @@ const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
       : process.env.EMAIL_USER;
 
     if (!fromAddress) {
-      console.error('❌ No valid FROM address configured. Set EMAIL_FROM or EMAIL_USER to a valid email address.');
-      return false;
+      const msg = 'No valid FROM address configured';
+      console.error('❌', msg);
+      return { success: false, error: msg };
     }
 
     const mailOptions = {
@@ -91,11 +93,11 @@ const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
     };
 
     const info = await trans.sendMail(mailOptions);
-    console.log('✅ Confirmation email sent to:', email, 'Message ID:', info.messageId);
-    return true;
+    console.log('✅ Confirmation email sent to:', email, 'Message ID:', info && info.messageId);
+    return { success: true, messageId: info && info.messageId };
   } catch (error) {
-    console.error('❌ Error sending confirmation email:', error.message);
-    return false;
+    console.error('❌ Error sending confirmation email:', error && error.message ? error.message : error);
+    return { success: false, error: error && error.message ? error.message : String(error) };
   }
 };
 
@@ -146,11 +148,11 @@ const sendNewsletterToSubscriber = async (email, newsletterData) => {
     };
 
     const info = await trans.sendMail(mailOptions);
-    console.log('✅ Newsletter sent to:', email, 'Message ID:', info.messageId);
-    return true;
+    console.log('✅ Newsletter sent to:', email, 'Message ID:', info && info.messageId);
+    return { success: true, messageId: info && info.messageId };
   } catch (error) {
-    console.error('❌ Error sending newsletter to', email, ':', error.message);
-    return false;
+    console.error('❌ Error sending newsletter to', email, ':', error && error.message ? error.message : error);
+    return { success: false, error: error && error.message ? error.message : String(error) };
   }
 };
 
@@ -185,18 +187,18 @@ const sendNewsletterToAll = async (newsletterData, db) => {
     const errors = [];
 
     // Send to each subscriber
-    for (const email of subscribers) {
+    for (const emailAddr of subscribers) {
       try {
-        const success = await sendNewsletterToSubscriber(email, newsletterData);
-        if (success) {
+        const result = await sendNewsletterToSubscriber(emailAddr, newsletterData);
+        if (result && result.success) {
           sent++;
         } else {
           failed++;
-          errors.push(`Failed to send to ${email}`);
+          errors.push(`Failed to send to ${emailAddr}${result && result.error ? `: ${result.error}` : ''}`);
         }
       } catch (err) {
         failed++;
-        errors.push(`Error sending to ${email}: ${err.message}`);
+        errors.push(`Error sending to ${emailAddr}: ${err && err.message ? err.message : String(err)}`);
       }
     }
 

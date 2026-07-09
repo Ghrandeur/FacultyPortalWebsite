@@ -70,10 +70,29 @@ document.getElementById("unsubscribeBtn").addEventListener("click", async () => 
 
 async function loadNewsletters() {
   try {
+    // Prefer backend API (admin-created newsletters) if available
+    newslettersData = [];
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}/newsletter/all`);
+        if (res.ok) {
+          const list = await res.json();
+          newslettersData = Array.isArray(list) ? list : [];
+          displayNewsletters();
+          const email = localStorage.getItem("subscriberEmail");
+          if (email) document.getElementById("unsubscribeBtn").style.display = "inline-block";
+          return;
+        }
+        console.warn('Failed to fetch newsletters from API, falling back to Firestore');
+      } catch (err) {
+        console.warn('Error fetching newsletters from API, falling back to Firestore', err);
+      }
+    }
+
+    // Fallback: load directly from Firestore
     const q = query(collection(db, "newsletters"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
 
-    newslettersData = [];
     querySnapshot.forEach((doc) => {
       newslettersData.push({
         id: doc.id,
@@ -122,9 +141,9 @@ function displayNewsletters() {
         <h3>${escapeHtml(newsletter.title)}</h3>
       </div>
       <span class="newsletter-category-badge">${newsletter.category || "General"}</span>
-      <div class="newsletter-item-preview">${escapeHtml(newsletter.preview || newsletter.content.substring(0, 150))}...</div>
+      <div class="newsletter-item-preview">${escapeHtml(newsletter.preview || (newsletter.content || '').substring(0, 150))}...</div>
       <div class="newsletter-item-meta">
-        <span><i class="fa-solid fa-calendar"></i> ${formatDate(newsletter.createdAt?.toDate())}</span>
+        <span><i class="fa-solid fa-calendar"></i> ${formatDate(newsletter.createdAt)}</span>
         <span><i class="fa-solid fa-envelope"></i> Newsletter</span>
       </div>
     `;
@@ -141,7 +160,7 @@ function openNewsletterDetail(newsletter) {
   modalBody.innerHTML = `
     <h2>${escapeHtml(newsletter.title)}</h2>
     <span class="newsletter-category-badge">${newsletter.category || "General"}</span>
-    <p><small>${formatDate(newsletter.createdAt?.toDate())}</small></p>
+    <p><small>${formatDate(newsletter.createdAt)}</small></p>
     <div style="margin-top: 16px; line-height: 1.8;">
       ${newsletter.content}
     </div>
@@ -152,7 +171,21 @@ function openNewsletterDetail(newsletter) {
 
 function formatDate(date) {
   if (!date) return "N/A";
-  return date.toLocaleDateString("en-US", {
+  // Support Firestore timestamp objects returned from backend or client
+  let d = null;
+  try {
+    if (date && typeof date === 'object' && typeof date.seconds === 'number') {
+      d = new Date(date.seconds * 1000);
+    } else if (date && typeof date.toDate === 'function') {
+      d = date.toDate();
+    } else {
+      d = new Date(date);
+    }
+  } catch (e) {
+    return 'N/A';
+  }
+  if (isNaN(d.getTime())) return 'N/A';
+  return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
