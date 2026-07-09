@@ -58,6 +58,7 @@ form.addEventListener("submit", async (e) => {
     });
 
     const data = await response.json();
+    console.log('Newsletter subscribe response', response.status, data);
 
     if (response.ok && data.success) {
       // Store email in localStorage for unsubscribe feature
@@ -67,13 +68,15 @@ form.addEventListener("submit", async (e) => {
         ? "Successfully subscribed! A confirmation email has been sent to " + email
         : "Successfully subscribed! You will receive newsletters at " + email;
       
-      showSuccess(confirmationMsg);
+      showSuccess(confirmationMsg + " Redirecting to the newsletter page...");
+      submitBtn.textContent = "Subscribed";
+      submitBtn.disabled = true;
       form.reset();
 
-      // Redirect to newsletter page after 2.5 seconds
+      // Redirect to newsletter page immediately after showing confirmation
       setTimeout(() => {
         window.location.href = "/pages/newsletter.html";
-      }, 2500);
+      }, 1000);
     } else {
       showError(data.error || "Error registering for newsletter");
       submitBtn.disabled = false;

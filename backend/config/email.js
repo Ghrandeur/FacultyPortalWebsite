@@ -13,8 +13,10 @@ const initializeTransporter = () => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
-    
-    console.log('✅ Email service initialized successfully');
+
+    const configuredFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+    const fromAddress = /@/.test(configuredFrom) ? configuredFrom : process.env.EMAIL_USER;
+    console.log('✅ Email service initialized successfully. Using sender:', fromAddress);
     return transporter;
   } catch (error) {
     console.error('❌ Failed to initialize email service:', error.message);
@@ -38,8 +40,17 @@ const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
       return false;
     }
 
+    const fromAddress = process.env.EMAIL_FROM && /@/.test(process.env.EMAIL_FROM)
+      ? process.env.EMAIL_FROM
+      : process.env.EMAIL_USER;
+
+    if (!fromAddress) {
+      console.error('❌ No valid FROM address configured. Set EMAIL_FROM or EMAIL_USER to a valid email address.');
+      return false;
+    }
+
     const mailOptions = {
-      from: `"${process.env.NEWSLETTER_FROM_NAME || 'FAHSSA'}" <${process.env.EMAIL_FROM}>`,
+      from: `"${process.env.NEWSLETTER_FROM_NAME || 'FAHSSA'}" <${fromAddress}>`,
       to: email,
       subject: 'Welcome to FAHSSA Newsletter!',
       html: `
@@ -97,8 +108,17 @@ const sendNewsletterToSubscriber = async (email, newsletterData) => {
       return false;
     }
 
+    const fromAddress = process.env.EMAIL_FROM && /@/.test(process.env.EMAIL_FROM)
+      ? process.env.EMAIL_FROM
+      : process.env.EMAIL_USER;
+
+    if (!fromAddress) {
+      console.error('❌ No valid FROM address configured. Set EMAIL_FROM or EMAIL_USER to a valid email address.');
+      return false;
+    }
+
     const mailOptions = {
-      from: `"${process.env.NEWSLETTER_FROM_NAME || 'FAHSSA'}" <${process.env.EMAIL_FROM}>`,
+      from: `"${process.env.NEWSLETTER_FROM_NAME || 'FAHSSA'}" <${fromAddress}>`,
       to: email,
       subject: `${process.env.NEWSLETTER_EMAIL_SUBJECT}: ${newsletterData.title}`,
       html: `
