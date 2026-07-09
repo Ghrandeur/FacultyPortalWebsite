@@ -72,12 +72,15 @@ select {
 }
 
 @media (max-width: 720px) {
+  /* keep back button fixed inside header box on mobile as well */
   .topbar .page-back-button {
-    position: static;
-    transform: none;
-    right: auto;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
     width: 52px;
-    margin-bottom: 8px;
+    height: 52px;
+    z-index: 6;
   }
 }
 
@@ -192,8 +195,11 @@ select {
 .header-with-logos .page-back-button {
   width: 52px;
   height: 52px;
+  min-width: 52px;
+  max-width: 52px;
+  flex: 0 0 52px; /* prevent flex-grow/width stretching */
   font-size: 20px;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
@@ -226,6 +232,11 @@ select {
 .header-with-logos h1 {
   flex: 1 1 100%;
   margin: 0;
+  /* responsive heading size so titles don't overflow on small screens */
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  line-height: 1.04;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Keep topbar/header layout consistent on small screens */
@@ -254,8 +265,27 @@ h1 {
   color: var(--primary-blue);
 }
 
+/* Reduce other page heading sizes slightly on narrow screens to avoid overflow */
+@media (max-width: 720px) {
+  .content-card h2,
+  .departments-header h2,
+  .parliamentarians-header h2,
+  .leaders-header h2,
+  .newsletter-header h2 {
+    font-size: clamp(1rem, 2.6vw, 1.4rem);
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+}
+
 .page-back-button .back-icon {
   color: inherit;
+}
+
+/* ensure the icon fits inside the circular button on all viewports */
+.page-back-button .back-icon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .theme-button {
