@@ -45,7 +45,8 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
+  /* keep same layout on mobile as desktop */
+  flex-wrap: nowrap;
   margin-bottom: 32px;
   overflow-x: auto;
   overflow-y: visible;
@@ -57,13 +58,17 @@ select {
   min-width: 0;
 }
 
-.topbar .page-back-button {
+/* move the back button into the header box and pin it to the right side */
+.header-with-logos {
+  position: relative;
+}
+
+.header-with-logos .page-back-button {
   position: absolute;
   top: 50%;
-  /* push the back button leftward so it's visually separated from the nav */
-  right: 140px;
+  right: 20px; /* sit inside the header box near the nav area */
   transform: translateY(-50%);
-  z-index: 5;
+  z-index: 6;
 }
 
 @media (max-width: 720px) {
@@ -223,27 +228,22 @@ select {
   margin: 0;
 }
 
+/* Keep topbar/header layout consistent on small screens */
 @media (max-width: 720px) {
+  .topbar {
+    flex-wrap: nowrap;
+  }
   .header-with-logos {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
   .header-with-logos .page-back-button,
   .header-with-logos .header-logos {
-    width: 100%;
+    width: auto;
   }
-}
-
-@media (max-width: 720px) {
-  .header-with-logos {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "back"
-      "logos"
-      "title";
-  }
-  .header-with-logos .header-logos {
-    justify-content: flex-start;
+  .header-with-logos h1 {
+    flex: 1 1 auto;
   }
 }
 
