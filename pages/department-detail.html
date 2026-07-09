@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Department Details | FAHSSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/pages.css" />
+    <style>
+      .detail-container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 30px;
+      }
+
+      .detail-header {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+        margin-bottom: 40px;
+      }
+
+      .dept-logo {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      .detail-header-content h2 {
+        margin: 0 0 12px 0;
+        color: var(--primary-blue);
+        font-size: 2rem;
+      }
+
+      .detail-header-content p {
+        margin: 0;
+        color: var(--text-light);
+        font-size: 1.1rem;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-top: 30px;
+      }
+
+      .info-card {
+        background: rgba(14, 165, 233, 0.08);
+        border-left: 4px solid var(--primary-blue);
+        padding: 20px;
+        border-radius: 8px;
+      }
+
+      .info-card-title {
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .info-card-content {
+        color: var(--text-dark);
+        line-height: 1.6;
+      }
+
+      .detail-section {
+        margin-top: 40px;
+      }
+
+      .detail-section h3 {
+        color: var(--primary-blue);
+        margin-bottom: 16px;
+        font-size: 1.3rem;
+      }
+
+      .detail-section p {
+        line-height: 1.9;
+        color: var(--text-dark);
+      }
+
+      .programs-list {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0;
+      }
+
+      .programs-list li {
+        padding: 8px 0;
+        padding-left: 24px;
+        position: relative;
+        color: var(--text-dark);
+      }
+
+      .programs-list li:before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: var(--primary-blue);
+        font-weight: bold;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="header-box header-with-logos">
+          <a href="/index.html" class="page-back-button" type="button">
+            <i class="fa-solid fa-chevron-left back-icon"></i>
+          </a>
+          <a href="/index.html" style="text-decoration: none;">
+            <div class="header-logos">
+              <img src="../fahssa.png" alt="FAHSSA logo" class="header-logo">
+              <img src="../uniuyo.jpg" alt="University of Uyo logo" class="header-logo">
+            </div>
+          </a>
+          <a href="/index.html" style="text-decoration: none;"><h1>FAHSSA</h1></a>
+        </div>
+        <button id="themeToggle" class="theme-button" type="button">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </header>
+
+      <main class="content-card">
+        <a href="/pages/departments.html" class="back-link">
+          <i class="fa-solid fa-arrow-left"></i> Back to Departments
+        </a>
+
+        <div id="departmentDetailContent" class="detail-container">
+          <div class="loading">Loading department details...</div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/api-config.js"></script>
+    <script>
+      const API_URL = window.API_URL;
+
+      async function loadDepartmentDetail() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const container = document.getElementById('departmentDetailContent');
+
+        if (!id) {
+          container.innerHTML = '<p style="color: red;">No department specified.</p>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_URL}/departments/${encodeURIComponent(id)}`);
+          if (!response.ok) {
+            throw new Error('Unable to load department details');
+          }
+          const dept = await response.json();
+          console.log('Department detail loaded:', dept);
+
+          // Validate and normalize logo URL
+          let logoUrl = '/assets/images/placeholder.svg';
+          if (dept.logo && typeof dept.logo === 'string' && dept.logo.trim()) {
+            const normalized = window.normalizeMediaUrl(dept.logo);
+            if (normalized && normalized.trim()) {
+              logoUrl = normalized;
+            }
+          }
+
+          // Build programs list
+          let programsHtml = '';
+          if (Array.isArray(dept.programs) && dept.programs.length > 0) {
+            programsHtml = `
+              <h3>Programs Offered</h3>
+              <ul class="programs-list">
+                ${dept.programs.map(p => `<li>${p}</li>`).join('')}
+              </ul>
+            `;
+          }
+
+          // Build achievements section
+          let achievementsHtml = '';
+          if (dept.achievements && dept.achievements.trim()) {
+            achievementsHtml = `
+              <div class="detail-section">
+                <h3>Achievements & Highlights</h3>
+                <p>${dept.achievements}</p>
+              </div>
+            `;
+          }
+
+          container.innerHTML = `
+            <div class="detail-header">
+              <img src="${logoUrl}" alt="${dept.name}" class="dept-logo" onerror="this.src='/assets/images/placeholder.svg'">
+              <div class="detail-header-content">
+                <h2>${dept.name || 'Department'}</h2>
+                <p>${dept.description || 'No description available'}</p>
+              </div>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-card">
+                <div class="info-card-title">Head of Department</div>
+                <div class="info-card-content">${dept.hod || 'N/A'}</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-title">President/Chairman</div>
+                <div class="info-card-content">${dept.president || 'N/A'}</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-title">Location</div>
+                <div class="info-card-content">${dept.location || 'N/A'}</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-title">Contact</div>
+                <div class="info-card-content">
+                  ${dept.contact ? `<a href="tel:${dept.contact}">${dept.contact}</a>` : 'N/A'}
+                </div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-title">Email</div>
+                <div class="info-card-content">
+                  ${dept.email ? `<a href="mailto:${dept.email}">${dept.email}</a>` : 'N/A'}
+                </div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-title">Website</div>
+                <div class="info-card-content">
+                  ${dept.website ? `<a href="${dept.website}" target="_blank">Visit Site</a>` : 'N/A'}
+                </div>
+              </div>
+            </div>
+
+            ${programsHtml}
+            ${achievementsHtml}
+          `;
+        } catch (error) {
+          console.error('Error loading department detail:', error);
+          container.innerHTML = '<p style="color: red;">Department details could not be loaded. Please try again later.</p>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadDepartmentDetail);
+    </script>
+  </body>
+</html>

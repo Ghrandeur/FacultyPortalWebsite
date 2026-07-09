@@ -32,72 +32,75 @@
         </header>
 
         <main class="content-card">
-            <section class="departments-section">
-                <div class="departments-header">
-                    <h2>Our Departments</h2>
-                    <p>Explore the five pillars of excellence in our faculty</p>
-                </div>
-
-                <div class="departments-grid" id="departmentsList">
-                    <div class="loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        <p>Loading departments...</p>
-                    </div>
-                </div>
-
-                <div id="emptyState" class="empty-state" style="display: none;">
-                    <i class="fa-solid fa-building"></i>
-                    <h3>No Departments Found</h3>
-                    <p>Please check back later</p>
-                </div>
+            <section class="page-header">
+                <h2><i class="fa-solid fa-building"></i> Departments</h2>
+                <p>Explore our Faculty Departments</p>
             </section>
+
+            <div id="departmentsList" class="department-cards-grid">
+                <div class="loading">Loading departments...</div>
+            </div>
         </main>
     </div>
 
-    <!-- Department Detail Modal -->
-    <div id="departmentModal" class="modal">
-        <div class="modal-content department-modal">
-            <button class="modal-close">&times;</button>
-            <div id="modalBody" class="modal-body">
-                <div class="dept-detail">
-                    <div class="dept-logo-container">
-                        <img id="deptLogo" src="" alt="Department Logo" class="dept-logo" />
-                    </div>
-                    <h2 id="deptName"></h2>
-                    <p id="deptDescription" class="dept-desc"></p>
-                    
-                    <div class="dept-info">
-                        <div class="info-item">
-                            <strong>HOD:</strong>
-                            <p id="deptHOD"></p>
-                        </div>
-                        <div class="info-item">
-                            <strong>Contact:</strong>
-                            <p id="deptContact"></p>
-                        </div>
-                        <div class="info-item">
-                            <strong>Office Location:</strong>
-                            <p id="deptLocation"></p>
-                        </div>
-                    </div>
-
-                    <div class="dept-programs">
-                        <h3>Programs Offered</h3>
-                        <ul id="deptPrograms"></ul>
-                    </div>
-
-                    <div class="dept-achievements">
-                        <h3>Recent Achievements</h3>
-                        <p id="deptAchievements"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="../assets/js/main.js"></script>
-    <script type="module" src="../assets/js/firebase-config.js"></script>
-    <script type="module" src="../assets/js/departments.js"></script>
+    <script src="../assets/js/api-config.js"></script>
+    <script>
+      const API_URL = window.API_URL;
+
+      async function loadDepartments() {
+        try {
+          const response = await fetch(`${API_URL}/departments/all`);
+          const departments = await response.json();
+          const container = document.getElementById('departmentsList');
+
+          if (!container) return;
+          container.innerHTML = '';
+
+          if (!Array.isArray(departments) || departments.length === 0) {
+            container.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">No departments found</p>';
+            return;
+          }
+
+          departments.forEach((dept) => {
+            // Validate logo URL
+            let logoUrl = '/assets/images/placeholder.svg';
+            if (dept.logo && typeof dept.logo === 'string' && dept.logo.trim()) {
+              const normalized = window.normalizeMediaUrl(dept.logo);
+              if (normalized && normalized.trim()) {
+                logoUrl = normalized;
+              }
+            }
+
+            const card = document.createElement('div');
+            card.className = 'department-card';
+            card.innerHTML = `
+              <div class="dept-card-image">
+                <img src="${logoUrl}" alt="${dept.name}" loading="lazy" 
+                     onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">
+              </div>
+              <div class="dept-card-content">
+                <h3>${dept.name || 'Department'}</h3>
+                <p class="dept-card-hod"><strong>HOD:</strong> ${dept.hod || 'N/A'}</p>
+                <p class="dept-card-desc">${dept.description || 'No description'}</p>
+                <a href="/pages/department-detail.html?id=${encodeURIComponent(dept.id)}" class="view-details-btn">
+                  View Details <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        } catch (error) {
+          console.error('Error loading departments:', error);
+          const container = document.getElementById('departmentsList');
+          if (container) {
+            container.innerHTML = '<p style="color: red;">Failed to load departments. Please try again later.</p>';
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadDepartments);
+    </script>
 </body>
 </html>
 

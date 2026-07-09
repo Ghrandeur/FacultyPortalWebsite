@@ -1,82 +1,173 @@
 /* Departments Page Styles */
 
-.departments-section {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.departments-header {
-  text-align: center;
-  margin-bottom: 50px;
-}
-
-.departments-header h2 {
-  margin: 0 0 8px 0;
-  font-size: 2rem;
-  color: var(--text-dark);
-}
-
-.departments-header p {
-  margin: 0;
-  color: var(--text-light);
-  font-size: 1.1rem;
-}
-
-.departments-grid {
+.department-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
   margin-bottom: 40px;
 }
 
 .department-card {
   background: white;
-  border: 2px solid #E5E7EB;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 300ms ease;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.department-card:hover {
-  border-color: #10B981;
-  box-shadow: 0 16px 40px rgba(16, 185, 129, 0.2);
-  transform: translateY(-8px);
+.dark-mode .department-card {
+  background: var(--card-bg-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.dept-logo-section {
+.department-card:hover {
+  box-shadow: 0 12px 24px rgba(14, 165, 233, 0.2);
+  transform: translateY(-4px);
+}
+
+.dept-card-image {
   width: 100%;
   height: 200px;
-  background: linear-gradient(135deg, #DCFCE7 0%, #BBEF63 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(135deg, #e0f2fe 0%, #0ea5e9 100%);
   overflow: hidden;
   position: relative;
 }
 
-.dept-logo-section img {
+.dept-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 300ms ease;
 }
 
-.dept-logo-placeholder {
-  font-size: 4rem;
-  color: #22C55E;
-  opacity: 0.5;
+.department-card:hover .dept-card-image img {
+  transform: scale(1.05);
 }
 
 .dept-card-content {
-  padding: 24px;
+  padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
+.dept-card-content h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.dark-mode .dept-card-content h3 {
+  color: var(--text-dark-mode);
+}
+
+.dept-card-hod {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+.dark-mode .dept-card-hod {
+  color: var(--text-light-dark);
+}
+
+.dept-card-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-light);
+  line-height: 1.6;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dark-mode .dept-card-desc {
+  color: var(--text-light-dark);
+}
+
+.view-details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: auto;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+
+.view-details-btn:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  transform: translateX(4px);
+}
+
+.view-details-btn i {
+  font-size: 0.85rem;
+}
+
+/* Old modal styles - keeping for backward compatibility if needed */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dark-mode .modal-content {
+  background-color: var(--card-bg-dark);
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #000;
+}
+
 
 .dept-card-title {
   margin: 0;

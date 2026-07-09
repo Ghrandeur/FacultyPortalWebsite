@@ -231,7 +231,7 @@ router.get("/departments/all", async (req, res) => {
 // Create department (Admin)
 router.post("/departments/create", async (req, res) => {
   try {
-    const { name, description, hod, contact, location, programs, achievements, order } = req.body;
+    const { name, description, hod, president, contact, email, location, website, programs, achievements, order } = req.body;
 
     if (!name || !description) {
       return res.status(400).json({ error: "Name and description required" });
@@ -241,8 +241,11 @@ router.post("/departments/create", async (req, res) => {
       name,
       description,
       hod: hod || "N/A",
+      president: president || "N/A",
       contact: contact || "N/A",
+      email: email || "",
       location: location || "N/A",
+      website: website || "",
       programs: programs || [],
       achievements: achievements || "",
       order: order || 0,
@@ -273,14 +276,17 @@ router.get("/departments/:id", async (req, res) => {
 // Update department (Admin)
 router.put("/departments/:id", async (req, res) => {
   try {
-    const { name, description, hod, contact, location, programs, achievements, order } = req.body;
+    const { name, description, hod, president, contact, email, location, website, programs, achievements, order } = req.body;
     const updateData = {};
     
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (hod !== undefined) updateData.hod = hod;
+    if (president !== undefined) updateData.president = president;
     if (contact !== undefined) updateData.contact = contact;
+    if (email !== undefined) updateData.email = email;
     if (location !== undefined) updateData.location = location;
+    if (website !== undefined) updateData.website = website;
     if (programs !== undefined) updateData.programs = programs;
     if (achievements !== undefined) updateData.achievements = achievements;
     if (order !== undefined) updateData.order = order;

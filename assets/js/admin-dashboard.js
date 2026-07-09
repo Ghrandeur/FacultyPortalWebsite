@@ -1769,24 +1769,40 @@ function openDepartmentForm() {
       <textarea id="departmentDescription" rows="4" placeholder="Department description" required></textarea>
     </div>
     <div class="form-group">
-      <label for="departmentHod">Head of Department</label>
+      <label for="departmentLogoFile">Department Logo</label>
+      <input type="file" id="departmentLogoFile" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label for="departmentHod">Head of Department (HOD)</label>
       <input type="text" id="departmentHod" placeholder="HOD name">
     </div>
     <div class="form-group">
-      <label for="departmentContact">Contact</label>
-      <input type="text" id="departmentContact" placeholder="Contact details">
+      <label for="departmentPresident">President/Chairman</label>
+      <input type="text" id="departmentPresident" placeholder="President or Chairman name">
+    </div>
+    <div class="form-group">
+      <label for="departmentContact">Contact Phone</label>
+      <input type="tel" id="departmentContact" placeholder="Phone number">
+    </div>
+    <div class="form-group">
+      <label for="departmentEmail">Email</label>
+      <input type="email" id="departmentEmail" placeholder="Email address">
     </div>
     <div class="form-group">
       <label for="departmentLocation">Location</label>
-      <input type="text" id="departmentLocation" placeholder="Location">
+      <input type="text" id="departmentLocation" placeholder="Building/Office location">
     </div>
     <div class="form-group">
-      <label for="departmentPrograms">Programs</label>
-      <textarea id="departmentPrograms" rows="3" placeholder="Programs offered, comma separated"></textarea>
+      <label for="departmentWebsite">Website</label>
+      <input type="url" id="departmentWebsite" placeholder="https://example.com">
     </div>
     <div class="form-group">
-      <label for="departmentAchievements">Achievements</label>
-      <textarea id="departmentAchievements" rows="3" placeholder="Key achievements"></textarea>
+      <label for="departmentPrograms">Programs Offered</label>
+      <textarea id="departmentPrograms" rows="3" placeholder="Programs offered (one per line or comma separated)"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="departmentAchievements">Achievements & Highlights</label>
+      <textarea id="departmentAchievements" rows="3" placeholder="Key achievements and milestones"></textarea>
     </div>
     <div class="form-group">
       <label for="departmentOrder">Display Order</label>
@@ -1800,26 +1816,48 @@ async function handleDepartmentSubmit() {
   const name = document.getElementById('departmentName').value;
   const description = document.getElementById('departmentDescription').value;
   const hod = document.getElementById('departmentHod').value;
+  const president = document.getElementById('departmentPresident').value;
   const contact = document.getElementById('departmentContact').value;
+  const email = document.getElementById('departmentEmail').value;
   const location = document.getElementById('departmentLocation').value;
-  const programs = document.getElementById('departmentPrograms').value
-    .split(/\r?\n|,/) 
+  const website = document.getElementById('departmentWebsite').value;
+  const programsText = document.getElementById('departmentPrograms').value;
+  const programs = programsText
+    .split(/\r?\n|,/)
     .map(p => p.trim())
     .filter(Boolean);
   const achievements = document.getElementById('departmentAchievements').value;
   const order = Number(document.getElementById('departmentOrder').value || 0);
+  const fileInput = document.getElementById('departmentLogoFile');
 
   try {
+    let logoUrl = currentEditData?.logo || '';
+    
+    // Upload new logo if provided
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      try {
+        logoUrl = await uploadImageToStorage(fileInput.files[0], 'departments');
+      } catch (err) {
+        console.warn('Logo upload failed:', err);
+        // Continue without logo
+      }
+    }
+
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/departments/${currentEditId}` : `${API_URL}/departments/create`;
     
+    const body = { name, description, hod, president, contact, email, location, website, programs, achievements, order };
+    if (logoUrl) {
+      body.logo = logoUrl;
+    }
+
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ name, description, hod, contact, location, programs, achievements, order })
+      body: JSON.stringify(body)
     });
 
     if (response.ok) {
@@ -1863,24 +1901,40 @@ async function editDepartment(id) {
         <textarea id="departmentDescription" rows="4" placeholder="Department description" required>${dept.description || ''}</textarea>
       </div>
       <div class="form-group">
-        <label for="departmentHod">Head of Department</label>
+        <label for="departmentLogoFile">Update Logo (optional)</label>
+        <input type="file" id="departmentLogoFile" accept="image/*">
+      </div>
+      <div class="form-group">
+        <label for="departmentHod">Head of Department (HOD)</label>
         <input type="text" id="departmentHod" value="${dept.hod || ''}" placeholder="HOD name">
       </div>
       <div class="form-group">
-        <label for="departmentContact">Contact</label>
-        <input type="text" id="departmentContact" value="${dept.contact || ''}" placeholder="Contact details">
+        <label for="departmentPresident">President/Chairman</label>
+        <input type="text" id="departmentPresident" value="${dept.president || ''}" placeholder="President or Chairman name">
+      </div>
+      <div class="form-group">
+        <label for="departmentContact">Contact Phone</label>
+        <input type="tel" id="departmentContact" value="${dept.contact || ''}" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label for="departmentEmail">Email</label>
+        <input type="email" id="departmentEmail" value="${dept.email || ''}" placeholder="Email address">
       </div>
       <div class="form-group">
         <label for="departmentLocation">Location</label>
-        <input type="text" id="departmentLocation" value="${dept.location || ''}" placeholder="Location">
+        <input type="text" id="departmentLocation" value="${dept.location || ''}" placeholder="Building/Office location">
       </div>
       <div class="form-group">
-        <label for="departmentPrograms">Programs</label>
-        <textarea id="departmentPrograms" rows="3" placeholder="Programs offered, comma separated">${Array.isArray(dept.programs) ? dept.programs.join(', ') : dept.programs || ''}</textarea>
+        <label for="departmentWebsite">Website</label>
+        <input type="url" id="departmentWebsite" value="${dept.website || ''}" placeholder="https://example.com">
       </div>
       <div class="form-group">
-        <label for="departmentAchievements">Achievements</label>
-        <textarea id="departmentAchievements" rows="3" placeholder="Key achievements">${dept.achievements || ''}</textarea>
+        <label for="departmentPrograms">Programs Offered</label>
+        <textarea id="departmentPrograms" rows="3" placeholder="Programs offered (one per line or comma separated)">${Array.isArray(dept.programs) ? dept.programs.join('\n') : dept.programs || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="departmentAchievements">Achievements & Highlights</label>
+        <textarea id="departmentAchievements" rows="3" placeholder="Key achievements and milestones">${dept.achievements || ''}</textarea>
       </div>
       <div class="form-group">
         <label for="departmentOrder">Display Order</label>
