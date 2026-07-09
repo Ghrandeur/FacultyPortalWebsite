@@ -239,6 +239,27 @@ select {
   word-break: break-word;
 }
 
+/* leave room on the right inside header box for back button */
+.header-with-logos h1 {
+  padding-right: 72px;
+}
+
+/* homepage has no back button — remove extra right padding */
+.home .header-with-logos h1 {
+  padding-right: 0;
+}
+
+@media (max-width: 420px) {
+  .header-box {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .header-with-logos h1 {
+    font-size: clamp(1.05rem, 4.0vw, 1.6rem);
+    padding-right: 56px;
+  }
+}
+
 /* Keep topbar/header layout consistent on small screens */
 @media (max-width: 720px) {
   .topbar {
