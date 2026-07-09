@@ -24,6 +24,7 @@ function serverTimestamp() {
 router.post("/newsletter/subscribe", async (req, res) => {
   try {
     const { regNo, department, email } = req.body;
+    console.log('Newsletter subscribe request:', { regNo, department, email });
 
     if (!regNo || !department || !email) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -32,7 +33,7 @@ router.post("/newsletter/subscribe", async (req, res) => {
     const existingSnapshot = await db.collection("newsletter_subscribers").where("email", "==", email).get();
 
     if (!existingSnapshot.empty) {
-      // If already subscribed, do not create duplicate but still acknowledge subscription.
+      console.log('Newsletter subscribe: already exists', email);
       return res.json({
         success: true,
         message: "Subscription already exists",

@@ -6,8 +6,14 @@ const defaultBackendUrl = (window.location.hostname === 'localhost' || window.lo
   : deployedBackendUrl;
 const runtimeBackendUrl = window.__BACKEND_URL__ || window.API_URL || defaultBackendUrl;
 const backendBaseUrl = runtimeBackendUrl.replace(/\/api$/, '');
-window.API_URL = runtimeBackendUrl.endsWith('/api') ? runtimeBackendUrl : `${runtimeBackendUrl.replace(/\/$/, '')}/api`;
+const API_URL = runtimeBackendUrl.endsWith('/api')
+  ? runtimeBackendUrl
+  : `${runtimeBackendUrl.replace(/\/$/, '')}/api`;
+
+window.API_URL = API_URL;
 window.BACKEND_BASE_URL = backendBaseUrl;
+
+export { API_URL };
 
 window.normalizeMediaUrl = function (url) {
   if (!url) return '';

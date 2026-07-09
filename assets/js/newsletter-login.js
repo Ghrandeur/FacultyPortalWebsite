@@ -3,10 +3,11 @@ import {
   getAuth,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { API_URL } from "./api-config.js";
+import { API_URL as CONFIG_API_URL } from "./api-config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const API_URL = window.API_URL || CONFIG_API_URL || 'http://localhost:5000/api';
 
 const form = document.getElementById("newsletterLoginForm");
 const errorMessage = document.getElementById("errorMessage");
