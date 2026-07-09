@@ -159,12 +159,34 @@ select {
 }
 
 .header-with-logos {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "back logos ."
+    "title title title";
+  align-items: center;
   gap: 18px;
 }
 
+.page-back-button {
+  grid-area: back;
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--primary-blue);
+  background: var(--white);
+  color: var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
 .header-logos {
+  grid-area: logos;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -179,27 +201,15 @@ select {
   padding: 8px;
 }
 
+.header-with-logos h1 {
+  grid-area: title;
+}
 
 h1 {
   margin: 0;
   font-size: clamp(2.5rem, 4vw, 3.5rem);
   line-height: 1.02;
   color: var(--primary-blue);
-}
-
-.page-back-button {
-  width: 56px;
-  height: 56px;
-  font-size: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 2px solid var(--primary-blue);
-  background: var(--white);
-  color: var(--primary-blue);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: background 180ms ease, transform 180ms ease;
 }
 
 .page-back-button .back-icon {
