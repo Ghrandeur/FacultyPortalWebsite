@@ -1671,7 +1671,8 @@ async function handleDepartmentSubmit() {
       alert('Department created successfully!');
     } else {
       const err = await response.json().catch(() => ({}));
-      alert(err.error || 'Error creating department');
+      console.error('Department create failed:', response.status, err);
+      alert(err.error || `Error creating department (${response.status})`);
     }
   } catch (error) {
     console.error('Error creating department:', error);
