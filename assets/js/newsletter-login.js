@@ -64,8 +64,8 @@ form.addEventListener("submit", async (e) => {
       localStorage.setItem("subscriberEmail", email);
       
       const confirmationMsg = data.emailConfirmation 
-        ? "Registration successful! A confirmation email has been sent to " + email
-        : "Registration successful! You will receive newsletters at " + email;
+        ? "Successfully subscribed! A confirmation email has been sent to " + email
+        : "Successfully subscribed! You will receive newsletters at " + email;
       
       showSuccess(confirmationMsg);
       form.reset();

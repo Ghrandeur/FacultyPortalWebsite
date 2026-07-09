@@ -32,7 +32,12 @@ router.post("/newsletter/subscribe", async (req, res) => {
     const existingSnapshot = await db.collection("newsletter_subscribers").where("email", "==", email).get();
 
     if (!existingSnapshot.empty) {
-      return res.status(400).json({ error: "Email already subscribed" });
+      // If already subscribed, do not create duplicate but still acknowledge subscription.
+      return res.json({
+        success: true,
+        message: "Subscription already exists",
+        emailConfirmation: true
+      });
     }
 
     const docRef = await db.collection("newsletter_subscribers").add({
