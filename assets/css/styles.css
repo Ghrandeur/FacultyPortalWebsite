@@ -60,7 +60,8 @@ select {
 .topbar .page-back-button {
   position: absolute;
   top: 50%;
-  right: 86px;
+  /* push the back button leftward so it's visually separated from the nav */
+  right: 140px;
   transform: translateY(-50%);
   z-index: 5;
 }
