@@ -17,7 +17,43 @@ let currentFilter = "all";
 let newslettersData = [];
 
 // Load newsletters on page load
-document.addEventListener("DOMContentLoaded", loadNewsletters);
+document.addEventListener("DOMContentLoaded", () => {
+  showNewsletterStatusFromSubscription();
+  loadNewsletters();
+});
+
+function showNewsletterStatusFromSubscription() {
+  const statusElement = document.getElementById('newsletterStatus');
+  if (!statusElement) return;
+
+  const stored = localStorage.getItem('newsletterEmailResult');
+  if (!stored) return;
+
+  try {
+    const result = JSON.parse(stored);
+    if (!result) return;
+
+    if (result.success) {
+      statusElement.style.display = 'block';
+      statusElement.style.borderColor = '#c7f0d0';
+      statusElement.style.background = '#ecfdf5';
+      statusElement.style.color = '#134e4a';
+      statusElement.textContent = result.message || 'Subscription succeeded and confirmation email was sent.';
+    } else {
+      statusElement.style.display = 'block';
+      statusElement.style.borderColor = '#fecaca';
+      statusElement.style.background = '#fef2f2';
+      statusElement.style.color = '#991b1b';
+      statusElement.textContent = result.error
+        ? `Subscription succeeded, but email send failed: ${result.error}`
+        : 'Subscription succeeded, but email confirmation could not be sent.';
+    }
+  } catch (err) {
+    console.warn('Could not parse saved newsletter status', err);
+  } finally {
+    localStorage.removeItem('newsletterEmailResult');
+  }
+}
 
 // Filter button listeners
 document.querySelectorAll(".filter-btn").forEach((btn) => {

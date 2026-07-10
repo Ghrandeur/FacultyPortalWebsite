@@ -21,4 +21,4 @@ window.firebaseApp = app;
 window.firebaseAuth = auth;
 window.firebaseStorage = storage;
 
-export { app, auth, storage };
+export { app, auth, storage, firebaseConfig };
