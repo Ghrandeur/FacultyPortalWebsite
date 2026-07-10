@@ -6,17 +6,39 @@ let transporter = null;
 
 const initializeTransporter = () => {
   try {
-    transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE || 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    // Support explicit SMTP server configuration or a simple service+auth
+    if (process.env.EMAIL_SMTP_HOST) {
+      const host = process.env.EMAIL_SMTP_HOST;
+      const port = parseInt(process.env.EMAIL_SMTP_PORT || '587', 10);
+      const secure = (process.env.EMAIL_SMTP_SECURE || 'false').toLowerCase() === 'true';
+      transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure,
+        auth: process.env.EMAIL_USER && process.env.EMAIL_PASSWORD ? {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        } : undefined,
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        service: process.env.EMAIL_SERVICE || 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+    }
 
     const configuredFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER;
     const fromAddress = /@/.test(configuredFrom) ? configuredFrom : process.env.EMAIL_USER;
-    console.log('✅ Email service initialized successfully. Using sender:', fromAddress);
+    // Verify transporter connectivity immediately so startup logs any auth/config issues
+    transporter.verify().then(() => {
+      console.log('✅ Email service initialized and verified. Using sender:', fromAddress);
+    }).catch(err => {
+      console.warn('⚠️ Email transporter verification failed:', err && err.message ? err.message : err);
+    });
+
     return transporter;
   } catch (error) {
     console.error('❌ Failed to initialize email service:', error.message);

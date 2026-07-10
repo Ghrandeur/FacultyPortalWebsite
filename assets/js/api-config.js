@@ -1,9 +1,9 @@
-// Configure your backend URL for local development or production deployment.
-// In production, this app uses the deployed backend URL below.
-const deployedBackendUrl = 'https://facultyportalwebsite-3.onrender.com';
+// Derive backend URL at runtime. Prefer explicit `window.__BACKEND_URL__`,
+// otherwise use same origin so there is no hardcoded remote host.
+const inferredOrigin = window.location && window.location.origin ? window.location.origin : '';
 const defaultBackendUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:5000'
-  : deployedBackendUrl;
+  : inferredOrigin || '';
 const runtimeBackendUrl = window.__BACKEND_URL__ || window.API_URL || defaultBackendUrl;
 const backendBaseUrl = runtimeBackendUrl.replace(/\/api$/, '');
 const API_URL = runtimeBackendUrl.endsWith('/api')

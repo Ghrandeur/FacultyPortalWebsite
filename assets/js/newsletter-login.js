@@ -13,17 +13,17 @@ const form = document.getElementById("newsletterLoginForm");
 const errorMessage = document.getElementById("errorMessage");
 const successMessage = document.getElementById("successMessage");
 
-// Fail fast if API_URL is not configured correctly on the page
+// Show the effective API URL for debugging and allow the flow to proceed.
+const debugBanner = document.createElement('div');
+debugBanner.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999;background:#fff;border:1px solid #ddd;padding:6px 8px;border-radius:6px;font-size:12px;color:#333;box-shadow:0 2px 6px rgba(0,0,0,0.1)';
+debugBanner.textContent = `API: ${API_URL}`;
+document.body.appendChild(debugBanner);
+
 if (!API_URL || typeof API_URL !== 'string' || API_URL.indexOf('undefined') !== -1) {
-  console.error('Configuration error: API_URL is not set or invalid:', API_URL);
+  console.warn('Configuration warning: API_URL may be invalid:', API_URL);
   if (errorMessage) {
-    errorMessage.textContent = 'Configuration error: API URL not set. Please contact the site administrator.';
+    errorMessage.textContent = 'Warning: API URL may be invalid. Admin can fix this.';
     errorMessage.style.display = 'block';
-  }
-  const submitBtn = form?.querySelector('button[type="submit"]');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Unavailable';
   }
 }
 
@@ -83,7 +83,12 @@ form.addEventListener("submit", async (e) => {
         ? "Successfully subscribed! A confirmation email has been sent to " + email
         : "Successfully subscribed! You will receive newsletters at " + email;
       
-      showSuccess(confirmationMsg + " Redirecting to the newsletter page...");
+        // If email failed, surface the error to the user but still proceed
+        if (!data.emailConfirmation && data.emailResult && data.emailResult.error) {
+          showError(`Subscribed but confirmation email failed: ${data.emailResult.error}`);
+        } else {
+          showSuccess(confirmationMsg + " Redirecting to the newsletter page...");
+        }
       submitBtn.textContent = "Subscribed";
       submitBtn.disabled = true;
       form.reset();

@@ -52,11 +52,13 @@ router.post("/newsletter/subscribe", async (req, res) => {
     // Send confirmation email
     const emailResult = await sendSubscriptionConfirmation(email, regNo);
 
+    // Return subscription success and include detailed email result for client visibility
     res.json({ 
       success: true, 
       id: docRef.id, 
       message: "Subscription successful",
-      emailConfirmation: emailResult
+      emailConfirmation: Boolean(emailResult && emailResult.success),
+      emailResult
     });
   } catch (error) {
     console.error("Newsletter subscription error:", error);
