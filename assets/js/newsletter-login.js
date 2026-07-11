@@ -24,13 +24,7 @@ window.newsletterLoginDebug = {
 const getErrorMessageElement = () => document.getElementById("errorMessage");
 const getSuccessMessageElement = () => document.getElementById("successMessage");
 
-// Show the effective API URL for debugging and allow the flow to proceed.
-const debugBanner = document.createElement('div');
-debugBanner.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999;background:#fff;border:1px solid #ddd;padding:6px 8px;border-radius:6px;font-size:12px;color:#333;box-shadow:0 2px 6px rgba(0,0,0,0.1)';
-debugBanner.textContent = `API: ${API_URL}`;
-
 function initializeNewsletterLogin() {
-  document.body.appendChild(debugBanner);
   setupNewsletterForm();
 }
 
