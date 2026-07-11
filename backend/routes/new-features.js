@@ -18,6 +18,19 @@ function serverTimestamp() {
   return admin.firestore.FieldValue.serverTimestamp();
 }
 
+async function deleteCompanionTopicAndReplies(topicId) {
+  const topicRef = db.collection("companion_topics").doc(topicId);
+  const repliesSnapshot = await db.collection("companion_replies").where("topicId", "==", topicId).get();
+  const batch = db.batch();
+
+  batch.delete(topicRef);
+  repliesSnapshot.forEach((replyDoc) => {
+    batch.delete(replyDoc.ref);
+  });
+
+  await batch.commit();
+}
+
 // ==================== NEWSLETTER ROUTES ====================
 
 // Subscribe to newsletter
@@ -678,7 +691,7 @@ router.get("/companion/topics/:id", async (req, res) => {
 // Delete companion topic (Admin - for moderation)
 router.delete("/companion/topics/:id", async (req, res) => {
   try {
-    await db.collection("companion_topics").doc(req.params.id).delete();
+    await deleteCompanionTopicAndReplies(req.params.id);
     res.json({ success: true, message: "Topic deleted" });
   } catch (error) {
     console.error("Delete topic error:", error);

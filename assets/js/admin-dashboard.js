@@ -2479,20 +2479,24 @@ async function loadCompanionContent() {
 }
 
 async function deleteCompanionTopic(id) {
-  if (!confirm('Are you sure you want to delete this topic?')) return;
+  if (!confirm('Are you sure you want to delete this student question and its replies?')) return;
 
   try {
+    const token = currentUser && typeof currentUser.getIdToken === 'function'
+      ? await currentUser.getIdToken()
+      : '';
+
     const response = await fetch(`${API_URL}/companion/topics/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': await currentUser.getIdToken()
+        ...(token ? { Authorization: token } : {})
       }
     });
 
     if (response.ok) {
       loadCompanionContent();
       loadDashboardStats();
-      alert('Topic deleted successfully!');
+      alert('Student question deleted successfully!');
     } else {
       alert('Failed to delete topic');
     }
