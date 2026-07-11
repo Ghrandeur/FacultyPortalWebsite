@@ -2147,8 +2147,8 @@ function openParliamentarianForm() {
       <input type="text" id="parlPortfolio" placeholder="Portfolio link or summary">
     </div>
     <div class="form-group">
-      <label for="parlImage">Photo URL</label>
-      <input type="url" id="parlImage" placeholder="https://.../image.jpg">
+      <label for="parlPhotoFile">Upload Photo From Device</label>
+      <input type="file" id="parlPhotoFile" accept="image/*">
     </div>
     <div class="form-group">
       <label for="parlEmail">Email</label>
@@ -2174,20 +2174,35 @@ async function handleParliamentarianSubmit() {
   const portfolio = document.getElementById('parlPortfolio').value;
   const email = document.getElementById('parlEmail').value;
   const phone = document.getElementById('parlPhone').value;
-  const image = document.getElementById('parlImage').value.trim();
+  const fileInput = document.getElementById('parlPhotoFile');
   const order = Number(document.getElementById('parlOrder').value || 0);
 
   try {
+    let image = normalizePhotoUrlValue(currentEditData?.image || '');
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const uploadedImage = await uploadImageToStorage(fileInput.files[0], 'parliamentarians');
+      image = normalizePhotoUrlValue(uploadedImage);
+      if (!image) {
+        alert('Warning: Photo upload may have failed. The parliamentarian will be saved without a photo.');
+        image = '';
+      }
+    }
+
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/parliamentarians/${currentEditId}` : `${API_URL}/parliamentarians/create`;
-    
+
+    const body = { name, position, department, bio, portfolio, email, phone, order };
+    if (image) {
+      body.image = image;
+    }
+
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ name, position, department, bio, portfolio, email, phone, order, image })
+      body: JSON.stringify(body)
     });
 
     if (response.ok) {
@@ -2242,8 +2257,8 @@ async function editParliamentarian(id) {
         <input type="text" id="parlPortfolio" value="${person.portfolio || ''}" placeholder="Portfolio link or summary">
       </div>
       <div class="form-group">
-        <label for="parlImage">Photo URL</label>
-        <input type="url" id="parlImage" value="${person.image || ''}" placeholder="https://.../image.jpg">
+        <label for="parlPhotoFile">Upload New Photo From Device (optional)</label>
+        <input type="file" id="parlPhotoFile" accept="image/*">
       </div>
       <div class="form-group">
         <label for="parlEmail">Email</label>
