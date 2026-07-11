@@ -834,6 +834,21 @@ async function editLeader(id) {
   }
 }
 
+function normalizePhotoUrlValue(value) {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (value && typeof value === 'object') {
+    if (typeof value.url === 'string') return value.url.trim();
+    if (typeof value.photoUrl === 'string') return value.photoUrl.trim();
+    if (typeof value.src === 'string') return value.src.trim();
+    if (typeof value.href === 'string') return value.href.trim();
+  }
+
+  return '';
+}
+
 async function handleLeaderSubmit() {
   const name = document.getElementById('leaderName').value;
   const department = document.getElementById('leaderDepartment').value;
@@ -843,19 +858,20 @@ async function handleLeaderSubmit() {
   try {
     console.log('Leader submit - starting', { name, department, position, hasFile: !!(fileInput?.files?.[0]) });
     
-    let photoUrl = currentEditData?.photoUrl || '';
+    let photoUrl = normalizePhotoUrlValue(currentEditData?.photoUrl || '');
     if (fileInput && fileInput.files && fileInput.files[0]) {
       console.log('Uploading new photo');
-      photoUrl = await uploadImageToStorage(fileInput.files[0], 'leaders');
-      console.log('Photo URL after upload:', photoUrl);
-      if (!photoUrl || !photoUrl.trim()) {
+      const uploadedPhoto = await uploadImageToStorage(fileInput.files[0], 'leaders');
+      photoUrl = normalizePhotoUrlValue(uploadedPhoto);
+      console.log('Photo URL after upload:', photoUrl || 'empty');
+      if (!photoUrl) {
         console.error('Photo upload returned empty URL');
         alert('Warning: Photo upload may have failed. The leader will be saved without a photo.');
         photoUrl = '';
       }
     } else {
       console.log('No new photo provided, using existing:', photoUrl || 'none');
-      if (!photoUrl || !photoUrl.trim()) {
+      if (!photoUrl) {
         console.warn('No photo available for leader');
       }
     }
@@ -870,8 +886,8 @@ async function handleLeaderSubmit() {
     const body = { name, department, position };
     
     // Only include photoUrl if it has a non-empty value
-    if (photoUrl && typeof photoUrl === 'string' && photoUrl.trim()) {
-      body.photoUrl = photoUrl.trim();
+    if (photoUrl) {
+      body.photoUrl = photoUrl;
     }
     
     console.log('Sending to API:', { method, url, body });
