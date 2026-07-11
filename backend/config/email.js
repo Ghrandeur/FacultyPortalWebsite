@@ -1,11 +1,32 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+const normalizeEmailSetting = (value) => {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+};
+
+const resolveEmailConfig = () => {
+  const fromAddress = normalizeEmailSetting(process.env.EMAIL_FROM || process.env.EMAIL_USER || 'fahssauniuyoeditorialboard@gmail.com');
+  const user = normalizeEmailSetting(process.env.EMAIL_USER || fromAddress || 'promiseetok211@gmail.com');
+  const pass = normalizeEmailSetting(process.env.EMAIL_PASSWORD || '');
+  const fromName = normalizeEmailSetting(process.env.NEWSLETTER_FROM_NAME || 'FAHSSA Newsletter');
+
+  return {
+    fromAddress,
+    user,
+    pass,
+    fromName,
+  };
+};
+
 // Create transporter for sending emails
 let transporter = null;
 
 const initializeTransporter = () => {
   try {
+    const { fromAddress, user, pass } = resolveEmailConfig();
+
     // Support explicit SMTP server configuration or a simple service+auth
     if (process.env.EMAIL_SMTP_HOST) {
       const host = process.env.EMAIL_SMTP_HOST;
@@ -15,23 +36,21 @@ const initializeTransporter = () => {
         host,
         port,
         secure,
-        auth: process.env.EMAIL_USER && process.env.EMAIL_PASSWORD ? {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
+        auth: user && pass ? {
+          user,
+          pass,
         } : undefined,
       });
     } else {
       transporter = nodemailer.createTransport({
         service: process.env.EMAIL_SERVICE || 'gmail',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
+          user,
+          pass,
         },
       });
     }
 
-    const configuredFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER;
-    const fromAddress = /@/.test(configuredFrom) ? configuredFrom : process.env.EMAIL_USER;
     // Verify transporter connectivity immediately so startup logs any auth/config issues
     transporter.verify().then(() => {
       console.log('✅ Email service initialized and verified. Using sender:', fromAddress);
@@ -63,9 +82,7 @@ const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
       return { success: false, error: msg };
     }
 
-    const fromAddress = process.env.EMAIL_FROM && /@/.test(process.env.EMAIL_FROM)
-      ? process.env.EMAIL_FROM
-      : process.env.EMAIL_USER;
+    const { fromAddress, fromName } = resolveEmailConfig();
 
     if (!fromAddress) {
       const msg = 'No valid FROM address configured';
@@ -74,7 +91,7 @@ const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
     }
 
     const mailOptions = {
-      from: `"${process.env.NEWSLETTER_FROM_NAME || 'FAHSSA'}" <${fromAddress}>`,
+      from: `"${fromName}" <${fromAddress}>`,
       to: email,
       subject: 'Welcome to FAHSSA Newsletter!',
       html: `
@@ -132,9 +149,7 @@ const sendNewsletterToSubscriber = async (email, newsletterData) => {
       return false;
     }
 
-    const fromAddress = process.env.EMAIL_FROM && /@/.test(process.env.EMAIL_FROM)
-      ? process.env.EMAIL_FROM
-      : process.env.EMAIL_USER;
+    const { fromAddress, fromName } = resolveEmailConfig();
 
     if (!fromAddress) {
       console.error('❌ No valid FROM address configured. Set EMAIL_FROM or EMAIL_USER to a valid email address.');
@@ -142,7 +157,7 @@ const sendNewsletterToSubscriber = async (email, newsletterData) => {
     }
 
     const mailOptions = {
-      from: `"${process.env.NEWSLETTER_FROM_NAME || 'FAHSSA'}" <${fromAddress}>`,
+      from: `"${fromName}" <${fromAddress}>`,
       to: email,
       subject: `${process.env.NEWSLETTER_EMAIL_SUBJECT}: ${newsletterData.title}`,
       html: `
@@ -269,6 +284,7 @@ const testEmailConnection = async () => {
 module.exports = {
   initializeTransporter,
   getTransporter,
+  resolveEmailConfig,
   sendSubscriptionConfirmation,
   sendNewsletterToSubscriber,
   sendNewsletterToAll,
