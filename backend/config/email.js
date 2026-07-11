@@ -20,6 +20,37 @@ const resolveEmailConfig = () => {
   };
 };
 
+const buildTransportOptions = () => {
+  const { user, pass } = resolveEmailConfig();
+
+  if (process.env.EMAIL_SMTP_HOST) {
+    return {
+      host: process.env.EMAIL_SMTP_HOST,
+      port: parseInt(process.env.EMAIL_SMTP_PORT || '587', 10),
+      secure: (process.env.EMAIL_SMTP_SECURE || 'false').toLowerCase() === 'true',
+      requireTLS: true,
+      auth: user && pass ? { user, pass } : undefined,
+      family: 4,
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    };
+  }
+
+  return {
+    service: process.env.EMAIL_SERVICE || 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    requireTLS: true,
+    auth: user && pass ? { user, pass } : undefined,
+    family: 4,
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  };
+};
+
 // Create transporter for sending emails
 let transporter = null;
 
@@ -27,29 +58,7 @@ const initializeTransporter = () => {
   try {
     const { fromAddress, user, pass } = resolveEmailConfig();
 
-    // Support explicit SMTP server configuration or a simple service+auth
-    if (process.env.EMAIL_SMTP_HOST) {
-      const host = process.env.EMAIL_SMTP_HOST;
-      const port = parseInt(process.env.EMAIL_SMTP_PORT || '587', 10);
-      const secure = (process.env.EMAIL_SMTP_SECURE || 'false').toLowerCase() === 'true';
-      transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth: user && pass ? {
-          user,
-          pass,
-        } : undefined,
-      });
-    } else {
-      transporter = nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE || 'gmail',
-        auth: {
-          user,
-          pass,
-        },
-      });
-    }
+    transporter = nodemailer.createTransport(buildTransportOptions());
 
     // Verify transporter connectivity immediately so startup logs any auth/config issues
     transporter.verify().then(() => {
@@ -285,6 +294,7 @@ module.exports = {
   initializeTransporter,
   getTransporter,
   resolveEmailConfig,
+  buildTransportOptions,
   sendSubscriptionConfirmation,
   sendNewsletterToSubscriber,
   sendNewsletterToAll,
