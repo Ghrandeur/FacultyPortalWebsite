@@ -26,27 +26,31 @@ const buildTransportOptions = () => {
   if (process.env.EMAIL_SMTP_HOST) {
     return {
       host: process.env.EMAIL_SMTP_HOST,
-      port: parseInt(process.env.EMAIL_SMTP_PORT || '587', 10),
-      secure: (process.env.EMAIL_SMTP_SECURE || 'false').toLowerCase() === 'true',
+      port: parseInt(process.env.EMAIL_SMTP_PORT || '465', 10),
+      secure: (process.env.EMAIL_SMTP_SECURE || 'true').toLowerCase() === 'true',
       requireTLS: true,
       auth: user && pass ? { user, pass } : undefined,
+      authMethod: process.env.EMAIL_SMTP_AUTH_METHOD || 'PLAIN',
       family: 4,
-      connectionTimeout: 15000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' },
     };
   }
 
   return {
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     requireTLS: true,
     auth: user && pass ? { user, pass } : undefined,
+    authMethod: 'PLAIN',
     family: 4,
-    connectionTimeout: 15000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
+    tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' },
   };
 };
 
