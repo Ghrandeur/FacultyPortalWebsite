@@ -62,20 +62,30 @@ router.post("/newsletter/subscribe", async (req, res) => {
       active: true,
     });
 
-    const emailResult = { success: false, error: "Email delivery is being processed in the background" };
-    void sendSubscriptionConfirmation(email, regNo)
-      .then((result) => {
-        console.log("Newsletter confirmation email result for", email, result);
-      })
-      .catch((emailError) => {
-        console.warn("Newsletter confirmation email failed, but subscription was saved:", emailError && emailError.message ? emailError.message : emailError);
-      });
+    let emailResult = { success: false, error: "Email delivery is being processed in the background" };
+    let emailConfirmation = false;
+
+    try {
+      const emailSendResult = await sendSubscriptionConfirmation(email, regNo);
+      console.log("Newsletter confirmation email result for", email, emailSendResult);
+
+      emailConfirmation = Boolean(emailSendResult && emailSendResult.success);
+      emailResult = {
+        success: emailConfirmation,
+        ...(emailSendResult && emailSendResult.messageId ? { messageId: emailSendResult.messageId } : {}),
+        ...(emailSendResult && emailSendResult.error ? { error: emailSendResult.error } : {}),
+      };
+    } catch (emailError) {
+      const message = emailError && emailError.message ? emailError.message : String(emailError);
+      console.warn("Newsletter confirmation email failed, but subscription was saved:", message);
+      emailResult = { success: false, error: message };
+    }
 
     res.json({
       success: true,
       id: docRef.id,
-      message: "Subscription successful",
-      emailConfirmation: false,
+      message: emailConfirmation ? "Subscription successful" : "Subscription saved, but confirmation email could not be sent",
+      emailConfirmation,
       emailResult
     });
   } catch (error) {

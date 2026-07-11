@@ -117,16 +117,27 @@ function setupNewsletterForm() {
     console.log('Newsletter subscribe response', response.status, data);
 
     if (response.ok && data.success) {
+      const emailConfirmed = Boolean(data.emailConfirmation);
+      const emailResultSuccessful = Boolean(data.emailResult?.success);
+      const shouldRedirect = emailConfirmed || emailResultSuccessful;
+
       // Store email in localStorage for unsubscribe feature
       localStorage.setItem("subscriberEmail", email);
       const emailResult = {
-        success: Boolean(data.emailConfirmation),
-        message: data.message || (data.emailConfirmation ? `Successfully subscribed! A confirmation email has been sent to ${email}` : `Successfully subscribed! You will receive newsletters at ${email}`),
+        success: shouldRedirect,
+        message: data.message || (emailConfirmed ? `Successfully subscribed! A confirmation email has been sent to ${email}` : `Successfully subscribed! You will receive newsletters at ${email}`),
         error: data.emailResult?.error || null,
       };
       localStorage.setItem("newsletterEmailResult", JSON.stringify(emailResult));
-      
-      if (!data.emailConfirmation && data.emailResult && data.emailResult.error) {
+
+      if (!shouldRedirect) {
+        showError(`Subscription saved, but the confirmation email could not be sent. Please stay on this page and try again later. ${data.emailResult?.error || ''}`.trim());
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        return;
+      }
+
+      if (!emailConfirmed && data.emailResult && data.emailResult.error) {
         showError(`Subscribed but confirmation email failed: ${data.emailResult.error}`);
       } else {
         showSuccess(emailResult.message + " Redirecting to the newsletter page...");
