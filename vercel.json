@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://facultyportalwebsite-3.onrender.com/api/$1"
+    }
+  ]
+}
