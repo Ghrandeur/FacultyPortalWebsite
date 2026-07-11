@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { storage } = require('../config/firebase');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const sharp = require('sharp');
 
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -45,8 +46,32 @@ async function processSingleFile(file, folder, s3Enabled, firebaseStorageEnabled
   const localFilePath = path.join(localFolder, safeName);
 
   if (!fs.existsSync(localFolder)) fs.mkdirSync(localFolder, { recursive: true });
-  fs.writeFileSync(localFilePath, file.buffer);
-  const localUrl = `/uploads/${relativePath}`;
+
+  let processedBuffer = file.buffer;
+  let processedMimeType = file.mimetype || 'application/octet-stream';
+  let outputExtension = ext || '.bin';
+
+  try {
+    const image = sharp(file.buffer);
+    const metadata = await image.metadata();
+    if (metadata.format) {
+      const converted = await image
+        .rotate()
+        .jpeg({ quality: 85, progressive: true })
+        .toBuffer();
+      processedBuffer = converted;
+      processedMimeType = 'image/jpeg';
+      outputExtension = '.jpg';
+    }
+  } catch (imageErr) {
+    console.warn('Image conversion failed, using original buffer:', imageErr && imageErr.message);
+  }
+
+  const finalName = outputExtension !== ext ? `${path.basename(safeName, ext)}${outputExtension}` : safeName;
+  const finalRelativePath = folder ? `${folder}/${finalName}` : finalName;
+  const finalLocalFilePath = path.join(localFolder, finalName);
+  fs.writeFileSync(finalLocalFilePath, processedBuffer);
+  const localUrl = `/uploads/${finalRelativePath}`;
 
   if (s3Enabled) {
     try {
@@ -54,12 +79,12 @@ async function processSingleFile(file, folder, s3Enabled, firebaseStorageEnabled
       if (s3Endpoint) s3ClientConfig.endpoint = s3Endpoint;
       const s3 = new S3Client(s3ClientConfig);
 
-      const s3Key = `uploads/${relativePath}`;
+      const s3Key = `uploads/${finalRelativePath}`;
       const putParams = {
         Bucket: s3Bucket,
         Key: s3Key,
-        Body: file.buffer,
-        ContentType: file.mimetype || 'application/octet-stream',
+        Body: processedBuffer,
+        ContentType: processedMimeType,
         CacheControl: 'public, max-age=31536000'
       };
 
@@ -87,12 +112,12 @@ async function processSingleFile(file, folder, s3Enabled, firebaseStorageEnabled
   if (firebaseStorageEnabled) {
     try {
       const bucket = storage.bucket();
-      const fileName = `uploads/${relativePath}`;
+      const fileName = `uploads/${finalRelativePath}`;
       const remoteFile = bucket.file(fileName);
 
-      await remoteFile.save(file.buffer, {
+      await remoteFile.save(processedBuffer, {
         metadata: {
-          contentType: file.mimetype || 'application/octet-stream',
+          contentType: processedMimeType,
           cacheControl: 'public, max-age=31536000'
         }
       });
