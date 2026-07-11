@@ -62,21 +62,20 @@ router.post("/newsletter/subscribe", async (req, res) => {
       active: true,
     });
 
-    let emailResult = { success: false, error: "Email service not configured" };
-    try {
-      emailResult = await sendSubscriptionConfirmation(email, regNo);
-    } catch (emailError) {
-      console.warn("Newsletter confirmation email failed, but subscription was saved:", emailError && emailError.message ? emailError.message : emailError);
-      emailResult = { success: false, error: emailError && emailError.message ? emailError.message : "Email delivery failed" };
-    }
+    const emailResult = { success: false, error: "Email delivery is being processed in the background" };
+    void sendSubscriptionConfirmation(email, regNo)
+      .then((result) => {
+        console.log("Newsletter confirmation email result for", email, result);
+      })
+      .catch((emailError) => {
+        console.warn("Newsletter confirmation email failed, but subscription was saved:", emailError && emailError.message ? emailError.message : emailError);
+      });
 
     res.json({
       success: true,
       id: docRef.id,
-      message: emailResult && emailResult.success
-        ? "Subscription successful"
-        : "Subscription saved. Confirmation email could not be sent right now.",
-      emailConfirmation: Boolean(emailResult && emailResult.success),
+      message: "Subscription successful",
+      emailConfirmation: false,
       emailResult
     });
   } catch (error) {
