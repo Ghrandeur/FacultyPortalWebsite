@@ -62,11 +62,16 @@ function displayParliamentarians() {
   container.innerHTML = "";
 
   parliamentariansData.forEach((parl) => {
+    const rawPhotoUrl = parl.image || parl.photoUrl || parl.url || '';
+    const photoUrl = rawPhotoUrl && typeof rawPhotoUrl === 'string' && rawPhotoUrl.trim()
+      ? (window.normalizeMediaUrl ? window.normalizeMediaUrl(rawPhotoUrl) : rawPhotoUrl)
+      : '';
+
     const card = document.createElement("div");
     card.className = "parliamentarian-card";
     card.innerHTML = `
       <div class="parl-image-section">
-        ${parl.image ? `<img src="${parl.image}" alt="${escapeHtml(parl.name)}">` : '<i class="fa-solid fa-user parl-image-placeholder"></i>'}
+        ${photoUrl ? `<img src="${photoUrl}" alt="${escapeHtml(parl.name)}" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg'">` : '<i class="fa-solid fa-user parl-image-placeholder"></i>'}
         ${parl.position ? `<span class="parl-badge">${escapeHtml(parl.position)}</span>` : ""}
       </div>
       <div class="parl-card-content">

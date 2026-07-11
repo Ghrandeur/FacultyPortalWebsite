@@ -460,7 +460,7 @@ router.get("/parliamentarians/all", async (req, res) => {
 // Create parliamentarian (Admin)
 router.post("/parliamentarians/create", async (req, res) => {
   try {
-    const { name, position, department, bio, portfolio, email, phone, achievements, order } = req.body;
+    const { name, position, department, bio, portfolio, email, phone, achievements, order, image } = req.body;
 
     if (!name || !position) {
       return res.status(400).json({ error: "Name and position required" });
@@ -475,7 +475,7 @@ router.post("/parliamentarians/create", async (req, res) => {
       email: email || "",
       phone: phone || "",
       achievements: achievements || [],
-      image: null,
+      image: image || null,
       order: order || 0,
     });
 
@@ -503,7 +503,7 @@ router.get("/parliamentarians/:id", async (req, res) => {
 // Update parliamentarian (Admin)
 router.put("/parliamentarians/:id", async (req, res) => {
   try {
-    const { name, position, department, bio, portfolio, email, phone, achievements, order } = req.body;
+    const { name, position, department, bio, portfolio, email, phone, achievements, order, image } = req.body;
     const updateData = {};
     
     if (name !== undefined) updateData.name = name;
@@ -515,6 +515,7 @@ router.put("/parliamentarians/:id", async (req, res) => {
     if (phone !== undefined) updateData.phone = phone;
     if (achievements !== undefined) updateData.achievements = achievements;
     if (order !== undefined) updateData.order = order;
+    if (image !== undefined) updateData.image = image || null;
     
     await db.collection("parliamentarians").doc(req.params.id).update(updateData);
     res.json({ success: true, message: "Parliamentarian updated" });

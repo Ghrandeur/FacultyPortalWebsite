@@ -2131,6 +2131,10 @@ function openParliamentarianForm() {
       <input type="text" id="parlPortfolio" placeholder="Portfolio link or summary">
     </div>
     <div class="form-group">
+      <label for="parlImage">Photo URL</label>
+      <input type="url" id="parlImage" placeholder="https://.../image.jpg">
+    </div>
+    <div class="form-group">
       <label for="parlEmail">Email</label>
       <input type="email" id="parlEmail" placeholder="Email address">
     </div>
@@ -2154,6 +2158,7 @@ async function handleParliamentarianSubmit() {
   const portfolio = document.getElementById('parlPortfolio').value;
   const email = document.getElementById('parlEmail').value;
   const phone = document.getElementById('parlPhone').value;
+  const image = document.getElementById('parlImage').value.trim();
   const order = Number(document.getElementById('parlOrder').value || 0);
 
   try {
@@ -2166,7 +2171,7 @@ async function handleParliamentarianSubmit() {
         'Content-Type': 'application/json',
         'Authorization': await currentUser.getIdToken()
       },
-      body: JSON.stringify({ name, position, department, bio, portfolio, email, phone, order })
+      body: JSON.stringify({ name, position, department, bio, portfolio, email, phone, order, image })
     });
 
     if (response.ok) {
@@ -2219,6 +2224,10 @@ async function editParliamentarian(id) {
       <div class="form-group">
         <label for="parlPortfolio">Portfolio</label>
         <input type="text" id="parlPortfolio" value="${person.portfolio || ''}" placeholder="Portfolio link or summary">
+      </div>
+      <div class="form-group">
+        <label for="parlImage">Photo URL</label>
+        <input type="url" id="parlImage" value="${person.image || ''}" placeholder="https://.../image.jpg">
       </div>
       <div class="form-group">
         <label for="parlEmail">Email</label>
