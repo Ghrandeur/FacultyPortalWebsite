@@ -10,7 +10,12 @@ import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const API_URL = window.API_URL || window.__BACKEND_URL__ || 'http://localhost:5000/api';
+const deployedBackendUrl = 'https://facultyportalwebsite-3.onrender.com';
+const resolvedHostname = window.location?.hostname || '';
+const fallbackApiUrl = resolvedHostname === 'localhost' || resolvedHostname === '127.0.0.1'
+  ? 'http://localhost:5000/api'
+  : `${deployedBackendUrl}/api`;
+const API_URL = window.API_URL || window.__BACKEND_URL__ || fallbackApiUrl;
 
 let currentFilter = "all";
 let newslettersData = [];

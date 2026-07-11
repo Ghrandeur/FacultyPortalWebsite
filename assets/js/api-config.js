@@ -2,9 +2,10 @@
   const location = global.location || {};
   const inferredOrigin = location.origin || '';
   const hostname = location.hostname || '';
+  const deployedBackendUrl = 'https://facultyportalwebsite-3.onrender.com';
   const defaultBackendUrl = (hostname === 'localhost' || hostname === '127.0.0.1')
     ? 'http://localhost:5000'
-    : inferredOrigin || '';
+    : inferredOrigin || deployedBackendUrl;
   const runtimeBackendUrl = global.__BACKEND_URL__ || global.API_URL || defaultBackendUrl;
   const backendBaseUrl = runtimeBackendUrl.replace(/\/api$/, '');
   const API_URL = runtimeBackendUrl.endsWith('/api')

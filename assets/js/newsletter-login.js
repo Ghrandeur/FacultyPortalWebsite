@@ -6,7 +6,12 @@ import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const API_URL = window.API_URL || window.__BACKEND_URL__ || 'http://localhost:5000/api';
+const deployedBackendUrl = 'https://facultyportalwebsite-3.onrender.com';
+const resolvedHostname = window.location?.hostname || '';
+const fallbackApiUrl = resolvedHostname === 'localhost' || resolvedHostname === '127.0.0.1'
+  ? 'http://localhost:5000/api'
+  : `${deployedBackendUrl}/api`;
+const API_URL = window.API_URL || window.__BACKEND_URL__ || fallbackApiUrl;
 
 window.newsletterLoginDebug = {
   scriptLoaded: true,
@@ -89,16 +94,26 @@ function setupNewsletterForm() {
     }
 
     // Call backend endpoint
-    const response = await fetch(`${API_URL}/newsletter/subscribe`, {
+    const requestUrl = `${API_URL.replace(/\/$/, '')}/newsletter/subscribe`;
+    const response = await fetch(requestUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...(token && { 'Authorization': token })
       },
       body: JSON.stringify({ regNo, department, email })
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data = {};
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch (parseError) {
+      console.warn('Newsletter subscribe response was not valid JSON:', responseText);
+      data = { error: 'The server returned an invalid response.' };
+    }
+
     console.log('Newsletter subscribe response', response.status, data);
 
     if (response.ok && data.success) {
@@ -125,13 +140,14 @@ function setupNewsletterForm() {
         window.location.href = "/pages/newsletter.html";
       }, 1000);
     } else {
-      showError(data.error || "Error registering for newsletter");
+      const backendMessage = data?.error || data?.message || `Error registering for newsletter (status ${response.status}).`;
+      showError(backendMessage);
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     }
   } catch (error) {
       console.error("Error registering for newsletter:", error);
-      showError("Error registering for newsletter. Please try again.");
+      showError(`Unable to reach the newsletter service. Please try again. ${error?.message ? `(${error.message})` : ''}`.trim());
       const submitBtn = form.querySelector('button[type="submit"]');
       submitBtn.disabled = false;
       submitBtn.textContent = "Register for Newsletter";

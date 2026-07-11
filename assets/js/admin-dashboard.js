@@ -1,7 +1,21 @@
 import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 
-const API_URL = window.API_URL;
+function resolveApiBaseUrl() {
+  const location = window.location || {};
+  const inferredOrigin = location.origin || '';
+  const hostname = location.hostname || '';
+  const defaultBackendUrl = (hostname === 'localhost' || hostname === '127.0.0.1')
+    ? 'http://localhost:5000'
+    : inferredOrigin || '';
+
+  const runtimeBackendUrl = window.__BACKEND_URL__ || window.API_URL || defaultBackendUrl;
+  return runtimeBackendUrl && String(runtimeBackendUrl).endsWith('/api')
+    ? runtimeBackendUrl
+    : `${String(runtimeBackendUrl || '').replace(/\/$/, '')}/api`;
+}
+
+const API_URL = resolveApiBaseUrl();
 let currentUser = null;
 let currentForm = null;
 let currentEditId = null;
@@ -2311,24 +2325,40 @@ function openSocialHandleForm() {
 }
 
 async function handleSocialHandleSubmit() {
-  const name = document.getElementById('socialName').value;
-  const platform = document.getElementById('socialPlatform').value;
-  const handle = document.getElementById('socialHandle').value;
-  const url = document.getElementById('socialUrl').value;
-  const type = document.getElementById('socialType').value;
+  const name = document.getElementById('socialName').value.trim();
+  const platform = document.getElementById('socialPlatform').value.trim();
+  const handle = document.getElementById('socialHandle').value.trim();
+  const url = document.getElementById('socialUrl').value.trim();
+  const type = document.getElementById('socialType').value.trim();
+
+  if (!name || !platform) {
+    alert('Name and platform are required.');
+    return;
+  }
 
   try {
     const method = currentEditId ? 'PUT' : 'POST';
     const apiUrl = currentEditId ? `${API_URL}/social-handles/${currentEditId}` : `${API_URL}/social-handles/create`;
-    
+    const token = currentUser && typeof currentUser.getIdToken === 'function'
+      ? await currentUser.getIdToken()
+      : '';
+
     const response = await fetch(apiUrl, {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': await currentUser.getIdToken()
+        ...(token ? { Authorization: token } : {})
       },
       body: JSON.stringify({ name, platform, handle, url, type })
     });
+
+    const responseBody = await response.text();
+    let parsedBody = {};
+    try {
+      parsedBody = responseBody ? JSON.parse(responseBody) : {};
+    } catch (parseError) {
+      parsedBody = {};
+    }
 
     if (response.ok) {
       closeModal();
@@ -2336,12 +2366,11 @@ async function handleSocialHandleSubmit() {
       loadDashboardStats();
       alert(currentEditId ? 'Social handle updated successfully!' : 'Social handle created successfully!');
     } else {
-      const err = await response.json().catch(() => ({}));
-      alert(err.error || 'Error saving social handle');
+      alert(parsedBody.error || responseBody || 'Error saving social handle');
     }
   } catch (error) {
     console.error('Error saving social handle:', error);
-    alert(`Error saving social handle: ${error.message}`);
+    alert(`Error saving social handle: ${error.message || 'Unknown error'}`);
   }
 }
 
