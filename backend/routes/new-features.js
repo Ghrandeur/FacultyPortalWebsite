@@ -49,14 +49,20 @@ router.post("/newsletter/subscribe", async (req, res) => {
       active: true,
     });
 
-    // Send confirmation email
-    const emailResult = await sendSubscriptionConfirmation(email, regNo);
+    let emailResult = { success: false, error: "Email service not configured" };
+    try {
+      emailResult = await sendSubscriptionConfirmation(email, regNo);
+    } catch (emailError) {
+      console.warn("Newsletter confirmation email failed, but subscription was saved:", emailError && emailError.message ? emailError.message : emailError);
+      emailResult = { success: false, error: emailError && emailError.message ? emailError.message : "Email delivery failed" };
+    }
 
-    // Return subscription success and include detailed email result for client visibility
-    res.json({ 
-      success: true, 
-      id: docRef.id, 
-      message: "Subscription successful",
+    res.json({
+      success: true,
+      id: docRef.id,
+      message: emailResult && emailResult.success
+        ? "Subscription successful"
+        : "Subscription saved. Confirmation email could not be sent right now.",
       emailConfirmation: Boolean(emailResult && emailResult.success),
       emailResult
     });
