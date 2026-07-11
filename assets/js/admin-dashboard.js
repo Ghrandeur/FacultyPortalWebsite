@@ -457,6 +457,7 @@ async function uploadImageToStorage(fileOrFiles, folderName) {
   const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
   if (files.length === 0) return '';
 
+  const isMultipleUpload = files.length > 1;
   console.log('Uploading image(s):', { count: files.length, folderName });
   const url = `${API_URL}/upload`;
   const formData = new FormData();
@@ -487,12 +488,12 @@ async function uploadImageToStorage(fileOrFiles, folderName) {
       throw new Error(message);
     }
 
-    // Normalize response: if backend returns single url or multiple
+    // Normalize response: return a string for single uploads and an array for multi-file uploads.
     if (data.urls && Array.isArray(data.urls)) {
-      return data.urls;
+      return isMultipleUpload ? data.urls : (data.urls[0] || '');
     }
-    if (data.url) return [data.url];
-    return [];
+    if (data.url) return isMultipleUpload ? [data.url] : data.url;
+    return isMultipleUpload ? [] : '';
   } catch (err) {
     console.error('Upload error:', err);
     throw err;
@@ -835,6 +836,10 @@ async function editLeader(id) {
 }
 
 function normalizePhotoUrlValue(value) {
+  if (Array.isArray(value)) {
+    return normalizePhotoUrlValue(value[0] || '');
+  }
+
   if (typeof value === 'string') {
     return value.trim();
   }
