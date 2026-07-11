@@ -8,7 +8,7 @@ const normalizeEmailSetting = (value) => {
 
 const resolveEmailConfig = () => {
   const fromAddress = normalizeEmailSetting(process.env.EMAIL_FROM || process.env.EMAIL_USER || 'fahssauniuyoeditorialboard@gmail.com');
-  const user = normalizeEmailSetting(process.env.EMAIL_USER || fromAddress || 'promiseetok211@gmail.com');
+  const user = normalizeEmailSetting(process.env.EMAIL_USER || process.env.EMAIL_FROM || fromAddress || 'fahssauniuyoeditorialboard@gmail.com');
   const pass = normalizeEmailSetting(process.env.EMAIL_PASSWORD || '');
   const fromName = normalizeEmailSetting(process.env.NEWSLETTER_FROM_NAME || 'FAHSSA Newsletter');
 
@@ -38,10 +38,9 @@ const buildTransportOptions = () => {
   }
 
   return {
-    service: process.env.EMAIL_SERVICE || 'gmail',
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false,
     requireTLS: true,
     auth: user && pass ? { user, pass } : undefined,
     family: 4,
