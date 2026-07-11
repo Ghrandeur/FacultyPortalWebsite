@@ -7,11 +7,10 @@ import {
   getDocs,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { API_URL as CONFIG_API_URL } from "./api-config.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const API_URL = window.API_URL || CONFIG_API_URL || 'http://localhost:5000/api';
+const API_URL = window.API_URL || window.__BACKEND_URL__ || 'http://localhost:5000/api';
 
 let currentFilter = "all";
 let newslettersData = [];
