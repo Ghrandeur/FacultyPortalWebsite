@@ -4,7 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const { db, admin } = require("../config/firebase");
-const { sendSubscriptionConfirmation, sendNewsletterToAll } = require("../config/email");
+const { sendSubscriptionConfirmation, sendNewsletterToAll, testEmailConnection } = require("../config/email");
 
 function toSnapshotArray(snapshot) {
   const items = [];
@@ -154,6 +154,20 @@ router.get("/newsletter/all", async (req, res) => {
   } catch (error) {
     console.error("Get newsletters error:", error);
     res.status(500).json({ error: error.message || "Failed to get newsletters" });
+  }
+});
+
+// Email health check
+router.get("/email/health", async (req, res) => {
+  try {
+    const result = await testEmailConnection();
+    if (result.success) {
+      return res.json(result);
+    }
+    return res.status(502).json(result);
+  } catch (error) {
+    console.error("Email health check error:", error);
+    res.status(500).json({ success: false, message: error.message || "Failed to verify email connection" });
   }
 });
 

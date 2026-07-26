@@ -101,23 +101,37 @@ const initializeTransporter = () => {
     const { fromAddress, user, pass } = resolveEmailConfig();
     const options = buildTransportOptions();
 
+    console.log('🔧 Email transport options:', {
+      host: options.host,
+      port: options.port,
+      secure: options.secure,
+      authMethod: options.authMethod,
+      requireTLS: options.requireTLS,
+    });
+
     transporter = nodemailer.createTransport(options);
 
     // Verify transporter connectivity immediately so startup logs any auth/config issues
     transporter.verify().then(() => {
       console.log('✅ Email service initialized and verified. Using sender:', fromAddress);
+      console.log(`✅ SMTP verify succeeded on ${options.host}:${options.port} secure=${options.secure}`);
     }).catch(async (err) => {
-      console.warn('⚠️ Email transporter verification failed:', err && err.message ? err.message : err);
+      console.warn('⚠️ Email transporter verification failed for', `${options.host}:${options.port}`, 'secure=', options.secure, 'error=', err && err.message ? err.message : err);
 
       const fallbackOptions = getFallbackTransportOptions(options);
-      if (!fallbackOptions) return;
+      if (!fallbackOptions) {
+        console.warn('⚠️ No SMTP fallback options available. Skipping fallback.');
+        return;
+      }
 
+      console.log('ℹ️ Attempting SMTP fallback to port 587 with secure=false');
       transporter = nodemailer.createTransport(fallbackOptions);
       try {
         await transporter.verify();
         console.log('✅ SMTP fallback transporter verified. Using sender:', fromAddress);
+        console.log(`✅ SMTP verify succeeded on ${fallbackOptions.host}:${fallbackOptions.port} secure=${fallbackOptions.secure}`);
       } catch (fallbackErr) {
-        console.warn('⚠️ SMTP fallback transporter verification failed:', fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr);
+        console.warn('⚠️ SMTP fallback transporter verification failed for', `${fallbackOptions.host}:${fallbackOptions.port}`, 'secure=', fallbackOptions.secure, 'error=', fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr);
       }
     });
 
@@ -361,15 +375,17 @@ const testEmailConnection = async () => {
   try {
     const trans = getTransporter();
     if (!trans) {
+      console.warn('⚠️ Email transporter not initialized when running testEmailConnection');
       return { success: false, message: 'Email transporter not initialized' };
     }
 
+    console.log('🔎 Verifying active email transporter...');
     await trans.verify();
     console.log('✅ Email connection verified successfully');
     return { success: true, message: 'Email connection verified' };
   } catch (error) {
-    console.error('❌ Email connection failed:', error.message);
-    return { success: false, message: error.message };
+    console.error('❌ Email connection failed:', error && error.message ? error.message : error);
+    return { success: false, message: error && error.message ? error.message : String(error) };
   }
 };
 
