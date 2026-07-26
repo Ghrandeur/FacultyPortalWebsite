@@ -1,9 +1,15 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 require('dotenv').config();
 
 const normalizeEmailSetting = (value) => {
   if (typeof value !== 'string') return '';
   return value.trim();
+};
+
+const lookupIpv4 = (hostname, options, callback) => {
+  const lookupOptions = { family: 4, hints: dns.ADDRCONFIG | dns.V4MAPPED };
+  return dns.lookup(hostname, lookupOptions, callback);
 };
 
 const resolveEmailConfig = () => {
@@ -36,6 +42,7 @@ const buildTransportOptions = () => {
       greetingTimeout: 30000,
       socketTimeout: 30000,
       tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' },
+      dns: lookupIpv4,
     };
   }
 
@@ -51,6 +58,7 @@ const buildTransportOptions = () => {
     greetingTimeout: 30000,
     socketTimeout: 30000,
     tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' },
+    dns: lookupIpv4,
   };
 };
 
