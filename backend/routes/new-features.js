@@ -47,11 +47,31 @@ router.post("/newsletter/subscribe", async (req, res) => {
 
     if (!existingSnapshot.empty) {
       console.log('Newsletter subscribe: already exists', email);
+
+      let emailResult = { success: false, error: 'Email delivery failed' };
+      let emailConfirmation = false;
+
+      try {
+        const emailSendResult = await sendSubscriptionConfirmation(email, regNo);
+        console.log('Newsletter confirmation email resent for existing subscriber', email, emailSendResult);
+
+        emailConfirmation = Boolean(emailSendResult && emailSendResult.success);
+        emailResult = {
+          success: emailConfirmation,
+          ...(emailSendResult && emailSendResult.messageId ? { messageId: emailSendResult.messageId } : {}),
+          ...(emailSendResult && emailSendResult.error ? { error: emailSendResult.error } : {}),
+        };
+      } catch (emailError) {
+        const message = emailError && emailError.message ? emailError.message : String(emailError);
+        console.warn('Newsletter confirmation email resend failed for existing subscriber:', message);
+        emailResult = { success: false, error: message };
+      }
+
       return res.json({
         success: true,
-        message: "Subscription already exists",
-        emailConfirmation: true,
-        emailResult: { success: true, error: null }
+        message: emailConfirmation ? 'Subscription already exists. Confirmation email resent.' : 'Subscription already exists',
+        emailConfirmation,
+        emailResult
       });
     }
 
