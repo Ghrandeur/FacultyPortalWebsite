@@ -54,6 +54,19 @@ const buildTransportOptions = () => {
   };
 };
 
+const verifyEmailConfig = () => {
+  const { user, pass, fromAddress } = resolveEmailConfig();
+  const missing = [];
+  if (!user) missing.push('EMAIL_USER');
+  if (!pass) missing.push('EMAIL_PASSWORD');
+  if (!fromAddress) missing.push('EMAIL_FROM');
+
+  return {
+    hasCredentials: Boolean(user && pass),
+    missing,
+  };
+};
+
 // Create transporter for sending emails
 let transporter = null;
 
@@ -87,6 +100,13 @@ const getTransporter = () => {
 // Send confirmation email to new subscriber (returns structured result)
 const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
   try {
+    const configStatus = verifyEmailConfig();
+    if (!configStatus.hasCredentials) {
+      const msg = `Email credentials missing: ${configStatus.missing.join(', ')}`;
+      console.warn('⚠️', msg, 'skipping confirmation email');
+      return { success: false, error: msg };
+    }
+
     const trans = getTransporter();
     if (!trans) {
       const msg = 'Email service not configured';
