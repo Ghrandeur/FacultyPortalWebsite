@@ -131,11 +131,7 @@ function setupNewsletterForm() {
         return;
       }
 
-      if (!emailConfirmed && data.emailResult && data.emailResult.error) {
-        showError(`Subscribed but confirmation email failed: ${data.emailResult.error}`);
-      } else {
-        showSuccess(emailResult.message + " Redirecting to the newsletter page...");
-      }
+      showSuccess((emailConfirmed ? emailResult.message : `Successfully subscribed! You will receive newsletters at ${email}`) + " Redirecting to the newsletter page...");
       submitBtn.textContent = "Subscribed";
       submitBtn.disabled = true;
       form.reset();
