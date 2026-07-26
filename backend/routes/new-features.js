@@ -48,12 +48,16 @@ router.post("/newsletter/subscribe", async (req, res) => {
     if (!existingSnapshot.empty) {
       console.log('Newsletter subscribe: already exists', email);
 
+      const existingDoc = existingSnapshot.docs[0];
+      const existingData = existingDoc.data();
+      const alreadyActive = existingData.active === true;
+
       let emailResult = { success: false, error: 'Email delivery failed' };
       let emailConfirmation = false;
 
       try {
         const emailSendResult = await sendSubscriptionConfirmation(email, regNo);
-        console.log('Newsletter confirmation email resent for existing subscriber', email, emailSendResult);
+        console.log('Newsletter confirmation email sent for existing subscriber', email, emailSendResult);
 
         emailConfirmation = Boolean(emailSendResult && emailSendResult.success);
         emailResult = {
@@ -63,13 +67,31 @@ router.post("/newsletter/subscribe", async (req, res) => {
         };
       } catch (emailError) {
         const message = emailError && emailError.message ? emailError.message : String(emailError);
-        console.warn('Newsletter confirmation email resend failed for existing subscriber:', message);
+        console.warn('Newsletter confirmation email for existing subscriber failed:', message);
         emailResult = { success: false, error: message };
+      }
+
+      if (!emailConfirmation) {
+        return res.status(502).json({
+          success: false,
+          error: 'Confirmation email could not be sent.',
+          emailConfirmation,
+          emailResult
+        });
+      }
+
+      if (!alreadyActive) {
+        await existingDoc.ref.update({
+          active: true,
+          regNo,
+          department,
+          subscribedAt: serverTimestamp()
+        });
       }
 
       return res.json({
         success: true,
-        message: emailConfirmation ? 'Subscription already exists. Confirmation email resent.' : 'Subscription already exists',
+        message: alreadyActive ? 'Subscription already exists. Confirmation email resent.' : 'Subscription reactivated and confirmation email sent.',
         emailConfirmation,
         emailResult
       });
