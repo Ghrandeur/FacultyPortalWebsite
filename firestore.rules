@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isValidCompanionTopic() {
+      return request.resource.data.keys().hasOnly([
+        'studentName',
+        'email',
+        'category',
+        'title',
+        'content',
+        'preview',
+        'replies',
+        'createdAt',
+        'anonymous'
+      ])
+        && request.resource.data.studentName is string
+        && request.resource.data.email is string
+        && request.resource.data.category is string
+        && request.resource.data.title is string
+        && request.resource.data.content is string
+        && request.resource.data.preview is string
+        && request.resource.data.replies is int
+        && request.resource.data.replies >= 0
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.anonymous is bool;
+    }
+
+    function isValidCompanionReply() {
+      return request.resource.data.keys().hasOnly([
+        'topicId',
+        'studentName',
+        'email',
+        'content',
+        'createdAt'
+      ])
+        && request.resource.data.topicId is string
+        && request.resource.data.studentName is string
+        && request.resource.data.email is string
+        && request.resource.data.content is string
+        && request.resource.data.createdAt is timestamp;
+    }
+
+    function isValidMarketplaceItem() {
+      return request.resource.data.keys().hasOnly([
+        'name',
+        'category',
+        'price',
+        'description',
+        'contactPhone',
+        'contactWhatsApp',
+        'image',
+        'views',
+        'createdAt'
+      ])
+        && request.resource.data.name is string
+        && request.resource.data.category is string
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
+        && request.resource.data.description is string
+        && request.resource.data.contactPhone is string
+        && (request.resource.data.contactWhatsApp == null || request.resource.data.contactWhatsApp is string)
+        && (request.resource.data.image == null || request.resource.data.image is string)
+        && request.resource.data.views is int
+        && request.resource.data.views >= 0
+        && request.resource.data.createdAt is timestamp;
+    }
+
+    match /archive/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /gallery/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /leaders/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /documents/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /team/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /pastQuestions/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /faculty/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /newsletters/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /newsletter_subscribers/{docId} { allow read: if isAdmin(); allow write: if isAdmin(); }
+    match /marketplace_items/{docId} {
+      allow read: if true;
+      allow create: if isValidMarketplaceItem();
+      allow update, delete: if isAdmin();
+    }
+    match /departments/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /parliamentarians/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /social_handles/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /department_socials/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /faculty_info/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /advisors/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /faq/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /companion_topics/{docId} {
+      allow read: if true;
+      allow create: if isValidCompanionTopic();
+      allow update: if isAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['replies'])
+        && request.resource.data.replies == resource.data.replies + 1
+      );
+      allow delete: if isAdmin();
+    }
+    match /companion_replies/{docId} {
+      allow read: if true;
+      allow create: if isValidCompanionReply();
+      allow update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

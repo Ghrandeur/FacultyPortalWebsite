@@ -106,12 +106,20 @@
   width: 100%;
   height: 200px;
   background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
-  object-fit: cover;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #D1D5DB;
   font-size: 3rem;
+  overflow: hidden;
+}
+
+.item-image img,
+.item-detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .item-content {

@@ -17,6 +17,51 @@ let itemsData = [];
 let currentCategory = "";
 let currentSort = "newest";
 
+function getMarketplaceImageUrl(item) {
+  const rawImage = item && item.image;
+  if (typeof rawImage !== "string") return "";
+
+  const trimmed = rawImage.trim();
+  if (!trimmed) return "";
+
+  if (typeof window.normalizeMediaUrl === "function") {
+    return window.normalizeMediaUrl(trimmed);
+  }
+
+  if (/^(https?:)?\/\//i.test(trimmed) || trimmed.startsWith("/")) {
+    return trimmed;
+  }
+
+  return `/${trimmed.replace(/^\.?\//, "")}`;
+}
+
+async function uploadMarketplaceImage(file) {
+  if (!file) return "";
+
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("folder", "marketplace");
+
+  const apiBaseUrl = (window.API_URL || "/api").replace(/\/$/, "");
+  const response = await fetch(`${apiBaseUrl}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (error) {
+    console.warn("Unable to parse image upload response", error);
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || `Image upload failed (${response.status})`);
+  }
+
+  return data.url || data.urls?.[0] || "";
+}
+
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   loadItems();
@@ -104,11 +149,12 @@ function displayItems() {
   container.innerHTML = "";
 
   filtered.forEach((item) => {
+    const imageUrl = getMarketplaceImageUrl(item);
     const card = document.createElement("div");
     card.className = "item-card";
     card.innerHTML = `
       <div class="item-image">
-        ${item.image ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">` : '<i class="fa-solid fa-image"></i>'}
+        ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">` : '<i class="fa-solid fa-image"></i>'}
       </div>
       <div class="item-content">
         <span class="item-category-badge">${item.category}</span>
@@ -147,7 +193,17 @@ async function handleUploadItem(e) {
     return;
   }
 
+  const submitButton = document.querySelector("#uploadForm .upload-submit-btn");
+  const imageFile = document.getElementById("itemImage").files?.[0] || null;
+
   try {
+    let imageUrl = "";
+    if (imageFile) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Uploading image...";
+      imageUrl = await uploadMarketplaceImage(imageFile);
+    }
+
     await addDoc(collection(db, "marketplace_items"), {
       name,
       category,
@@ -155,7 +211,7 @@ async function handleUploadItem(e) {
       description,
       contactPhone: phone,
       contactWhatsApp: whatsapp || null,
-      image: null,
+      image: imageUrl || null,
       views: 0,
       createdAt: serverTimestamp(),
     });
@@ -166,14 +222,20 @@ async function handleUploadItem(e) {
     loadItems();
   } catch (error) {
     console.error("Error uploading item:", error);
-    document.getElementById("uploadError").textContent = "Error uploading item. Please try again.";
+    document.getElementById("uploadError").textContent = error.message || "Error uploading item. Please try again.";
     document.getElementById("uploadError").style.display = "block";
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Upload Item";
+    }
   }
 }
 
 function openItemDetail(item) {
   const modal = document.getElementById("itemModal");
   const modalBody = document.getElementById("modalBody");
+  const imageUrl = getMarketplaceImageUrl(item);
 
   let contactButtons = `
     <div class="contact-seller">
@@ -203,7 +265,7 @@ function openItemDetail(item) {
   modalBody.innerHTML = `
     <div class="item-detail">
       <div class="item-detail-image">
-        ${item.image ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">` : '<i class="fa-solid fa-image"></i>'}
+        ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">` : '<i class="fa-solid fa-image"></i>'}
       </div>
       <div class="item-detail-header">
         <h2>${escapeHtml(item.name)}</h2>
