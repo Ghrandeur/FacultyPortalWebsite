@@ -50,19 +50,12 @@ router.post("/newsletter/subscribe", async (req, res) => {
       return res.json({
         success: true,
         message: "Subscription already exists",
-        emailConfirmation: true
+        emailConfirmation: true,
+        emailResult: { success: true, error: null }
       });
     }
 
-    const docRef = await db.collection("newsletter_subscribers").add({
-      regNo,
-      department,
-      email,
-      subscribedAt: serverTimestamp(),
-      active: true,
-    });
-
-    let emailResult = { success: false, error: "Email delivery is being processed in the background" };
+    let emailResult = { success: false, error: "Email delivery failed" };
     let emailConfirmation = false;
 
     try {
@@ -77,14 +70,31 @@ router.post("/newsletter/subscribe", async (req, res) => {
       };
     } catch (emailError) {
       const message = emailError && emailError.message ? emailError.message : String(emailError);
-      console.warn("Newsletter confirmation email failed, but subscription was saved:", message);
+      console.warn("Newsletter confirmation email failed:", message);
       emailResult = { success: false, error: message };
     }
+
+    if (!emailConfirmation) {
+      return res.status(502).json({
+        success: false,
+        error: "Confirmation email could not be sent. Subscription was not saved.",
+        emailConfirmation,
+        emailResult
+      });
+    }
+
+    const docRef = await db.collection("newsletter_subscribers").add({
+      regNo,
+      department,
+      email,
+      subscribedAt: serverTimestamp(),
+      active: true,
+    });
 
     res.json({
       success: true,
       id: docRef.id,
-      message: emailConfirmation ? "Subscription successful" : "Subscription saved, but confirmation email could not be sent",
+      message: "Subscription successful",
       emailConfirmation,
       emailResult
     });
