@@ -26,6 +26,24 @@ const resolveEmailConfig = () => {
   };
 };
 
+const getFallbackTransportOptions = (options) => {
+  const hasHost = Boolean(options && options.host);
+  const currentPort = options && options.port;
+  if (!hasHost || currentPort === 587) {
+    return null;
+  }
+
+  return {
+    ...options,
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    tls: { rejectUnauthorized: false, minVersion: 'TLSv1.2' },
+  };
+};
+
+const createTransporter = (options) => nodemailer.createTransport(options);
+
 const buildTransportOptions = () => {
   const { user, pass } = resolveEmailConfig();
 
@@ -81,14 +99,26 @@ let transporter = null;
 const initializeTransporter = () => {
   try {
     const { fromAddress, user, pass } = resolveEmailConfig();
+    const options = buildTransportOptions();
 
-    transporter = nodemailer.createTransport(buildTransportOptions());
+    transporter = nodemailer.createTransport(options);
 
     // Verify transporter connectivity immediately so startup logs any auth/config issues
     transporter.verify().then(() => {
       console.log('✅ Email service initialized and verified. Using sender:', fromAddress);
-    }).catch(err => {
+    }).catch(async (err) => {
       console.warn('⚠️ Email transporter verification failed:', err && err.message ? err.message : err);
+
+      const fallbackOptions = getFallbackTransportOptions(options);
+      if (!fallbackOptions) return;
+
+      transporter = nodemailer.createTransport(fallbackOptions);
+      try {
+        await transporter.verify();
+        console.log('✅ SMTP fallback transporter verified. Using sender:', fromAddress);
+      } catch (fallbackErr) {
+        console.warn('⚠️ SMTP fallback transporter verification failed:', fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr);
+      }
     });
 
     return transporter;
@@ -103,6 +133,28 @@ const getTransporter = () => {
     return initializeTransporter();
   }
   return transporter;
+};
+
+const sendMailWithFallback = async (trans, mailOptions, options) => {
+  try {
+    return await trans.sendMail(mailOptions);
+  } catch (error) {
+    console.warn('⚠️ Email send failed, attempting SMTP fallback:', error && error.message ? error.message : error);
+    const fallbackOptions = getFallbackTransportOptions(options);
+    if (!fallbackOptions) {
+      throw error;
+    }
+
+    const fallbackTransporter = createTransporter(fallbackOptions);
+    try {
+      await fallbackTransporter.verify();
+      console.log('✅ SMTP fallback transporter verified for send.');
+      return await fallbackTransporter.sendMail(mailOptions);
+    } catch (fallbackError) {
+      console.error('❌ SMTP fallback send failed:', fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
+      throw fallbackError;
+    }
+  }
 };
 
 // Send confirmation email to new subscriber (returns structured result)
@@ -171,7 +223,7 @@ const sendSubscriptionConfirmation = async (email, name = 'Subscriber') => {
       text: `Welcome to FAHSSA Newsletter!\n\nThank you for registering. You will now receive our latest updates and announcements.\n\nYou can unsubscribe anytime from our newsletter page.`,
     };
 
-    const info = await trans.sendMail(mailOptions);
+    const info = await sendMailWithFallback(trans, mailOptions, buildTransportOptions());
     console.log('✅ Confirmation email sent to:', email, 'Message ID:', info && info.messageId);
     return { success: true, messageId: info && info.messageId };
   } catch (error) {
