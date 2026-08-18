@@ -2316,25 +2316,133 @@ async function loadSocialHandles() {
     const container = document.getElementById('socialHandlesList');
     container.innerHTML = '';
 
-    items.forEach(handle => {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = `
+    // Only allow editing these five platforms from the admin UI
+    const platforms = ['facebook', 'x', 'instagram', 'whatsapp', 'tiktok'];
+    const labels = {
+      facebook: 'Facebook',
+      x: 'X (Twitter)',
+      instagram: 'Instagram',
+      whatsapp: 'WhatsApp',
+      tiktok: 'TikTok'
+    };
+
+    const existing = {};
+    items.forEach(h => {
+      if (h.platform) existing[String(h.platform).toLowerCase()] = h;
+    });
+
+    const grid = document.createElement('div');
+    grid.className = 'social-handles-grid';
+
+    platforms.forEach((p) => {
+      const data = existing[p] || {};
+      const id = data.id || '';
+
+      const card = document.createElement('div');
+      card.className = 'item';
+
+      card.innerHTML = `
         <div class="item-info">
-          <h3>${handle.name}</h3>
-          <p>${handle.platform}</p>
-          <p>${handle.handle || ''}</p>
-          <p>${handle.url || ''}</p>
-        </div>
-        <div class="item-actions">
-          <button class="edit-btn" onclick="editSocialHandle('${handle.id}')">Edit</button>
-          <button class="delete-btn" onclick="deleteSocialHandle('${handle.id}')">Delete</button>
+          <h3>${labels[p]}</h3>
+          <div class="form-group">
+            <label>Handle</label>
+            <input type="text" class="social-input-handle" data-platform="${p}" value="${escapeHtml(data.handle || '')}" placeholder="@handle or id">
+          </div>
+          <div class="form-group">
+            <label>URL</label>
+            <input type="url" class="social-input-url" data-platform="${p}" value="${escapeHtml(data.url || '')}" placeholder="https://...">
+          </div>
+          <div class="item-actions">
+            <button class="save-btn" data-platform="${p}">Save</button>
+            ${id ? `<button class="delete-btn" data-id="${id}" data-platform="${p}">Delete</button>` : ''}
+          </div>
         </div>
       `;
-      container.appendChild(div);
+
+      grid.appendChild(card);
     });
+
+    container.appendChild(grid);
+
+    // Attach event listeners for save and delete per platform
+    container.querySelectorAll('.save-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const platform = btn.dataset.platform;
+        const handle = container.querySelector(`.social-input-handle[data-platform="${platform}"]`).value.trim();
+        const url = container.querySelector(`.social-input-url[data-platform="${platform}"]`).value.trim();
+        await saveSocialByPlatform(platform, handle, url, existing[platform]);
+      });
+    });
+
+    container.querySelectorAll('.delete-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.dataset.id;
+        if (!confirm('Are you sure you want to delete this social handle?')) return;
+        try {
+          const token = currentUser && typeof currentUser.getIdToken === 'function' ? await currentUser.getIdToken() : '';
+          const resp = await fetch(`${API_URL}/social-handles/${id}`, {
+            method: 'DELETE',
+            headers: token ? { Authorization: token } : {}
+          });
+          if (resp.ok) {
+            alert('Deleted successfully');
+            loadSocialHandles();
+            loadDashboardStats();
+          } else {
+            const text = await resp.text();
+            alert('Failed to delete: ' + text);
+          }
+        } catch (err) {
+          console.error('Delete error', err);
+          alert('Error deleting social handle');
+        }
+      });
+    });
+
   } catch (error) {
     console.error('Error loading social handles:', error);
+  }
+}
+
+// Save or create a social handle by platform
+async function saveSocialByPlatform(platform, handle, url, existing) {
+  try {
+    const payload = {
+      name: platform,
+      platform,
+      handle: handle || '',
+      url: url || ''
+    };
+
+    const token = currentUser && typeof currentUser.getIdToken === 'function' ? await currentUser.getIdToken() : '';
+    let apiUrl = `${API_URL}/social-handles/create`;
+    let method = 'POST';
+
+    if (existing && existing.id) {
+      apiUrl = `${API_URL}/social-handles/${existing.id}`;
+      method = 'PUT';
+    }
+
+    const resp = await fetch(apiUrl, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: token } : {})
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (resp.ok) {
+      alert('Saved successfully');
+      loadSocialHandles();
+      loadDashboardStats();
+    } else {
+      const text = await resp.text();
+      alert('Failed to save: ' + text);
+    }
+  } catch (err) {
+    console.error('Save error', err);
+    alert('Error saving social handle');
   }
 }
 
