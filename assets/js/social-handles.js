@@ -102,7 +102,7 @@ function setupQuickLinks() {
     emailBtn.href = `mailto:${email}`;
   }
 
-  document.getElementById("website").href = "https://www.uniuyo.edu.ng";
+  document.getElementById("website").href = "http://fahssauniuyo.vercel.app/";
   document.getElementById("subscribe").href = "/pages/newsletter-login.html";
 }
 
@@ -118,7 +118,7 @@ function createSocialCard(social) {
   switch (platform) {
     case "facebook":
       icon = '<i class="fa-brands fa-facebook"></i>';
-      link = social.url || "#";
+      link = social.url || "https://www.facebook.com/p/Faculty-of-Allied-Health-Sciences-UNIUYO-61574712552379/";
       break;
     case "twitter":
     case "x":
@@ -135,7 +135,7 @@ function createSocialCard(social) {
       break;
     case "whatsapp":
       icon = '<i class="fa-brands fa-whatsapp"></i>';
-      link = social.url || "#";
+      link = social.url || "https://www.whatsapp.com/channel/0029Vb7hiR1BKfhs2cLLRB3T";
       break;
     case "telegram":
       icon = '<i class="fa-brands fa-telegram"></i>';
