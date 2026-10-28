@@ -16,12 +16,15 @@ async function loadLeaders() {
 function displayLeaders() {
   const container = document.getElementById('leadersContainer');
   container.innerHTML = '';
-  const leaders = leadersData.filter(leader => (leader.administration || 'past') === activeAdministration);
+  const leaders = leadersData.filter(leader => {
+    const administration = leader.administration === 'past' ? '2025-2026' : (leader.administration || '2025-2026');
+    return administration === activeAdministration;
+  });
 
   if (leaders.length === 0) {
     container.innerHTML = activeAdministration === '2026-2027'
       ? '<p style="text-align: center; grid-column: 1/-1;">No leaders have been added to the 2026–2027 administration yet.</p>'
-      : '<p style="text-align: center; grid-column: 1/-1;">No past administration leaders found.</p>';
+      : '<p style="text-align: center; grid-column: 1/-1;">No leaders found for the 2025–2026 administration.</p>';
     return;
   }
 

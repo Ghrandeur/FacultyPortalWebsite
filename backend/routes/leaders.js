@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
       name,
       department,
       position,
-      administration: administration === 'past' ? 'past' : '2026-2027',
+      administration: administration === '2025-2026' || administration === 'past' ? '2025-2026' : '2026-2027',
       createdAt: new Date()
     };
     
@@ -66,7 +66,7 @@ router.put('/:id', async (req, res) => {
     if (req.body.department !== undefined) updateData.department = req.body.department;
     if (req.body.position !== undefined) updateData.position = req.body.position;
     if (req.body.administration !== undefined) {
-      updateData.administration = req.body.administration === 'past' ? 'past' : '2026-2027';
+      updateData.administration = req.body.administration === '2025-2026' || req.body.administration === 'past' ? '2025-2026' : '2026-2027';
     }
     
     // Only update photoUrl if it's provided and has a value

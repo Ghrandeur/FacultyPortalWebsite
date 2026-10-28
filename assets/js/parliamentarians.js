@@ -66,7 +66,10 @@ function displayParliamentarians() {
   const container = document.getElementById("parliamentariansList");
   const emptyState = document.getElementById("emptyState");
 
-  const filteredData = parliamentariansData.filter(parl => (parl.administration || "past") === activeAdministration);
+  const filteredData = parliamentariansData.filter(parl => {
+    const administration = parl.administration === "past" ? "2025-2026" : (parl.administration || "2025-2026");
+    return administration === activeAdministration;
+  });
 
   container.style.display = "grid";
   if (emptyState) emptyState.style.display = "none";
@@ -75,7 +78,7 @@ function displayParliamentarians() {
   if (filteredData.length === 0) {
     container.innerHTML = activeAdministration === "2026-2027"
       ? '<p style="grid-column: 1/-1; text-align:center;">No parliamentarians have been added to the 2026–2027 administration yet.</p>'
-      : '<p style="grid-column: 1/-1; text-align:center;">No past administration parliamentarians found.</p>';
+      : '<p style="grid-column: 1/-1; text-align:center;">No parliamentarians found for the 2025–2026 administration.</p>';
     return;
   }
 

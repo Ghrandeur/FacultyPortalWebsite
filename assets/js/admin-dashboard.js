@@ -760,7 +760,7 @@ async function loadLeaders() {
         <div class="item-info">
           <h3>${leader.name}</h3>
           <p>${leader.department} - ${leader.position}</p>
-          <p><strong>${(leader.administration || 'past') === 'past' ? 'Past Administration' : 'Present Administration — 2026/2027'}</strong></p>
+          <p><strong>${(leader.administration === '2026-2027') ? 'Present Administration — 2026/2027' : 'Past Administration — 2025/2026'}</strong></p>
         </div>
         <div class="item-actions">
           <button class="edit-btn" onclick="editLeader('${leader.id}')">Edit</button>
@@ -797,7 +797,7 @@ function openLeaderForm() {
       <label for="leaderAdministration">Administration</label>
       <select id="leaderAdministration" required>
         <option value="2026-2027">Present Administration — 2026/2027</option>
-        <option value="past">Past Administration</option>
+        <option value="2025-2026">Past Administration — 2025/2026</option>
       </select>
     </div>
     <div class="form-group">
@@ -834,8 +834,8 @@ async function editLeader(id) {
       <div class="form-group">
         <label for="leaderAdministration">Administration</label>
         <select id="leaderAdministration" required>
-          <option value="2026-2027" ${(leader.administration || 'past') === '2026-2027' ? 'selected' : ''}>Present Administration — 2026/2027</option>
-          <option value="past" ${(leader.administration || 'past') === 'past' ? 'selected' : ''}>Past Administration</option>
+          <option value="2026-2027" ${(leader.administration || '') === '2026-2027' ? 'selected' : ''}>Present Administration — 2026/2027</option>
+          <option value="2025-2026" ${(leader.administration || '2025-2026') === '2025-2026' || leader.administration === 'past' ? 'selected' : ''}>Past Administration — 2025/2026</option>
         </select>
       </div>
       <div class="form-group">
@@ -2127,7 +2127,7 @@ async function loadParliamentarians() {
           <h3>${person.name}</h3>
           <p>${person.position}</p>
           <p>${person.department || ''}</p>
-          <p><strong>${(person.administration || 'past') === 'past' ? 'Past Administration' : 'Present Administration — 2026/2027'}</strong></p>
+          <p><strong>${(person.administration === '2026-2027') ? 'Present Administration — 2026/2027' : 'Past Administration — 2025/2026'}</strong></p>
         </div>
         <div class="item-actions">
           <button class="edit-btn" onclick="editParliamentarian('${person.id}')">Edit</button>
@@ -2164,7 +2164,7 @@ function openParliamentarianForm() {
       <label for="parlAdministration">Administration</label>
       <select id="parlAdministration" required>
         <option value="2026-2027">Present Administration — 2026/2027</option>
-        <option value="past">Past Administration</option>
+        <option value="2025-2026">Past Administration — 2025/2026</option>
       </select>
     </div>
     <div class="form-group">
@@ -2281,8 +2281,8 @@ async function editParliamentarian(id) {
       <div class="form-group">
         <label for="parlAdministration">Administration</label>
         <select id="parlAdministration" required>
-          <option value="2026-2027" ${(person.administration || 'past') === '2026-2027' ? 'selected' : ''}>Present Administration — 2026/2027</option>
-          <option value="past" ${(person.administration || 'past') === 'past' ? 'selected' : ''}>Past Administration</option>
+          <option value="2026-2027" ${(person.administration || '') === '2026-2027' ? 'selected' : ''}>Present Administration — 2026/2027</option>
+          <option value="2025-2026" ${(person.administration || '2025-2026') === '2025-2026' || person.administration === 'past' ? 'selected' : ''}>Past Administration — 2025/2026</option>
         </select>
       </div>
       <div class="form-group">

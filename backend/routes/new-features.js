@@ -543,7 +543,7 @@ router.post("/parliamentarians/create", async (req, res) => {
       achievements: achievements || [],
       image: image || null,
       order: order || 0,
-      administration: administration === 'past' ? 'past' : '2026-2027',
+      administration: administration === '2025-2026' || administration === 'past' ? '2025-2026' : '2026-2027',
     });
 
     res.json({ success: true, id: docRef.id });
@@ -583,7 +583,7 @@ router.put("/parliamentarians/:id", async (req, res) => {
     if (achievements !== undefined) updateData.achievements = achievements;
     if (order !== undefined) updateData.order = order;
     if (image !== undefined) updateData.image = image || null;
-    if (administration !== undefined) updateData.administration = administration === 'past' ? 'past' : '2026-2027';
+    if (administration !== undefined) updateData.administration = administration === '2025-2026' || administration === 'past' ? '2025-2026' : '2026-2027';
     
     await db.collection("parliamentarians").doc(req.params.id).update(updateData);
     res.json({ success: true, message: "Parliamentarian updated" });
