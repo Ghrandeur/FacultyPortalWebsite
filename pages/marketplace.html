@@ -34,20 +34,48 @@
 
         <main class="content-card">
             <section class="marketplace-section">
-                <div class="marketplace-header">
-                    <h2>Buy & Sell Student Goods</h2>
-                    <p>Connect with fellow students to buy and sell items</p>
-                    <button id="uploadItemBtn" class="upload-btn">
-                        <i class="fa-solid fa-plus"></i> Upload an Item
-                    </button>
+                <div class="marketplace-header marketplace-hero">
+                    <div class="marketplace-hero-copy">
+                        <span class="marketplace-eyebrow"><i class="fa-solid fa-bolt"></i> FAHSSA Community Market</span>
+                        <h2>Find great student deals</h2>
+                        <p>Discover useful items, negotiate with sellers, and turn what you no longer need into cash.</p>
+                        <button id="uploadItemBtn" class="upload-btn">
+                            <i class="fa-solid fa-plus"></i> Sell an Item
+                        </button>
+                    </div>
+                    <div class="marketplace-hero-art" aria-hidden="true">
+                        <div class="hero-orb orb-one"><i class="fa-solid fa-book-open"></i></div>
+                        <div class="hero-orb orb-two"><i class="fa-solid fa-laptop"></i></div>
+                        <div class="hero-orb orb-three"><i class="fa-solid fa-chair"></i></div>
+                        <div class="hero-bag"><i class="fa-solid fa-bag-shopping"></i></div>
+                    </div>
+                </div>
+
+                <div class="marketplace-stats" aria-label="Marketplace summary">
+                    <div><strong id="itemCount">0</strong><span>Items listed</span></div>
+                    <div><strong>9</strong><span>Categories</span></div>
+                    <div><strong><i class="fa-solid fa-shield-heart"></i></strong><span>Student community</span></div>
+                </div>
+
+                <div class="category-strip" aria-label="Browse categories">
+                    <button class="category-chip active" data-category=""><i class="fa-solid fa-border-all"></i><span>All</span></button>
+                    <button class="category-chip" data-category="textbooks"><i class="fa-solid fa-book"></i><span>Books</span></button>
+                    <button class="category-chip" data-category="electronics"><i class="fa-solid fa-laptop"></i><span>Electronics</span></button>
+                    <button class="category-chip" data-category="furniture"><i class="fa-solid fa-chair"></i><span>Furniture</span></button>
+                    <button class="category-chip" data-category="clothing"><i class="fa-solid fa-shirt"></i><span>Clothing</span></button>
+                    <button class="category-chip" data-category="accessories"><i class="fa-solid fa-gem"></i><span>Accessories</span></button>
+                    <button class="category-chip" data-category="supplies"><i class="fa-solid fa-pen-ruler"></i><span>Supplies</span></button>
+                    <button class="category-chip" data-category="housing"><i class="fa-solid fa-house"></i><span>Housing</span></button>
+                    <button class="category-chip" data-category="services"><i class="fa-solid fa-handshake"></i><span>Services</span></button>
                 </div>
 
                 <div class="marketplace-filters">
-                    <div class="filter-group">
-                        <input type="text" id="searchInput" placeholder="Search items..." class="search-box" />
+                    <div class="filter-group search-filter">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search items, brands or categories..." class="search-box" />
                     </div>
                     <div class="filter-group">
-                        <select id="categoryFilter" class="filter-select">
+                        <select id="categoryFilter" class="filter-select" aria-label="Category">
                             <option value="">All Categories</option>
                             <option value="textbooks">Textbooks</option>
                             <option value="electronics">Electronics</option>
@@ -61,12 +89,20 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <select id="sortFilter" class="filter-select">
+                        <select id="sortFilter" class="filter-select" aria-label="Sort items">
                             <option value="newest">Newest First</option>
                             <option value="price-low">Price: Low to High</option>
                             <option value="price-high">Price: High to Low</option>
                             <option value="popular">Most Popular</option>
                         </select>
+                    </div>
+                    <button id="savedFilter" class="saved-filter" type="button"><i class="fa-solid fa-heart"></i><span>Saved</span></button>
+                </div>
+                <div class="marketplace-results-bar">
+                    <p><strong id="resultCount">0</strong> items found</p>
+                    <div class="view-switch" aria-label="Display style">
+                        <button class="view-btn active" data-view="grid" type="button" aria-label="Grid view"><i class="fa-solid fa-grid-2"></i></button>
+                        <button class="view-btn" data-view="list" type="button" aria-label="List view"><i class="fa-solid fa-list"></i></button>
                     </div>
                 </div>
 
@@ -134,8 +170,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="itemImage">Upload Image</label>
-                    <input type="file" id="itemImage" name="itemImage" accept="image/*" />
+                    <label for="itemImage">Product Photo</label>
+                    <label class="image-dropzone" for="itemImage">
+                        <div id="imagePreview" class="image-preview-placeholder"><i class="fa-solid fa-cloud-arrow-up"></i><span>Add a clear product photo</span></div>
+                        <input type="file" id="itemImage" name="itemImage" accept="image/*" />
+                    </label>
                 </div>
 
                 <button type="submit" class="upload-submit-btn">Upload Item</button>

@@ -16,6 +16,9 @@ const db = getFirestore(app);
 let itemsData = [];
 let currentCategory = "";
 let currentSort = "newest";
+let savedOnly = false;
+let currentView = "grid";
+let savedItems = new Set(JSON.parse(localStorage.getItem("facultyMarketplaceSaved") || "[]"));
 
 function getMarketplaceImageUrl(item) {
   const rawImage = item && item.image;
@@ -112,11 +115,48 @@ function setupEventListeners() {
   document.getElementById("searchInput").addEventListener("input", displayItems);
   document.getElementById("categoryFilter").addEventListener("change", (e) => {
     currentCategory = e.target.value;
+    document.querySelectorAll(".category-chip").forEach((chip) => {
+      chip.classList.toggle("active", (chip.dataset.category || "") === currentCategory);
+    });
     displayItems();
   });
   document.getElementById("sortFilter").addEventListener("change", (e) => {
     currentSort = e.target.value;
     displayItems();
+  });
+
+  document.querySelectorAll(".category-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      currentCategory = chip.dataset.category || "";
+      document.getElementById("categoryFilter").value = currentCategory;
+      document.querySelectorAll(".category-chip").forEach((item) => item.classList.remove("active"));
+      chip.classList.add("active");
+      displayItems();
+    });
+  });
+
+  document.getElementById("savedFilter").addEventListener("click", (event) => {
+    savedOnly = !savedOnly;
+    event.currentTarget.classList.toggle("active", savedOnly);
+    displayItems();
+  });
+
+  document.querySelectorAll(".view-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      currentView = button.dataset.view;
+      document.querySelectorAll(".view-btn").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+      document.getElementById("itemsList").classList.toggle("list-view", currentView === "list");
+    });
+  });
+
+  document.getElementById("itemImage").addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    const preview = document.getElementById("imagePreview");
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { preview.innerHTML = `<img src="${reader.result}" alt="Product preview">`; };
+    reader.readAsDataURL(file);
   });
 }
 
@@ -147,20 +187,25 @@ function displayItems() {
 
   let filtered = itemsData.filter((item) => {
     const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm) ||
-      item.description.toLowerCase().includes(searchTerm);
+      String(item.name || "").toLowerCase().includes(searchTerm) ||
+      String(item.description || "").toLowerCase().includes(searchTerm) ||
+      String(item.category || "").toLowerCase().includes(searchTerm);
     const matchesCategory = !currentCategory || item.category === currentCategory;
-    return matchesSearch && matchesCategory;
+    const matchesSaved = !savedOnly || savedItems.has(item.id);
+    return matchesSearch && matchesCategory && matchesSaved;
   });
 
   // Sort
   if (currentSort === "price-low") {
-    filtered.sort((a, b) => a.price - b.price);
+    filtered.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
   } else if (currentSort === "price-high") {
-    filtered.sort((a, b) => b.price - a.price);
+    filtered.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
   } else if (currentSort === "popular") {
     filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
   }
+
+  document.getElementById("itemCount").textContent = itemsData.length;
+  document.getElementById("resultCount").textContent = filtered.length;
 
   if (filtered.length === 0) {
     container.style.display = "none";
@@ -176,20 +221,30 @@ function displayItems() {
     const imageUrl = getMarketplaceImageUrl(item);
     const card = document.createElement("div");
     card.className = "item-card";
+    const saved = savedItems.has(item.id);
     card.innerHTML = `
       <div class="item-image">
-        ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">` : '<i class="fa-solid fa-image"></i>'}
+        ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/placeholder.svg';">` : '<i class="fa-solid fa-box-open"></i>'}
+        <button class="save-item-btn ${saved ? "saved" : ""}" type="button" aria-label="${saved ? "Remove from saved items" : "Save item"}"><i class="${saved ? "fa-solid" : "fa-regular"} fa-heart"></i></button>
+        <span class="item-category-badge">${escapeHtml(item.category || "other")}</span>
       </div>
       <div class="item-content">
-        <span class="item-category-badge">${item.category}</span>
         <h3 class="item-title">${escapeHtml(item.name)}</h3>
         <p class="item-description">${escapeHtml(item.description)}</p>
         <div class="item-footer">
-          <div class="item-price">₦${item.price.toLocaleString()}</div>
-          <button class="item-contact-btn">Contact</button>
+          <div class="item-price">₦${Number(item.price || 0).toLocaleString()}</div>
+          <button class="item-contact-btn"><i class="fa-solid fa-comment-dots"></i> Contact</button>
         </div>
       </div>
     `;
+
+    card.querySelector(".save-item-btn").addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (savedItems.has(item.id)) savedItems.delete(item.id);
+      else savedItems.add(item.id);
+      localStorage.setItem("facultyMarketplaceSaved", JSON.stringify([...savedItems]));
+      displayItems();
+    });
 
     card.querySelector(".item-contact-btn").addEventListener("click", (e) => {
       e.stopPropagation();
@@ -242,6 +297,7 @@ async function handleUploadItem(e) {
 
     alert("Item uploaded successfully!");
     document.getElementById("uploadForm").reset();
+    document.getElementById("imagePreview").innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i><span>Add a clear product photo</span>';
     closeModal(document.getElementById("uploadModal"));
     loadItems();
   } catch (error) {
