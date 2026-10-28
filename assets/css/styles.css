@@ -513,3 +513,154 @@ h1 {
 .dark-mode .page-back-button:hover {
   background: rgba(59, 130, 246, 0.2);
 }
+
+/* Full-site dark theme */
+html.dark-mode {
+  --dark-bg: #000000;
+  --white: #111111;
+  --text-dark: #FFFFFF;
+  --text-light: #CBD5E1;
+  background: #000000;
+  color-scheme: dark;
+}
+
+html.dark-mode,
+html.dark-mode body {
+  min-height: 100%;
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.dark-mode .content-card,
+.dark-mode .header-box,
+.dark-mode .modal-content,
+.dark-mode .newsletter-login-container,
+.dark-mode .newsletter-item,
+.dark-mode .event-card,
+.dark-mode .member-card,
+.dark-mode .document-item,
+.dark-mode .question-item,
+.dark-mode .department-card,
+.dark-mode .department-detail-card,
+.dark-mode .parliamentarian-card,
+.dark-mode .advisor-card,
+.dark-mode .topic-card,
+.dark-mode .faq-item,
+.dark-mode .social-card,
+.dark-mode .contact-card,
+.dark-mode .quick-link-card {
+  background: #111111;
+  border-color: #2A2A2A;
+  color: #FFFFFF;
+}
+
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode label,
+.dark-mode th {
+  color: #FFFFFF;
+}
+
+.dark-mode p,
+.dark-mode li,
+.dark-mode td,
+.dark-mode .hero-copy p,
+.dark-mode .card-body p {
+  color: #CBD5E1;
+}
+
+.dark-mode a {
+  color: #7DD3FC;
+}
+
+.dark-mode a:hover {
+  color: #FBBF24;
+}
+
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+  background: #111111;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: #94A3B8;
+}
+
+.dark-mode button,
+.dark-mode .upload-btn,
+.dark-mode .upload-submit-btn,
+.dark-mode .details-btn,
+.dark-mode .read-more-btn,
+.dark-mode .download-btn,
+.dark-mode .item-contact-btn {
+  border-color: #FBBF24;
+}
+
+.dark-mode .upload-btn,
+.dark-mode .upload-submit-btn,
+.dark-mode .details-btn,
+.dark-mode .read-more-btn,
+.dark-mode .download-btn,
+.dark-mode .item-contact-btn {
+  background: #FBBF24;
+  color: #000000;
+}
+
+.dark-mode .upload-btn:hover,
+.dark-mode .upload-submit-btn:hover,
+.dark-mode .details-btn:hover,
+.dark-mode .read-more-btn:hover,
+.dark-mode .download-btn:hover,
+.dark-mode .item-contact-btn:hover {
+  background: #0EA5E9;
+  border-color: #0EA5E9;
+  color: #FFFFFF;
+}
+
+.dark-mode .theme-button,
+.dark-mode .page-back-button,
+.dark-mode .modal-close {
+  background: #111111;
+  border-color: #FBBF24;
+  color: #FBBF24;
+}
+
+.dark-mode .modal-close:hover {
+  background: rgba(251, 191, 36, 0.12);
+  color: #FFFFFF;
+}
+
+.dark-mode .item-category-badge,
+.dark-mode .category-badge,
+.dark-mode .filter-btn.active,
+.dark-mode .category-btn.active {
+  background: rgba(251, 191, 36, 0.16);
+  border-color: rgba(251, 191, 36, 0.45);
+  color: #FBBF24;
+}
+
+.dark-mode .item-price,
+.dark-mode .item-detail-price {
+  color: #FBBF24;
+}
+
+.dark-mode .page-nav-dropdown {
+  background: rgba(0, 0, 0, 0.96);
+}
+
+.dark-mode .page-nav-dropdown-inner {
+  background: #111111;
+  border-color: #2A2A2A;
+}
+
+.dark-mode .page-nav-item {
+  background: #000000;
+  border: 1px solid #2A2A2A;
+}

@@ -499,6 +499,58 @@ body.marketplace-modal-open {
   background: #374151;
 }
 
+/* Dark marketplace surfaces */
+.dark-mode .modal {
+  background: rgba(0, 0, 0, 0.88);
+}
+
+.dark-mode .modal-content {
+  background: #111111;
+  border: 1px solid #2A2A2A;
+}
+
+.dark-mode .item-card,
+.dark-mode .contact-method,
+.dark-mode .marketplace-form input,
+.dark-mode .marketplace-form textarea,
+.dark-mode .marketplace-form select,
+.dark-mode .search-box,
+.dark-mode .filter-select {
+  background: #111111;
+}
+
+.dark-mode .item-card {
+  border-color: #2A2A2A;
+}
+
+.dark-mode .item-title,
+.dark-mode .item-detail h2,
+.dark-mode .item-detail-description,
+.dark-mode .marketplace-form label {
+  color: #FFFFFF;
+}
+
+.dark-mode .item-description,
+.dark-mode .empty-state p {
+  color: #CBD5E1;
+}
+
+.dark-mode .item-footer,
+.dark-mode .contact-seller {
+  border-color: #2A2A2A;
+}
+
+.dark-mode .item-category-badge {
+  background: rgba(251, 191, 36, 0.16);
+  color: #FBBF24;
+}
+
+.dark-mode .error-message {
+  background: rgba(220, 38, 38, 0.16);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #FCA5A5;
+}
+
 /* Responsive */
 
 @media (max-width: 768px) {

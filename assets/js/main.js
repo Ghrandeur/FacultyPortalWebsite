@@ -3,7 +3,9 @@ const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const storedTheme = localStorage.getItem('facultyPortalTheme');
 
 const setTheme = (mode) => {
-  document.documentElement.classList.toggle('dark-mode', mode === 'dark');
+  const isDark = mode === 'dark';
+  document.documentElement.classList.toggle('dark-mode', isDark);
+  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
   // update only the icon inside the theme toggle button
   const themeIcon = document.querySelector('#themeToggle .theme-icon');
   if (themeIcon) {
