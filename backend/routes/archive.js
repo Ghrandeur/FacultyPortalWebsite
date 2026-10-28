@@ -5,10 +5,15 @@ const { db } = require('../config/firebase');
 // Get all archive events
 router.get('/', async (req, res) => {
   try {
-    const snapshot = await db.collection('archive').orderBy('date', 'desc').get();
+    const snapshot = await db.collection('archive').get();
     const events = [];
     snapshot.forEach(doc => {
       events.push({ id: doc.id, ...doc.data() });
+    });
+    events.sort((a, b) => {
+      const aDate = a.date && (a.date.toMillis ? a.date.toMillis() : new Date(a.date).getTime());
+      const bDate = b.date && (b.date.toMillis ? b.date.toMillis() : new Date(b.date).getTime());
+      return (bDate || 0) - (aDate || 0);
     });
     res.json(events);
   } catch (error) {
@@ -33,15 +38,22 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { title, description, image, content, date } = req.body;
-    const eventDate = date ? new Date(date) : null;
+    let eventDate = null;
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const [year, month, day] = date.split('-').map(Number);
+      eventDate = new Date(year, month - 1, day);
+    } else if (date) {
+      const parsed = new Date(date);
+      if (!isNaN(parsed.getTime())) eventDate = parsed;
+    }
     
     const eventData = {
       title,
       description,
       content,
-      date: eventDate || new Date(),
       createdAt: new Date()
     };
+    if (eventDate) eventData.date = eventDate;
     
     // Only store image if it has a valid value
     if (image && typeof image === 'string' && image.trim()) {
@@ -73,7 +85,15 @@ router.put('/:id', async (req, res) => {
     }
     
     if (req.body.date !== undefined) {
-      updateData.date = req.body.date ? new Date(req.body.date) : new Date();
+      if (!req.body.date) {
+        updateData.date = null;
+      } else if (typeof req.body.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.body.date)) {
+        const [year, month, day] = req.body.date.split('-').map(Number);
+        updateData.date = new Date(year, month - 1, day);
+      } else {
+        const parsed = new Date(req.body.date);
+        updateData.date = isNaN(parsed.getTime()) ? null : parsed;
+      }
     }
     
     console.log('Updating archive event:', { id: req.params.id, updateData });

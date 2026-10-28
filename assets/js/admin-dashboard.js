@@ -198,8 +198,8 @@ function openArchiveForm() {
       <input type="text" id="archiveTitle" placeholder="Event title" required>
     </div>
     <div class="form-group">
-      <label for="archiveDescription">Description</label>
-      <input type="text" id="archiveDescription" placeholder="Short description" required>
+      <label for="archiveDescription">Description / Summary</label>
+      <textarea id="archiveDescription" rows="3" placeholder="Write a clear summary with paragraphs if needed" required></textarea>
     </div>
     <div class="form-group">
       <label for="archiveDate">Event Date</label>
@@ -211,7 +211,7 @@ function openArchiveForm() {
     </div>
     <div class="form-group">
       <label for="archiveContent">Full Content</label>
-      <textarea id="archiveContent" rows="6" placeholder="Event details..."></textarea>
+      <textarea id="archiveContent" rows="10" placeholder="Write the complete event details. Separate paragraphs with blank lines."></textarea>
     </div>
   `;
   openModal();
@@ -259,8 +259,8 @@ async function editArchiveEvent(id) {
         <input type="text" id="archiveTitle" value="${event.title || ''}" placeholder="Event title" required>
       </div>
       <div class="form-group">
-        <label for="archiveDescription">Description</label>
-        <input type="text" id="archiveDescription" value="${event.description || ''}" placeholder="Short description" required>
+        <label for="archiveDescription">Description / Summary</label>
+        <textarea id="archiveDescription" rows="3" placeholder="Write a clear summary with paragraphs if needed" required>${escapeHtml(event.description || '')}</textarea>
       </div>
       <div class="form-group">
         <label for="archiveDate">Event Date</label>
@@ -272,7 +272,7 @@ async function editArchiveEvent(id) {
       </div>
       <div class="form-group">
         <label for="archiveContent">Full Content</label>
-        <textarea id="archiveContent" rows="6" placeholder="Event details...">${event.content || ''}</textarea>
+        <textarea id="archiveContent" rows="10" placeholder="Write the complete event details. Separate paragraphs with blank lines.">${escapeHtml(event.content || '')}</textarea>
       </div>
     `;
     openModal();
@@ -801,6 +801,10 @@ function openLeaderForm() {
       </select>
     </div>
     <div class="form-group">
+      <label for="leaderBio">Biography</label>
+      <textarea id="leaderBio" rows="6" placeholder="Write the leader's biography and achievements"></textarea>
+    </div>
+    <div class="form-group">
       <label for="leaderPhotoFile">Upload Photo From Device</label>
       <input type="file" id="leaderPhotoFile" accept="image/*">
     </div>
@@ -839,6 +843,10 @@ async function editLeader(id) {
         </select>
       </div>
       <div class="form-group">
+        <label for="leaderBio">Biography</label>
+        <textarea id="leaderBio" rows="6" placeholder="Write the leader's biography and achievements">${escapeHtml(leader.bio || '')}</textarea>
+      </div>
+      <div class="form-group">
         <label for="leaderPhotoFile">Upload New Photo From Device (optional)</label>
         <input type="file" id="leaderPhotoFile" accept="image/*">
       </div>
@@ -874,6 +882,7 @@ async function handleLeaderSubmit() {
   const department = document.getElementById('leaderDepartment').value;
   const position = document.getElementById('leaderPosition').value;
   const administration = document.getElementById('leaderAdministration').value;
+  const bio = document.getElementById('leaderBio')?.value.trim() || '';
   const fileInput = document.getElementById('leaderPhotoFile');
 
   try {
@@ -904,7 +913,7 @@ async function handleLeaderSubmit() {
       throw new Error('User not authenticated');
     }
 
-    const body = { name, department, position, administration };
+    const body = { name, department, position, administration, bio };
     
     // Only include photoUrl if it has a non-empty value
     if (photoUrl) {

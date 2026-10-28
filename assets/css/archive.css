@@ -1,4 +1,25 @@
 /* Archive page specific styles */
+.archive-card-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--primary-blue);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.archive-card-copy,
+.archive-modal-copy,
+.detail-content .event-description,
+.detail-content .event-full-content {
+  line-height: 1.85;
+  white-space: normal;
+}
+.archive-card-copy p,
+.archive-modal-copy p,
+.detail-content p {
+  margin: 0 0 12px;
+}
+
 .event-card img { height: 220px; }
 .event-card-content { padding: 22px; }
 .modal-content { max-width: 760px; }

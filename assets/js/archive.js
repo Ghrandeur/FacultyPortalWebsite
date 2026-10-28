@@ -1,5 +1,33 @@
 const API_URL = window.API_URL;
 
+function archiveDateLabel(value) {
+  if (!value) return 'Date not available';
+  let date;
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    date = new Date(year, month - 1, day);
+  } else if (value._seconds) {
+    date = new Date(value._seconds * 1000);
+  } else if (value.seconds) {
+    date = new Date(value.seconds * 1000);
+  } else {
+    date = new Date(value);
+  }
+  return isNaN(date.getTime()) ? 'Date not available' : date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function escapeArchiveHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+function archiveParagraphHtml(text) {
+  const safe = escapeArchiveHtml(text).trim();
+  if (!safe) return '';
+  return safe.split(/\n\s*\n/).filter(Boolean).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+
 async function loadArchiveEvents() {
   try {
     const response = await fetch(`${API_URL}/archive`);
@@ -37,8 +65,9 @@ async function loadArchiveEvents() {
       card.innerHTML = `
         <img src="${imageUrl}" alt="${event.title || 'Archive event'}" loading="lazy" onerror="console.warn('Image failed to load:', '${imageUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg';">
         <div class="event-card-content">
-          <h3>${event.title || 'Untitled event'}</h3>
-          <p>${(event.description || '').replace(/\n/g, '<br>')}</p>
+          <h3>${escapeArchiveHtml(event.title || 'Untitled event')}</h3>
+          <p class="archive-card-date"><i class="fa-solid fa-calendar-days"></i> ${archiveDateLabel(event.date)}</p>
+          <div class="archive-card-copy">${archiveParagraphHtml(event.description)}</div>
           <div class="archive-actions">
             <button type="button" class="read-more-btn">Read More</button>
             <a class="details-btn" href="/pages/archive-detail?id=${encodeURIComponent(event.id)}">View Details</a>
@@ -68,15 +97,22 @@ function showFullEvent(event) {
   modalTitle.textContent = event.title || 'Archive Event';
   modalBody.innerHTML = '';
 
+  const date = document.createElement('p');
+  date.className = 'archive-card-date';
+  date.innerHTML = `<i class="fa-solid fa-calendar-days"></i> ${archiveDateLabel(event.date)}`;
+  modalBody.appendChild(date);
+
   if (event.description) {
-    const description = document.createElement('p');
-    description.textContent = event.description;
+    const description = document.createElement('div');
+    description.className = 'archive-modal-copy';
+    description.innerHTML = archiveParagraphHtml(event.description);
     modalBody.appendChild(description);
   }
 
   if (event.content) {
-    const content = document.createElement('p');
-    content.textContent = event.content;
+    const content = document.createElement('div');
+    content.className = 'archive-modal-copy';
+    content.innerHTML = archiveParagraphHtml(event.content);
     modalBody.appendChild(content);
   }
 

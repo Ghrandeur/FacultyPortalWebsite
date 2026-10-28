@@ -231,6 +231,7 @@ function displayItems() {
       <div class="item-content">
         <h3 class="item-title">${escapeHtml(item.name)}</h3>
         <p class="item-description">${escapeHtml(item.description)}</p>
+        <span class="uploaded-date"><i class="fa-solid fa-calendar-day"></i> Uploaded ${formatMarketplaceDate(item.createdAt || item.uploadedAt || item.created_at)}</span>
         <div class="item-footer">
           <div class="item-price">₦${Number(item.price || 0).toLocaleString()}</div>
           <button class="item-contact-btn"><i class="fa-solid fa-comment-dots"></i> Contact</button>
@@ -350,7 +351,8 @@ function openItemDetail(item) {
       <div class="item-detail-header">
         <h2>${escapeHtml(item.name)}</h2>
         <span class="item-category-badge">${item.category}</span>
-        <div class="item-detail-price">₦${item.price.toLocaleString()}</div>
+        <div class="item-detail-price">₦${Number(item.price || 0).toLocaleString()}</div>
+        <span class="uploaded-date"><i class="fa-solid fa-calendar-day"></i> Uploaded ${formatMarketplaceDate(item.createdAt || item.uploadedAt || item.created_at)}</span>
       </div>
       <div class="item-detail-description">${escapeHtml(item.description)}</div>
       ${contactButtons}
@@ -358,6 +360,17 @@ function openItemDetail(item) {
   `;
 
   openModal(modal);
+}
+
+function formatMarketplaceDate(value) {
+  let date = null;
+  if (!value) return "Recently";
+  if (typeof value.toDate === "function") date = value.toDate();
+  else if (typeof value.seconds === "number") date = new Date(value.seconds * 1000);
+  else if (typeof value._seconds === "number") date = new Date(value._seconds * 1000);
+  else if (typeof value === "string" || typeof value === "number") date = new Date(value);
+  if (!date || isNaN(date.getTime())) return "Recently";
+  return date.toLocaleString(undefined, { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 function escapeHtml(text) {

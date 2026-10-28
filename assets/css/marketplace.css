@@ -466,6 +466,15 @@ body.marketplace-modal-open {
   font-size: 0.9rem;
 }
 
+.uploaded-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--text-light);
+  font-size: 0.78rem;
+}
+
 /* Modern marketplace presentation */
 .marketplace-section {
   max-width: 1280px;
