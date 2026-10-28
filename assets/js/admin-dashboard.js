@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function checkAuth() {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
-      window.location.href = 'login.html';
+      window.location.href = '/admin/login';
       return;
     }
     currentUser = user;
@@ -60,7 +60,7 @@ function setupEventListeners() {
     signOut(auth).then(() => {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminEmail');
-      window.location.href = 'login.html';
+      window.location.href = '/admin/login';
     });
   });
 

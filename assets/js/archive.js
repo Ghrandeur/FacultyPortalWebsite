@@ -41,7 +41,7 @@ async function loadArchiveEvents() {
           <p>${(event.description || '').replace(/\n/g, '<br>')}</p>
           <div class="archive-actions">
             <button type="button" class="read-more-btn">Read More</button>
-            <a class="details-btn" href="/pages/archive-detail.html?id=${encodeURIComponent(event.id)}">View Details</a>
+            <a class="details-btn" href="/pages/archive-detail?id=${encodeURIComponent(event.id)}">View Details</a>
           </div>
         </div>
       `;

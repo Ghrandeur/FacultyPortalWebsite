@@ -40,7 +40,7 @@ async function loadLeaders() {
           <h3>${leader.name}</h3>
           <p>${leader.department}</p>
           <p class="member-position">${leader.position}</p>
-          <a class="details-btn" href="/pages/leaders-detail.html?id=${encodeURIComponent(leader.id)}">View Details</a>
+          <a class="details-btn" href="/pages/leaders-detail?id=${encodeURIComponent(leader.id)}">View Details</a>
         </div>
       `;
       container.appendChild(card);

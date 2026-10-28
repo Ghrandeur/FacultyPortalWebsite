@@ -103,7 +103,7 @@ function setupQuickLinks() {
   }
 
   document.getElementById("website").href = "http://fahssauniuyo.vercel.app/";
-  document.getElementById("subscribe").href = "/pages/newsletter-login.html";
+  document.getElementById("subscribe").href = "/pages/newsletter-login";
 }
 
 function createSocialCard(social) {

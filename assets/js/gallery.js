@@ -37,7 +37,7 @@ async function loadGalleryPhotos() {
         <img src="${photoUrl}" alt="${photo.event}" loading="lazy" onerror="console.warn('Photo failed to load:', '${photoUrl}'); this.onerror=null;this.src='/assets/images/placeholder.svg'">
         <div class="gallery-caption">
           ${photo.event}
-          <a class="details-btn" href="/pages/gallery-detail.html?id=${encodeURIComponent(photo.id)}">View Details</a>
+          <a class="details-btn" href="/pages/gallery-detail?id=${encodeURIComponent(photo.id)}">View Details</a>
         </div>
       `;
       item.onclick = () => openLightbox(photoUrl, photo.event);

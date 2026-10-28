@@ -32,7 +32,7 @@ function displayDocuments(documents) {
         <p>${doc.description}</p>
       </div>
       <div class="document-actions">
-        <a href="/pages/documents-detail.html?id=${encodeURIComponent(doc.id)}" class="details-btn">
+        <a href="/pages/documents-detail?id=${encodeURIComponent(doc.id)}" class="details-btn">
           <i class="fa-solid fa-arrow-right"></i> View Details
         </a>
         <a href="${doc.fileUrl}" target="_blank" class="download-btn">

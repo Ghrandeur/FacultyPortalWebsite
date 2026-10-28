@@ -377,3 +377,9 @@ This project is part of the Faculty Portal system.
 4. Start the server
 5. Access admin dashboard to add content
 6. Share with your team!
+
+## NIMELSSA integration
+
+The backend also exposes a separate NIMELSSA API at `/api/nimelssa`. Its Firestore records use `nimelssa_*` namespaces; they do not reuse or overwrite the Faculty Portal's content collections. NIMELSSA media uploads use the existing `/api/upload` implementation and the same configured Firebase Storage or S3 bucket, under the `uploads/nimelssa/` prefix.
+
+NIMELSSA admin access uses the Firebase custom claim `nimelssaAdmin`. Grant the first administrator from the backend folder with `npm run set-nimelssa-admin -- admin@example.com`; later NIMELSSA administrators can be managed from the NIMELSSA admin workspace. The first authorized sign-in imports NIMELSSA's starter content into missing records only.

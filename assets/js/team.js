@@ -39,7 +39,7 @@ async function loadTeamMembers() {
           <h3>${member.name}</h3>
           <p>${member.department}</p>
           <p class="member-position">${member.position}</p>
-          <a class="details-btn" href="/pages/team-detail.html?id=${encodeURIComponent(member.id)}">View Details</a>
+          <a class="details-btn" href="/pages/team-detail?id=${encodeURIComponent(member.id)}">View Details</a>
         </div>
       `;
       container.appendChild(card);

@@ -18,7 +18,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     localStorage.setItem('adminEmail', email);
     
     // Redirect to dashboard
-    window.location.href = 'dashboard.html';
+    window.location.href = '/admin/dashboard';
   } catch (error) {
     errorMsg.style.display = 'block';
     errorMsg.textContent = `Login failed: ${error.message}`;
@@ -29,6 +29,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 // Check if user is already logged in
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    window.location.href = 'dashboard.html';
+    window.location.href = '/admin/dashboard';
   }
 });

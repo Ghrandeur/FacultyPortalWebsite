@@ -138,7 +138,7 @@ function setupNewsletterForm() {
 
       // Redirect to newsletter page immediately after showing confirmation
       setTimeout(() => {
-        window.location.href = "/pages/newsletter.html";
+        window.location.href = "/pages/newsletter";
       }, 1000);
     } else {
       const backendMessage = data?.error || data?.message || `Error registering for newsletter (status ${response.status}).`;

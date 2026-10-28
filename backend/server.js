@@ -61,6 +61,25 @@ app.use((req, res, next) => {
   next();
 });
 
+// Redirect legacy .html URLs and serve clean page URLs.
+app.use((req, res, next) => {
+  const pathname = req.path;
+  if (pathname !== '/' && pathname.endsWith('.html')) {
+    const cleanPath = pathname.replace(/\.html$/, '') + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+    return res.redirect(301, cleanPath);
+  }
+
+  const match = pathname.match(/^\/(pages|admin)\/([a-zA-Z0-9_-]+)$/);
+  if (match) {
+    const filePath = path.join(__dirname, '..', match[1], `${match[2]}.html`);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      return res.sendFile(filePath);
+    }
+  }
+
+  next();
+});
+
 // Serve static files
 app.use(express.static(path.join(__dirname, '../')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
@@ -138,6 +157,7 @@ app.use('/api/team', require('./routes/team'));
 app.use('/api/past-questions', require('./routes/pastQuestions'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', require('./routes/new-features'));
+app.use('/api/nimelssa', require('./routes/nimelssa'));
 
 // Serve main index page
 app.get('/', (req, res) => {

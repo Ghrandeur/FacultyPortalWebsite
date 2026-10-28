@@ -1,8 +1,33 @@
 {
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/pages/:name.html",
+      "destination": "/pages/:name",
+      "permanent": true
+    },
+    {
+      "source": "/admin/:name.html",
+      "destination": "/admin/:name",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "https://facultyportalwebsite-3.onrender.com/api/$1"
+    },
+    {
+      "source": "/pages/:name",
+      "destination": "/pages/:name.html"
+    },
+    {
+      "source": "/admin/:name",
+      "destination": "/admin/:name.html"
     }
   ]
 }
