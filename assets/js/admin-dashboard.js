@@ -2348,14 +2348,36 @@ async function loadSocialHandles() {
     const container = document.getElementById('socialHandlesList');
     container.innerHTML = '';
 
-    // Only allow editing these five platforms from the admin UI
-    const platforms = ['facebook', 'x', 'instagram', 'whatsapp', 'tiktok'];
+    const settingsResponse = await fetch(`${API_URL}/social-settings`);
+    const settings = settingsResponse.ok ? await settingsResponse.json() : {};
+    container.innerHTML = `
+      <div class="item social-settings-card">
+        <div class="item-info">
+          <h3>Contact Information & Quick Links</h3>
+          <div class="form-group"><label for="socialEmail">Email</label><input type="email" id="socialEmail" value="${escapeHtml(settings.email || '')}" placeholder="faculty@example.com"></div>
+          <div class="form-group"><label for="socialPhone">Phone</label><input type="text" id="socialPhone" value="${escapeHtml(settings.phone || '')}" placeholder="Phone number"></div>
+          <div class="form-group"><label for="socialLocation">Office Location</label><input type="text" id="socialLocation" value="${escapeHtml(settings.location || '')}" placeholder="Office location"></div>
+          <div class="form-group"><label for="socialWebsiteUrl">Website URL</label><input type="url" id="socialWebsiteUrl" value="${escapeHtml(settings.websiteUrl || '')}" placeholder="https://..."></div>
+          <div class="form-group"><label for="socialChatUrl">Chat/Message URL</label><input type="url" id="socialChatUrl" value="${escapeHtml(settings.chatUrl || '')}" placeholder="https://chat... or wa.me..."></div>
+          <div class="form-group"><label for="socialNewsletterUrl">Newsletter/Subscribe URL</label><input type="text" id="socialNewsletterUrl" value="${escapeHtml(settings.newsletterUrl || '/pages/newsletter-login')}" placeholder="/pages/newsletter-login"></div>
+          <div class="item-actions"><button class="save-btn" id="saveSocialSettings">Save Information & Links</button></div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('saveSocialSettings').addEventListener('click', saveSocialSettings);
+
+    // Admin selectors for every managed platform
+    const platforms = ['facebook', 'x', 'instagram', 'whatsapp', 'tiktok', 'linkedin', 'telegram', 'youtube'];
     const labels = {
       facebook: 'Facebook',
       x: 'X (Twitter)',
       instagram: 'Instagram',
       whatsapp: 'WhatsApp',
-      tiktok: 'TikTok'
+      tiktok: 'TikTok',
+      linkedin: 'LinkedIn',
+      telegram: 'Telegram',
+      youtube: 'YouTube'
     };
 
     const existing = {};
@@ -2377,6 +2399,20 @@ async function loadSocialHandles() {
         <div class="item-info">
           <h3>${labels[p]}</h3>
           <div class="form-group">
+            <label>Platform</label>
+            <select class="social-input-platform" data-platform="${p}">
+              ${platforms.map(platform => `<option value="${platform}" ${platform === p ? 'selected' : ''}>${labels[platform]}</option>`).join('')}
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Section</label>
+            <select class="social-input-type" data-platform="${p}">
+              <option value="main" ${data.type !== 'department' ? 'selected' : ''}>Official FAHSSA Channels</option>
+              <option value="department" ${data.type === 'department' ? 'selected' : ''}>Department Social Channels</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>Handle</label>
             <input type="text" class="social-input-handle" data-platform="${p}" value="${escapeHtml(data.handle || '')}" placeholder="@handle or id">
           </div>
@@ -2397,12 +2433,14 @@ async function loadSocialHandles() {
     container.appendChild(grid);
 
     // Attach event listeners for save and delete per platform
-    container.querySelectorAll('.save-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        const platform = btn.dataset.platform;
-        const handle = container.querySelector(`.social-input-handle[data-platform="${platform}"]`).value.trim();
-        const url = container.querySelector(`.social-input-url[data-platform="${platform}"]`).value.trim();
-        await saveSocialByPlatform(platform, handle, url, existing[platform]);
+    container.querySelectorAll('.social-handles-grid .save-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const originalPlatform = btn.dataset.platform;
+        const platform = container.querySelector(`.social-input-platform[data-platform="${originalPlatform}"]`).value;
+        const type = container.querySelector(`.social-input-type[data-platform="${originalPlatform}"]`).value;
+        const handle = container.querySelector(`.social-input-handle[data-platform="${originalPlatform}"]`).value.trim();
+        const url = container.querySelector(`.social-input-url[data-platform="${originalPlatform}"]`).value.trim();
+        await saveSocialByPlatform(platform, handle, url, existing[platform] || existing[originalPlatform], type);
       });
     });
 
@@ -2436,14 +2474,38 @@ async function loadSocialHandles() {
   }
 }
 
+async function saveSocialSettings() {
+  const payload = {
+    email: document.getElementById('socialEmail').value.trim(),
+    phone: document.getElementById('socialPhone').value.trim(),
+    location: document.getElementById('socialLocation').value.trim(),
+    websiteUrl: document.getElementById('socialWebsiteUrl').value.trim(),
+    chatUrl: document.getElementById('socialChatUrl').value.trim(),
+    newsletterUrl: document.getElementById('socialNewsletterUrl').value.trim()
+  };
+  try {
+    const token = currentUser && typeof currentUser.getIdToken === 'function' ? await currentUser.getIdToken() : '';
+    const response = await fetch(`${API_URL}/social-settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: token } : {}) },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error(await response.text());
+    alert('Contact information and quick links saved successfully!');
+  } catch (error) {
+    alert(`Error saving social settings: ${error.message}`);
+  }
+}
+
 // Save or create a social handle by platform
-async function saveSocialByPlatform(platform, handle, url, existing) {
+async function saveSocialByPlatform(platform, handle, url, existing, type = 'main') {
   try {
     const payload = {
       name: platform,
       platform,
       handle: handle || '',
-      url: url || ''
+      url: url || '',
+      type: type || 'main'
     };
 
     const token = currentUser && typeof currentUser.getIdToken === 'function' ? await currentUser.getIdToken() : '';
@@ -2491,7 +2553,17 @@ function openSocialHandleForm() {
     </div>
     <div class="form-group">
       <label for="socialPlatform">Platform</label>
-      <input type="text" id="socialPlatform" placeholder="Platform" required>
+      <select id="socialPlatform" required>
+        <option value="facebook">Facebook</option>
+        <option value="x">X (Twitter)</option>
+        <option value="instagram">Instagram</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="tiktok">TikTok</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="telegram">Telegram</option>
+        <option value="youtube">YouTube</option>
+        <option value="other">Other</option>
+      </select>
     </div>
     <div class="form-group">
       <label for="socialHandle">Handle</label>
@@ -2502,8 +2574,11 @@ function openSocialHandleForm() {
       <input type="url" id="socialUrl" placeholder="https://example.com">
     </div>
     <div class="form-group">
-      <label for="socialType">Type</label>
-      <input type="text" id="socialType" placeholder="Type (e.g. main)">
+      <label for="socialType">Section</label>
+      <select id="socialType">
+        <option value="main">Official FAHSSA Channels</option>
+        <option value="department">Department Social Channels</option>
+      </select>
     </div>
   `;
   openModal();
@@ -2581,7 +2656,9 @@ async function editSocialHandle(id) {
       </div>
       <div class="form-group">
         <label for="socialPlatform">Platform</label>
-        <input type="text" id="socialPlatform" value="${handle.platform || ''}" placeholder="Platform" required>
+        <select id="socialPlatform" required>
+          ${['facebook','x','instagram','whatsapp','tiktok','linkedin','telegram','youtube','other'].map(platform => `<option value="${platform}" ${handle.platform === platform ? 'selected' : ''}>${platform === 'x' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1)}</option>`).join('')}
+        </select>
       </div>
       <div class="form-group">
         <label for="socialHandle">Handle</label>
@@ -2592,8 +2669,11 @@ async function editSocialHandle(id) {
         <input type="url" id="socialUrl" value="${handle.url || ''}" placeholder="https://example.com">
       </div>
       <div class="form-group">
-        <label for="socialType">Type</label>
-        <input type="text" id="socialType" value="${handle.type || ''}" placeholder="Type (e.g. main)">
+        <label for="socialType">Section</label>
+        <select id="socialType">
+          <option value="main" ${(handle.type || 'main') === 'main' ? 'selected' : ''}>Official FAHSSA Channels</option>
+          <option value="department" ${handle.type === 'department' ? 'selected' : ''}>Department Social Channels</option>
+        </select>
       </div>
     `;
     openModal();

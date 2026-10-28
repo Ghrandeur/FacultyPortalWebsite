@@ -606,6 +606,35 @@ router.delete("/parliamentarians/:id", async (req, res) => {
 
 // ==================== SOCIAL HANDLES ROUTES ====================
 
+// Social/contact page settings
+router.get("/social-settings", async (req, res) => {
+  try {
+    const doc = await db.collection("social_settings").doc("main").get();
+    res.json(doc.exists ? doc.data() : {});
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to get social settings" });
+  }
+});
+
+router.put("/social-settings", async (req, res) => {
+  try {
+    const { email, phone, location, websiteUrl, chatUrl, newsletterUrl } = req.body;
+    const settings = {
+      email: email || "",
+      phone: phone || "",
+      location: location || "",
+      websiteUrl: websiteUrl || "",
+      chatUrl: chatUrl || "",
+      newsletterUrl: newsletterUrl || "/pages/newsletter-login",
+      updatedAt: new Date()
+    };
+    await db.collection("social_settings").doc("main").set(settings, { merge: true });
+    res.json({ success: true, message: "Social settings updated" });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to update social settings" });
+  }
+});
+
 // Get all social handles
 router.get("/social-handles/all", async (req, res) => {
   try {

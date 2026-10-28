@@ -1,45 +1,28 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  getDocs,
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { firebaseConfig } from "./firebase-config.js";
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const API_URL = window.API_URL;
 
 // Load social handles on page load
 document.addEventListener("DOMContentLoaded", () => {
   loadSocialHandles();
   loadDepartmentSocials();
   loadContactInfo();
-  setupQuickLinks();
 });
 
 async function loadSocialHandles() {
   try {
-    const querySnapshot = await getDocs(collection(db, "social_handles"));
-
+    const response = await fetch(`${API_URL}/social-handles/all`);
+    const socials = await response.json();
     const container = document.getElementById("mainSocialList");
     container.innerHTML = "";
 
-    let hasSocials = false;
+    const mainSocials = socials.filter(social => social.type === "main" || !social.type);
 
-    querySnapshot.forEach((doc) => {
-      const social = doc.data();
-      if (social.type === "main" || !social.type) {
-        hasSocials = true;
-        const card = createSocialCard(social);
-        container.appendChild(card);
-      }
-    });
-
-    if (!hasSocials) {
-      container.innerHTML =
-        '<div class="empty-state"><p>No social handles available</p></div>';
+    if (mainSocials.length === 0) {
+      container.innerHTML = '<div class="empty-state"><p>No social handles available</p></div>';
+      return;
     }
+
+    mainSocials.forEach(social => container.appendChild(createSocialCard(social)));
+
   } catch (error) {
     console.error("Error loading social handles:", error);
     document.getElementById("mainSocialList").innerHTML =
@@ -49,61 +32,51 @@ async function loadSocialHandles() {
 
 async function loadDepartmentSocials() {
   try {
-    const querySnapshot = await getDocs(collection(db, "department_socials"));
-
+    const response = await fetch(`${API_URL}/social-handles/all`);
+    const socials = await response.json();
+    const departmentSocials = socials.filter(social => social.type === "department");
     const container = document.getElementById("departmentSocialList");
     container.innerHTML = "";
 
-    let hasSocials = false;
-
-    querySnapshot.forEach((doc) => {
-      const social = doc.data();
-      hasSocials = true;
-      const card = createSocialCard(social);
-      container.appendChild(card);
-    });
-
-    if (!hasSocials) {
-      container.innerHTML =
-        '<div class="empty-state"><p>No department channels available</p></div>';
+    if (departmentSocials.length === 0) {
+      container.innerHTML = '<div class="empty-state"><p>No department channels available</p></div>';
+      return;
     }
+    departmentSocials.forEach(social => container.appendChild(createSocialCard(social)));
   } catch (error) {
     console.error("Error loading department socials:", error);
-    document.getElementById("departmentSocialList").innerHTML =
-      "<p>Error loading department channels</p>";
+    document.getElementById("departmentSocialList").innerHTML = "<p>Error loading department channels</p>";
   }
 }
 
 async function loadContactInfo() {
   try {
-    const querySnapshot = await getDocs(collection(db, "faculty_info"));
-
-    querySnapshot.forEach((doc) => {
-      const info = doc.data();
-      if (info.email) {
-        document.getElementById("facultyEmail").textContent = info.email;
-      }
-      if (info.phone) {
-        document.getElementById("facultyPhone").textContent = info.phone;
-      }
-      if (info.location) {
-        document.getElementById("facultyLocation").textContent = info.location;
-      }
-    });
+    const response = await fetch(`${API_URL}/social-settings`);
+    const info = await response.json();
+    document.getElementById("facultyEmail").textContent = info.email || "Not available";
+    document.getElementById("facultyPhone").textContent = info.phone || "Not available";
+    document.getElementById("facultyLocation").textContent = info.location || "Not available";
+    setupQuickLinks(info);
   } catch (error) {
     console.error("Error loading contact info:", error);
   }
 }
 
-function setupQuickLinks() {
-  const emailBtn = document.getElementById("emailLink");
-  const email = document.getElementById("facultyEmail").textContent;
-  if (email) {
-    emailBtn.href = `mailto:${email}`;
-  }
+function setupQuickLinks(info = {}) {
+  const email = info.email || "";
+  const website = document.getElementById("website");
+  const emailLink = document.getElementById("emailLink");
+  const chat = document.getElementById("chat");
+  const subscribe = document.getElementById("subscribe");
 
-  document.getElementById("website").href = "http://fahssauniuyo.vercel.app/";
-  document.getElementById("subscribe").href = "/pages/newsletter-login";
+  if (email) emailLink.href = `mailto:${email}`;
+  if (info.websiteUrl) website.href = info.websiteUrl;
+  if (info.chatUrl) chat.href = info.chatUrl;
+  if (info.newsletterUrl) subscribe.href = info.newsletterUrl;
+
+  [[website, info.websiteUrl], [emailLink, email], [chat, info.chatUrl], [subscribe, info.newsletterUrl]].forEach(([element, configured]) => {
+    element.style.display = configured ? "flex" : "none";
+  });
 }
 
 function createSocialCard(social) {
@@ -118,7 +91,7 @@ function createSocialCard(social) {
   switch (platform) {
     case "facebook":
       icon = '<i class="fa-brands fa-facebook"></i>';
-      link = social.url || "https://www.facebook.com/p/Faculty-of-Allied-Health-Sciences-UNIUYO-61574712552379/";
+      link = social.url || "#";
       break;
     case "twitter":
     case "x":
@@ -135,7 +108,7 @@ function createSocialCard(social) {
       break;
     case "whatsapp":
       icon = '<i class="fa-brands fa-whatsapp"></i>';
-      link = social.url || "https://www.whatsapp.com/channel/0029Vb7hiR1BKfhs2cLLRB3T";
+      link = social.url || "#";
       break;
     case "telegram":
       icon = '<i class="fa-brands fa-telegram"></i>';
@@ -155,12 +128,19 @@ function createSocialCard(social) {
     <div class="social-icon">${icon}</div>
     <h4>${escapeHtml(social.name || social.platform)}</h4>
     <p>${escapeHtml(social.handle || "")}</p>
-    <a href="${link}" target="_blank" rel="noopener noreferrer" class="social-card-link">
+    <a href="${escapeHtml(safeLink(link))}" target="_blank" rel="noopener noreferrer" class="social-card-link">
       <i class="fa-solid fa-arrow-up-right-from-square"></i> Follow
     </a>
   `;
 
   return card;
+}
+
+function safeLink(value) {
+  if (!value || typeof value !== "string") return "#";
+  const trimmed = value.trim();
+  if (/^(https?:|mailto:|tel:)/i.test(trimmed) || trimmed.startsWith("/pages/")) return trimmed;
+  return "#";
 }
 
 function escapeHtml(text) {
