@@ -514,6 +514,47 @@ h1 {
   background: rgba(59, 130, 246, 0.2);
 }
 
+/* Administration section tabs */
+.administration-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 32px;
+  flex-wrap: wrap;
+}
+
+.administration-tab {
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 2px solid var(--primary-blue);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--primary-blue);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.administration-tab span {
+  margin-left: 6px;
+}
+
+.administration-tab.active {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.dark-mode .administration-tab {
+  background: #111111;
+  border-color: #FBBF24;
+  color: #FBBF24;
+}
+
+.dark-mode .administration-tab.active {
+  background: #FBBF24;
+  border-color: #FBBF24;
+  color: #000000;
+}
+
 /* Full-site dark theme */
 html.dark-mode {
   --dark-bg: #000000;

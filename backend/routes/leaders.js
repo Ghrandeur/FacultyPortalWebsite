@@ -19,12 +19,13 @@ router.get('/', async (req, res) => {
 // Create leader
 router.post('/', async (req, res) => {
   try {
-    const { name, department, position, photoUrl } = req.body;
+    const { name, department, position, photoUrl, administration } = req.body;
     
     const leaderData = {
       name,
       department,
       position,
+      administration: administration === 'past' ? 'past' : '2026-2027',
       createdAt: new Date()
     };
     
@@ -64,6 +65,9 @@ router.put('/:id', async (req, res) => {
     if (req.body.name !== undefined) updateData.name = req.body.name;
     if (req.body.department !== undefined) updateData.department = req.body.department;
     if (req.body.position !== undefined) updateData.position = req.body.position;
+    if (req.body.administration !== undefined) {
+      updateData.administration = req.body.administration === 'past' ? 'past' : '2026-2027';
+    }
     
     // Only update photoUrl if it's provided and has a value
     if (req.body.photoUrl !== undefined && req.body.photoUrl && typeof req.body.photoUrl === 'string' && req.body.photoUrl.trim()) {

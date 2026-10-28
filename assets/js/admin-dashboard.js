@@ -760,6 +760,7 @@ async function loadLeaders() {
         <div class="item-info">
           <h3>${leader.name}</h3>
           <p>${leader.department} - ${leader.position}</p>
+          <p><strong>${(leader.administration || 'past') === 'past' ? 'Past Administration' : 'Present Administration — 2026/2027'}</strong></p>
         </div>
         <div class="item-actions">
           <button class="edit-btn" onclick="editLeader('${leader.id}')">Edit</button>
@@ -793,6 +794,13 @@ function openLeaderForm() {
       <input type="text" id="leaderPosition" placeholder="Position" required>
     </div>
     <div class="form-group">
+      <label for="leaderAdministration">Administration</label>
+      <select id="leaderAdministration" required>
+        <option value="2026-2027">Present Administration — 2026/2027</option>
+        <option value="past">Past Administration</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label for="leaderPhotoFile">Upload Photo From Device</label>
       <input type="file" id="leaderPhotoFile" accept="image/*">
     </div>
@@ -822,6 +830,13 @@ async function editLeader(id) {
       <div class="form-group">
         <label for="leaderPosition">Position</label>
         <input type="text" id="leaderPosition" value="${leader.position || ''}" placeholder="Position" required>
+      </div>
+      <div class="form-group">
+        <label for="leaderAdministration">Administration</label>
+        <select id="leaderAdministration" required>
+          <option value="2026-2027" ${(leader.administration || 'past') === '2026-2027' ? 'selected' : ''}>Present Administration — 2026/2027</option>
+          <option value="past" ${(leader.administration || 'past') === 'past' ? 'selected' : ''}>Past Administration</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="leaderPhotoFile">Upload New Photo From Device (optional)</label>
@@ -858,6 +873,7 @@ async function handleLeaderSubmit() {
   const name = document.getElementById('leaderName').value;
   const department = document.getElementById('leaderDepartment').value;
   const position = document.getElementById('leaderPosition').value;
+  const administration = document.getElementById('leaderAdministration').value;
   const fileInput = document.getElementById('leaderPhotoFile');
 
   try {
@@ -888,7 +904,7 @@ async function handleLeaderSubmit() {
       throw new Error('User not authenticated');
     }
 
-    const body = { name, department, position };
+    const body = { name, department, position, administration };
     
     // Only include photoUrl if it has a non-empty value
     if (photoUrl) {
@@ -2111,6 +2127,7 @@ async function loadParliamentarians() {
           <h3>${person.name}</h3>
           <p>${person.position}</p>
           <p>${person.department || ''}</p>
+          <p><strong>${(person.administration || 'past') === 'past' ? 'Past Administration' : 'Present Administration — 2026/2027'}</strong></p>
         </div>
         <div class="item-actions">
           <button class="edit-btn" onclick="editParliamentarian('${person.id}')">Edit</button>
@@ -2144,6 +2161,13 @@ function openParliamentarianForm() {
       <input type="text" id="parlDepartment" placeholder="Department">
     </div>
     <div class="form-group">
+      <label for="parlAdministration">Administration</label>
+      <select id="parlAdministration" required>
+        <option value="2026-2027">Present Administration — 2026/2027</option>
+        <option value="past">Past Administration</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label for="parlBio">Bio</label>
       <textarea id="parlBio" rows="4" placeholder="Short biography"></textarea>
     </div>
@@ -2175,6 +2199,7 @@ async function handleParliamentarianSubmit() {
   const name = document.getElementById('parlName').value;
   const position = document.getElementById('parlPosition').value;
   const department = document.getElementById('parlDepartment').value;
+  const administration = document.getElementById('parlAdministration').value;
   const bio = document.getElementById('parlBio').value;
   const portfolio = document.getElementById('parlPortfolio').value;
   const email = document.getElementById('parlEmail').value;
@@ -2196,7 +2221,7 @@ async function handleParliamentarianSubmit() {
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/parliamentarians/${currentEditId}` : `${API_URL}/parliamentarians/create`;
 
-    const body = { name, position, department, bio, portfolio, email, phone, order };
+    const body = { name, position, department, administration, bio, portfolio, email, phone, order };
     if (image) {
       body.image = image;
     }
@@ -2252,6 +2277,13 @@ async function editParliamentarian(id) {
       <div class="form-group">
         <label for="parlDepartment">Department</label>
         <input type="text" id="parlDepartment" value="${person.department || ''}" placeholder="Department">
+      </div>
+      <div class="form-group">
+        <label for="parlAdministration">Administration</label>
+        <select id="parlAdministration" required>
+          <option value="2026-2027" ${(person.administration || 'past') === '2026-2027' ? 'selected' : ''}>Present Administration — 2026/2027</option>
+          <option value="past" ${(person.administration || 'past') === 'past' ? 'selected' : ''}>Past Administration</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="parlBio">Bio</label>

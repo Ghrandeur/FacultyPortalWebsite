@@ -12,9 +12,24 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let parliamentariansData = [];
+let activeAdministration = "2026-2027";
 
-// Load parliamentarians on page load
-document.addEventListener("DOMContentLoaded", loadParliamentarians);
+// Load parliamentarians and administration tabs on page load
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".administration-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".administration-tab").forEach(item => {
+        item.classList.remove("active");
+        item.setAttribute("aria-selected", "false");
+      });
+      tab.classList.add("active");
+      tab.setAttribute("aria-selected", "true");
+      activeAdministration = tab.dataset.administration;
+      displayParliamentarians();
+    });
+  });
+  loadParliamentarians();
+});
 
 // No modal present on the page anymore; guard against missing elements.
 const modalCloseBtn = document.querySelector(".modal-close");
@@ -51,17 +66,20 @@ function displayParliamentarians() {
   const container = document.getElementById("parliamentariansList");
   const emptyState = document.getElementById("emptyState");
 
-  if (parliamentariansData.length === 0) {
-    container.style.display = "none";
-    emptyState.style.display = "flex";
+  const filteredData = parliamentariansData.filter(parl => (parl.administration || "past") === activeAdministration);
+
+  container.style.display = "grid";
+  if (emptyState) emptyState.style.display = "none";
+  container.innerHTML = "";
+
+  if (filteredData.length === 0) {
+    container.innerHTML = activeAdministration === "2026-2027"
+      ? '<p style="grid-column: 1/-1; text-align:center;">No parliamentarians have been added to the 2026–2027 administration yet.</p>'
+      : '<p style="grid-column: 1/-1; text-align:center;">No past administration parliamentarians found.</p>';
     return;
   }
 
-  container.style.display = "grid";
-  emptyState.style.display = "none";
-  container.innerHTML = "";
-
-  parliamentariansData.forEach((parl) => {
+  filteredData.forEach((parl) => {
     const rawPhotoUrl = parl.image || parl.photoUrl || parl.url || '';
     const photoUrl = rawPhotoUrl && typeof rawPhotoUrl === 'string' && rawPhotoUrl.trim()
       ? (window.normalizeMediaUrl ? window.normalizeMediaUrl(rawPhotoUrl) : rawPhotoUrl)
