@@ -749,3 +749,245 @@ html.dark-mode body {
   background: #111111;
   color: #FFFFFF;
 }
+
+/* Shared interactive portal layer */
+html { scroll-behavior: smooth; }
+
+body:not(.home) .content-card {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+}
+
+body:not(.home) .content-card::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -170px;
+  top: -170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.12), transparent 68%);
+  pointer-events: none;
+}
+
+.page-header,
+.marketplace-header,
+.departments-header,
+.leaders-header,
+.parliamentarians-header,
+.newsletter-header,
+.gallery-header,
+.documents-header,
+.past-questions-header,
+.social-header {
+  position: relative;
+}
+
+.page-header::after,
+.marketplace-header::after,
+.departments-header::after,
+.leaders-header::after,
+.parliamentarians-header::after,
+.newsletter-header::after,
+.gallery-header::after,
+.documents-header::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 4px;
+  margin: 14px auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #fbbf24);
+}
+
+.grid-cards .portal-card,
+.event-card,
+.member-card,
+.document-item,
+.question-item,
+.department-card,
+.department-detail-card,
+.parliamentarian-card,
+.advisor-card,
+.topic-card,
+.newsletter-item,
+.gallery-item,
+.resource-card,
+.social-card,
+.contact-card,
+.quick-link-card {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+  will-change: transform;
+}
+
+.grid-cards .portal-card:hover,
+.event-card:hover,
+.member-card:hover,
+.document-item:hover,
+.question-item:hover,
+.department-card:hover,
+.department-detail-card:hover,
+.parliamentarian-card:hover,
+.advisor-card:hover,
+.topic-card:hover,
+.newsletter-item:hover,
+.gallery-item:hover,
+.resource-card:hover,
+.social-card:hover,
+.contact-card:hover,
+.quick-link-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 18px 38px rgba(37, 99, 235, 0.14);
+}
+
+button,
+.portal-card,
+.event-card,
+.member-card,
+.document-item,
+.question-item,
+.department-card,
+.parliamentarian-card,
+.newsletter-item,
+.gallery-item,
+.resource-card,
+.social-card,
+.quick-link-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled):active,
+.portal-card:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.portal-card,
+.event-card,
+.member-card,
+.document-item,
+.question-item,
+.department-card,
+.parliamentarian-card,
+.topic-card,
+.newsletter-item,
+.gallery-item,
+.resource-card,
+.social-card {
+  animation: portalReveal 480ms cubic-bezier(.22,.61,.36,1) both;
+}
+
+@keyframes portalReveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header h2,
+.marketplace-hero h2,
+.departments-header h2,
+.leaders-header h2,
+.parliamentarians-header h2,
+.social-header h2 {
+  letter-spacing: -0.035em;
+}
+
+.search-box,
+.filter-select,
+.filter-section select,
+.marketplace-form input,
+.marketplace-form textarea,
+.marketplace-form select,
+.newsletter-login-container input,
+.topic-search-input,
+.reply-form input,
+.reply-form textarea {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.search-box:focus,
+.filter-select:focus,
+.filter-section select:focus,
+.marketplace-form input:focus,
+.marketplace-form textarea:focus,
+.marketplace-form select:focus,
+.newsletter-login-container input:focus,
+.topic-search-input:focus,
+.reply-form input:focus,
+.reply-form textarea:focus {
+  transform: translateY(-1px);
+}
+
+.portal-scroll-progress {
+  position: fixed;
+  z-index: 4000;
+  left: 0;
+  top: 0;
+  height: 3px;
+  width: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 60%, #fbbf24 100%);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.45);
+}
+
+.portal-back-to-top {
+  position: fixed;
+  z-index: 3000;
+  right: 22px;
+  bottom: 22px;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  cursor: pointer;
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.28);
+  transition: 180ms ease;
+}
+
+.portal-back-to-top.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.home .content-card {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(251, 191, 36, 0.08), transparent 180px),
+    radial-gradient(circle at 10% 90%, rgba(14, 165, 233, 0.08), transparent 220px),
+    var(--white);
+}
+
+.home .hero-copy {
+  padding-bottom: 4px;
+}
+
+.home .portal-card:nth-child(3n + 1) { animation-delay: 60ms; }
+.home .portal-card:nth-child(3n + 2) { animation-delay: 120ms; }
+.home .portal-card:nth-child(3n) { animation-delay: 180ms; }
+
+.dark-mode .portal-back-to-top { background: #fbbf24; color: #111111; }
+.dark-mode body:not(.home) .content-card { box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+@media (max-width: 600px) {
+  body:not(.home) .content-card { border-radius: 22px; padding: 20px 16px; }
+  .grid-cards .portal-card:hover,
+  .event-card:hover,
+  .member-card:hover,
+  .document-item:hover,
+  .question-item:hover,
+  .department-card:hover,
+  .parliamentarian-card:hover,
+  .topic-card:hover,
+  .newsletter-item:hover,
+  .gallery-item:hover,
+  .resource-card:hover,
+  .social-card:hover,
+  .quick-link-card:hover { transform: translateY(-3px); }
+}

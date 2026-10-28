@@ -142,3 +142,36 @@ portalLinks.forEach((link) => {
     }
   });
 });
+
+const progressBar = document.createElement('div');
+progressBar.className = 'portal-scroll-progress';
+progressBar.setAttribute('aria-hidden', 'true');
+document.body.appendChild(progressBar);
+
+const backToTop = document.createElement('button');
+backToTop.className = 'portal-back-to-top';
+backToTop.type = 'button';
+backToTop.setAttribute('aria-label', 'Back to top');
+backToTop.innerHTML = '<i class="fa-solid fa-arrow-up" aria-hidden="true"></i>';
+document.body.appendChild(backToTop);
+
+const updatePageProgress = () => {
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+  progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+  backToTop.classList.toggle('visible', window.scrollY > 520);
+};
+
+window.addEventListener('scroll', updatePageProgress, { passive: true });
+backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+updatePageProgress();
+
+const interactiveSelectors = '.event-card, .member-card, .document-item, .question-item, .department-card, .department-detail-card, .parliamentarian-card, .advisor-card, .topic-card, .newsletter-item, .gallery-item, .resource-card, .social-card, .contact-card, .quick-link-card';
+const interactiveItems = document.querySelectorAll(interactiveSelectors);
+interactiveItems.forEach((item, index) => {
+  item.style.animationDelay = `${Math.min(index * 55, 330)}ms`;
+});
+
+document.querySelectorAll('img').forEach((image) => {
+  image.addEventListener('load', () => image.classList.add('portal-image-loaded'), { once: true });
+});
