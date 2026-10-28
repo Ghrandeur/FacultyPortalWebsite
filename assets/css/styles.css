@@ -705,3 +705,47 @@ html.dark-mode body {
   background: #000000;
   border: 1px solid #2A2A2A;
 }
+
+/* Keep page-specific white surfaces readable in dark mode.
+   These rules must be global because some page stylesheets load after this file. */
+.dark-mode .filter-section select,
+.dark-mode .department-card,
+.dark-mode .department-detail-card,
+.dark-mode .department-modal .modal-content,
+.dark-mode .category-btn,
+.dark-mode .advisor-card,
+.dark-mode .faq-item,
+.dark-mode .faq-question,
+.dark-mode .topic-card,
+.dark-mode .reply-modal,
+.dark-mode .newsletter-item,
+.dark-mode .social-card,
+.dark-mode .quick-link-card,
+.dark-mode .item-card,
+.dark-mode .marketplace-modal .modal-content,
+.dark-mode .upload-form-container,
+.dark-mode .filter-section option,
+.dark-mode select option {
+  background: #111111 !important;
+  color: #FFFFFF !important;
+  border-color: #3B82F6;
+}
+
+.dark-mode .filter-section select,
+.dark-mode .marketplace-filters select,
+.dark-mode .marketplace-filters input,
+.dark-mode .reply-form input,
+.dark-mode .reply-form textarea,
+.dark-mode .reply-modal input,
+.dark-mode .reply-modal textarea,
+.dark-mode .topic-search-input {
+  background: #111111;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+.dark-mode .filter-section select option,
+.dark-mode select option {
+  background: #111111;
+  color: #FFFFFF;
+}
