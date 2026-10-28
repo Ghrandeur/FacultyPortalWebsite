@@ -192,8 +192,86 @@
 
 /* Upload Modal */
 
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(4px);
+  animation: marketplaceFadeIn 180ms ease;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  position: relative;
+  width: min(100%, 700px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--white, #FFFFFF);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.35);
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-light, #6B7280);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+}
+
 .upload-modal {
-  max-width: 500px;
+  width: min(100%, 500px);
+  padding: 30px;
+}
+
+.upload-modal h2 {
+  margin: 0 48px 24px 0;
+}
+
+body.marketplace-modal-open {
+  overflow: hidden;
+}
+
+@keyframes marketplaceFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .modal {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 24px);
+  }
+
+  .upload-modal {
+    margin: 0;
+    padding: 24px 18px;
+  }
 }
 
 .marketplace-form {

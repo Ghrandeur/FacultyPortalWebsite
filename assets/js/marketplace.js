@@ -68,17 +68,41 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
 });
 
+function openModal(modal) {
+  modal.classList.add("show");
+  document.body.classList.add("marketplace-modal-open");
+
+  const focusTarget = modal.querySelector("input:not([type='file']), textarea, select") || modal.querySelector("button, a[href]");
+  if (focusTarget) {
+    window.requestAnimationFrame(() => focusTarget.focus());
+  }
+}
+
+function closeModal(modal) {
+  modal.classList.remove("show");
+  if (!document.querySelector(".modal.show")) {
+    document.body.classList.remove("marketplace-modal-open");
+  }
+}
+
 function setupEventListeners() {
   // Upload button
   document.getElementById("uploadItemBtn").addEventListener("click", () => {
-    document.getElementById("uploadModal").classList.add("show");
+    openModal(document.getElementById("uploadModal"));
   });
 
   // Modal close
   document.querySelectorAll(".modal-close").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      e.target.closest(".modal").classList.remove("show");
+      closeModal(e.target.closest(".modal"));
     });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      const openModalElement = document.querySelector(".modal.show");
+      if (openModalElement) closeModal(openModalElement);
+    }
   });
 
   // Upload form
@@ -218,7 +242,7 @@ async function handleUploadItem(e) {
 
     alert("Item uploaded successfully!");
     document.getElementById("uploadForm").reset();
-    document.getElementById("uploadModal").classList.remove("show");
+    closeModal(document.getElementById("uploadModal"));
     loadItems();
   } catch (error) {
     console.error("Error uploading item:", error);
@@ -277,7 +301,7 @@ function openItemDetail(item) {
     </div>
   `;
 
-  modal.classList.add("show");
+  openModal(modal);
 }
 
 function escapeHtml(text) {
@@ -291,7 +315,7 @@ function escapeHtml(text) {
 document.querySelectorAll(".modal").forEach((modal) => {
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      modal.classList.remove("show");
+      closeModal(modal);
     }
   });
 });
