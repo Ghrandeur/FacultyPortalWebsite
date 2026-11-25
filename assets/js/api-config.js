@@ -30,6 +30,11 @@
       .replace(/^http:\/\/localhost(?::\d+)?(\/.*)$/i, `${backendBaseUrl}$1`)
       .replace(/^http:\/\/127\.0\.0\.1(?::\d+)?(\/.*)$/i, `${backendBaseUrl}$1`);
 
+    const firebaseStorageMatch = normalized.match(/^https?:\/\/storage\.googleapis\.com\/[^/]+\/(uploads\/.+)$/i);
+    if (firebaseStorageMatch) {
+      return `${backendBaseUrl}/${firebaseStorageMatch[1]}`;
+    }
+
     if (/^(https?:)?\/\//i.test(normalized)) {
       return normalized;
     }

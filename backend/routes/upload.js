@@ -124,10 +124,7 @@ async function processSingleFile(file, folder, s3Enabled, firebaseStorageEnabled
         }
       });
 
-      try { await remoteFile.makePublic(); } catch (e) { console.warn('remoteFile.makePublic() failed:', e && e.message); }
-
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-      return { url: publicUrl, storage: 'firebase' };
+      return { url: localUrl, storage: 'firebase' };
     } catch (firebaseErr) {
       console.warn('Firebase upload failed for file, using local copy:', firebaseErr && firebaseErr.message);
       return { url: localUrl, storage: 'local-fallback', warning: 'firebase_failed' };

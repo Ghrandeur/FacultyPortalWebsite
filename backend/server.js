@@ -133,8 +133,27 @@ app.use('/uploads', async (req, res, next) => {
       const [exists] = await remoteFile.exists();
 
       if (exists) {
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-        return res.redirect(publicUrl);
+        try {
+          const [metadata] = await remoteFile.getMetadata();
+          const contentType = metadata && metadata.contentType ? metadata.contentType : 'application/octet-stream';
+          res.setHeader('Content-Type', contentType);
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          remoteFile.createReadStream()
+            .on('error', (streamErr) => {
+              console.warn('Firebase storage stream error:', streamErr && streamErr.message ? streamErr.message : streamErr);
+              if (!res.headersSent) {
+                res.status(502).json({ error: 'Unable to read file from storage' });
+              } else {
+                res.end();
+              }
+            })
+            .pipe(res);
+          return;
+        } catch (readErr) {
+          console.warn('Firebase storage proxy error:', readErr && readErr.message ? readErr.message : readErr);
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+          return res.redirect(publicUrl);
+        }
       }
     } catch (error) {
       console.warn('Firebase storage fallback error:', error && error.message ? error.message : error);

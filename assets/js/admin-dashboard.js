@@ -625,8 +625,11 @@ async function handleGallerySubmit() {
         console.log('Uploading replacement gallery photo(s)');
         const uploaded = await uploadImageToStorage(selectedFiles, 'gallery');
         console.log('Photo URLs after upload:', uploaded);
-        if (Array.isArray(uploaded) && uploaded.length > 0) {
-          photoUrl = uploaded[0] || '';
+        const uploadedUrls = Array.isArray(uploaded)
+          ? uploaded.map(u => (typeof u === 'string' ? u.trim() : '')).filter(Boolean)
+          : (typeof uploaded === 'string' && uploaded.trim() ? [uploaded.trim()] : []);
+        if (uploadedUrls.length > 0) {
+          photoUrl = uploadedUrls[0];
         } else {
           console.error('Photo upload returned empty URLs');
           alert('Warning: Photo upload may have failed. The photo will be saved without an image.');
@@ -671,23 +674,34 @@ async function handleGallerySubmit() {
 
     let uploadedUrls = [];
     if (selectedFiles.length > 0) {
-      // Send all selected files in one request
+      const normalizeUploaded = (uploaded) => {
+        if (Array.isArray(uploaded)) {
+          return uploaded.map(u => (typeof u === 'string' ? u.trim() : '')).filter(Boolean);
+        }
+        if (typeof uploaded === 'string' && uploaded.trim()) {
+          return [uploaded.trim()];
+        }
+        return [];
+      };
+
       try {
         const uploaded = await uploadImageToStorage(selectedFiles, 'gallery');
-        if (Array.isArray(uploaded)) uploadedUrls = uploaded.map(u => (typeof u === 'string' ? u.trim() : '')).filter(Boolean);
+        uploadedUrls = normalizeUploaded(uploaded);
       } catch (e) {
         console.error('Batch upload failed, attempting per-file fallback:', e && e.message);
-        // Fallback: upload one by one
         for (const file of selectedFiles) {
           try {
             const res = await uploadImageToStorage(file, 'gallery');
-            if (Array.isArray(res)) {
-              uploadedUrls.push(...res.map(u => (typeof u === 'string' ? u.trim() : '')).filter(Boolean));
-            }
+            uploadedUrls.push(...normalizeUploaded(res));
           } catch (err) {
             console.warn('Per-file upload failed for', file.name, err && err.message);
           }
         }
+      }
+
+      if (uploadedUrls.length === 0 && pastedLinks.length === 0) {
+        alert('Photo upload failed. Please try again.');
+        return;
       }
     }
 
